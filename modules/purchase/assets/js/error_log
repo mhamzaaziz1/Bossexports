@@ -1,0 +1,4 @@
+[22-Jul-2024 09:16:05 Africa/Johannesburg] PHP Fatal error:  Uncaught Error: Call to undefined function _l() in /home/bossekwg/app.bossexports.co.za/modules/purchase/assets/js/pur_order_js.php:176
+Stack trace:
+#0 {main}
+  thrown in /home/bossekwg/app.bossexports.co.za/modules/purchase/assets/js/pur_order_js.php on line 176

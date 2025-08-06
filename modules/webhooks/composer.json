@@ -1,0 +1,6 @@
+{
+    "require": {
+        "rmccue/requests": "^2.0.7",
+        "firebase/php-jwt": "^6.8.1"
+    }
+}

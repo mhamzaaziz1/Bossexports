@@ -1,0 +1,44 @@
+# XAMPP specific
+.htaccess
+
+# IDE specific files
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace
+
+# OS specific files
+.DS_Store
+Thumbs.db
+
+# Application specific
+/application/config/config.php
+/application/config/database.php
+/application/config/constants.php
+/application/config/credentials.php
+
+# Composer dependencies
+/vendor/
+
+# Node modules
+/node_modules/
+
+# Temporary files
+/application/logs/*
+!/application/logs/index.html
+/application/cache/*
+!/application/cache/index.html
+/application/sessions/*
+!/application/sessions/index.html
+
+# Uploaded files
+/uploads/*
+!/uploads/index.html
+
+# Backup files
+*.bak
+*.swp
+*~
+
+# Environment files
+.env
