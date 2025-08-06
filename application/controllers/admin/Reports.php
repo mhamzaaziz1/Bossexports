@@ -2465,7 +2465,6 @@ class Reports extends AdminController
             if ($report_months) {
                 $date_filter = $report_months ? $this->get_where_report_period($contact_type === 'vendor' ? 'order_date' : 'date'): '';
             }
-            var_dump(preg_replace('/^\s*AND\s+/i', '', $date_filter)); die;
 
             $data['report_data'] = $this->reports_model->get_items_by_contact(
                 $contact_id,
