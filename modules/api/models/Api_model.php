@@ -7,6 +7,12 @@ class Api_model extends App_Model
     {
         parent::__construct();
     }
+    /**
+     * Get table data by name and id
+     * @param  string $name Table name
+     * @param  integer $id   Record ID
+     * @return mixed       
+     */
     public function get_table($name, $id)
     {
         switch ($name) {
@@ -87,6 +93,11 @@ class Api_model extends App_Model
         }
     }
 
+    /**
+     * Return value if not empty, otherwise return empty string
+     * @param  mixed $value Value to check
+     * @return mixed        Original value or empty string
+     */
     public function value($value)
     {
         if($value){
@@ -96,17 +107,27 @@ class Api_model extends App_Model
         }
     }
 
+    /**
+     * Search for data by type and key
+     * @param  string $type Type of data to search
+     * @param  string $key  Search key
+     * @return array        Search results
+     */
     public function search($type, $key)
     {
         return $this->get_relation_data_api($type,$key);
     }
 
+    /**
+     * Authenticate user login
+     * @param  string $username User email
+     * @param  string $password User password
+     * @return mixed           User object if authenticated, FALSE otherwise
+     */
     public function login($username, $password)
     {
         $this->db->where('email', $username);
         $user = $this->db->get('tblstaff')->row();
-        var_dump($user->password);
-        var_dump(md5($password));
         if(count($user) > 0)
         {
             $user_pass = $user->password;
@@ -120,6 +141,13 @@ class Api_model extends App_Model
             return FALSE;
         }
     }
+    /**
+     * Search tickets
+     * @param  string  $q     Search query
+     * @param  integer $limit Limit results
+     * @param  boolean $api   Whether the request is from API
+     * @return array          Search results
+     */
     public function _search_tickets($q, $limit = 0, $api = false)
     {
         $result = [
@@ -195,6 +223,14 @@ class Api_model extends App_Model
         return $result;
     }
 
+    /**
+     * Search leads
+     * @param  string  $q     Search query
+     * @param  integer $limit Limit results
+     * @param  array   $where Additional where conditions
+     * @param  boolean $api   Whether the request is from API
+     * @return array          Search results
+     */
      public function _search_leads($q, $limit = 0, $where = [], $api = false)
     {
         $result = [
@@ -245,6 +281,15 @@ class Api_model extends App_Model
         return $result;
     }
 
+    /**
+     * Search projects
+     * @param  string  $q        Search query
+     * @param  integer $limit    Limit results
+     * @param  mixed   $where    Additional where conditions
+     * @param  string  $rel_type Relationship type
+     * @param  boolean $api      Whether the request is from API
+     * @return array             Search results
+     */
     public function _search_projects($q, $limit = 0, $where = false, $rel_type = null, $api = false)
     {
         $result = [
@@ -263,7 +308,7 @@ class Api_model extends App_Model
             $this->db->join('tblclients', 'tblclients.userid = tblprojects.clientid','LEFT'); 
             $this->db->join('tblleads', 'tblleads.id = tblprojects.clientid','LEFT');    
         }
-        
+
         if (!$projects && $api == false) {
             $this->db->where('tblprojects.id IN (SELECT project_id FROM tblprojectmembers WHERE staff_id=' . get_staff_user_id() . ')');
         }
@@ -274,7 +319,7 @@ class Api_model extends App_Model
             $this->db->where('(tblleads.company LIKE "%' . $q . '%"
                 OR tblprojects.description LIKE "%' . $q . '%"
                 OR tblprojects.name LIKE "%' . $q . '%"
-                
+
                 OR tblleads.phonenumber LIKE "%' . $q . '%"
                 OR tblleads.city LIKE "%' . $q . '%"
                 OR tblleads.zip LIKE "%' . $q . '%"
@@ -300,6 +345,13 @@ class Api_model extends App_Model
         return $result;
     }
 
+    /**
+     * Search staff members
+     * @param  string  $q     Search query
+     * @param  integer $limit Limit results
+     * @param  boolean $api   Whether the request is from API
+     * @return array          Search results
+     */
     public function _search_staff($q, $limit = 0, $api = false)
     {
         $result = [
@@ -331,6 +383,13 @@ class Api_model extends App_Model
         return $result;
     }
 
+    /**
+     * Search tasks
+     * @param  string  $q     Search query
+     * @param  integer $limit Limit results
+     * @param  boolean $api   Whether the request is from API
+     * @return array          Search results
+     */
     public function _search_tasks($q, $limit = 0, $api = false)
     {
         $result = [
@@ -377,7 +436,7 @@ class Api_model extends App_Model
         // generate a token
         $data['token'] = $this->authorization_token->generateToken($payload);
         $today = date('Y-m-d H:i:s');
-                
+
         $data['expiration_date'] = to_sql_date($data['expiration_date'],true);
         $data['password'] = app_hash_password($data['password']);
        $this->db->insert(db_prefix() . 'user_api', $data);
@@ -455,7 +514,7 @@ class Api_model extends App_Model
                 }
 
                 $total_rows = $this->db->count_all_results('tblleads');
-                
+
                 if ($total_rows > 0) {
                     $result_lead = false;
                 } else {
@@ -493,7 +552,7 @@ class Api_model extends App_Model
         $data = [];
         if ($type == 'customer' || $type == 'customers') {
             $where_clients = 'tblclients.active=1';
-            
+
 
             if ($q) {
                 $where_clients .= ' AND (company LIKE "%' . $q . '%" OR CONCAT(firstname, " ", lastname) LIKE "%' . $q . '%" OR email LIKE "%' . $q . '%")';
@@ -510,7 +569,7 @@ class Api_model extends App_Model
                     ], true);
                 $data = $search['result'];
         } elseif ($type == 'project') {
-            
+
                 $where_projects = '';
                 if ($this->input->post('customer_id')) {
                     $where_projects .= '(clientid=' . $this->input->post('customer_id').' or clientid in (select id from tblleads where client_id='.$this->input->post('customer_id').') )';
@@ -519,14 +578,14 @@ class Api_model extends App_Model
                     $where_projects .= ' and rel_type="' . $this->input->post('rel_type').'" ' ;
                 }
                 $search = $this->_search_projects($q, 0, $where_projects,$this->input->post('rel_type'), true);
-                
-                
+
+
                 $data   = $search['result'];
-            
+
         } elseif ($type == 'staff') {
                 $search = $this->_search_staff($q,0,true);
                 $data   = $search['result'];
-            
+
         } elseif ($type == 'tasks') {
             $search = $this->_search_tasks($q,0,true);
             $data   = $search['result'];

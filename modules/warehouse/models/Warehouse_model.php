@@ -680,7 +680,7 @@ class Warehouse_model extends App_Model {
 						if ($commodity_group_type_value != '0') {
 							$flag_empty = 1;
 						}
-						
+
 					}
 					break;
 					case 2:
@@ -1033,9 +1033,9 @@ class Warehouse_model extends App_Model {
 	 * @return boolean
 	 */
 	public function delete_commodity($id) {
-		
+
 		hooks()->do_action('delete_item_on_woocommerce', $id);
-		
+
 		/*delete commodity min*/
 		$this->db->where('commodity_id', $id);
 		$this->db->delete(db_prefix() . 'inventory_commodity_min');
@@ -1046,7 +1046,7 @@ class Warehouse_model extends App_Model {
 				$this->delete_commodity_file($file_value['id']);
 			}
 		}
-		
+
 		$this->db->where('id', $id);
 		$this->db->delete(db_prefix() . 'items');
 		if ($this->db->affected_rows() > 0) {
@@ -1075,9 +1075,9 @@ class Warehouse_model extends App_Model {
 	 * @return	string
 	 */
 	public function create_goods_code() {
-		
+
 		$goods_code = get_warehouse_option('inventory_received_number_prefix') . get_warehouse_option('next_inventory_received_mumber');
-		
+
 		return $goods_code;
 
 	}
@@ -1106,7 +1106,7 @@ class Warehouse_model extends App_Model {
 
 
 
-		
+
 		/*get suppier name from supplier code*/
 		if (get_status_modules_wh('purchase')) {
 			if($data['supplier_code'] != ''){
@@ -1125,13 +1125,13 @@ class Warehouse_model extends App_Model {
 			unset($data['hot_purchase']);
 		}
 		$data['goods_receipt_code'] = $this->create_goods_code();
-		
+
 		if(!$this->check_format_date($data['date_c'])){
 			$data['date_c'] = to_sql_date($data['date_c']);
 		}else{
 			$data['date_c'] = $data['date_c'];
 		}
-		
+
 		if(!$this->check_format_date($data['date_add'])){
 			$data['date_add'] = to_sql_date($data['date_add']);
 		}else{
@@ -1357,7 +1357,7 @@ class Warehouse_model extends App_Model {
 
 				$index++;
 			}
-			
+
 		}
 
 
@@ -1429,7 +1429,7 @@ class Warehouse_model extends App_Model {
 			$data_insert['purchase_price'] = $data['unit_price'];
 			$data_insert['expiry_date'] = $data['expiry_date'];
 			$data_insert['lot_number'] = $data['lot_number'];
-			
+
 		} elseif ($status == '2') {
 			$data_insert['goods_receipt_id'] = $data['goods_delivery_id'];
 			$data_insert['price'] = $data['unit_price'];
@@ -1467,7 +1467,7 @@ class Warehouse_model extends App_Model {
 	 */
 	public function add_inventory_manage($data, $status) {
 		// status '1:Goods receipt note 2:Goods delivery note',
-		
+
 
 		if ($status == 1) {
 
@@ -1591,7 +1591,7 @@ class Warehouse_model extends App_Model {
 								$lot_number .= $result_value['lot_number'].','.$result_value['inventory_number'];
 							}
 						}
-						
+
 						//log expiry date
 						if(($result_value['expiry_date'] != null) && ($result_value['expiry_date'] != '') ){
 							if(strlen($expiry_date) != 0){
@@ -1648,7 +1648,7 @@ class Warehouse_model extends App_Model {
 				'expiry_date' => $expiry_date,
 				'lot_number' => $lot_number,
 			]);
-			
+
 			//goods transaction detail log
 			$data['expiry_date'] = $expiry_date;
 			$data['lot_number'] = $lot_number;
@@ -1741,8 +1741,8 @@ class Warehouse_model extends App_Model {
 			return $this->db->query('select * from tblinventory_commodity_min LIMIT 500')->result_array();
 		}
 	}
-	
-	
+
+
 		/**
 	 * get inventory min
 	 * @param  boolean $id
@@ -1752,7 +1752,7 @@ class Warehouse_model extends App_Model {
 			$this->db->where('commodity_id', $id);
 			return $this->db->get(db_prefix() . 'inventory_commodity_min')->row();
 	}
-	
+
 	public function update_inventory_minmax($id = false,$min=0,$max=0) {
 			$this->db->where('commodity_id', $id);
 			return $this->db->update(db_prefix() . 'inventory_commodity_min',array('inventory_number_min'=>$min,'inventory_number_max'=>$max));
@@ -1764,7 +1764,6 @@ class Warehouse_model extends App_Model {
 	 * @return boolean
 	 */
 	public function update_inventory_min($data) {
-	    var_dump($data);die;
 		$inventory_min = str_replace(', ', '|/\|', $data['inventory_min']);
 		$data_inventory = explode(',', $inventory_min);
 
@@ -2193,7 +2192,6 @@ class Warehouse_model extends App_Model {
 			$this->db->where('id', $rel_id);
 			$this->db->update(db_prefix() . 'goods_receipt', $data_update);
 
-			// //update history stock, inventoty manage after staff approved
 			$goods_receipt_detail = $this->get_goods_receipt_detail($rel_id);
 
 			/*check goods receipt from PO*/
@@ -2209,7 +2207,7 @@ class Warehouse_model extends App_Model {
 			}
 
 			foreach ($goods_receipt_detail as $goods_receipt_detail_value) {
-				
+
 				/*update Without checking warehouse*/		
 
 				if($this->check_item_without_checking_warehouse($goods_receipt_detail_value['commodity_code']) == true){
@@ -2281,7 +2279,7 @@ class Warehouse_model extends App_Model {
 			$goods_delivery_detail = $this->get_goods_delivery_detail($rel_id);
 			foreach ($goods_delivery_detail as $goods_delivery_detail_value) {
 				// add goods transaction detail (log) after update invetory number
-				
+
 				//update Without checking warehouse				
 				if($this->check_item_without_checking_warehouse($goods_delivery_detail_value['commodity_code']) == true){
 
@@ -2315,7 +2313,7 @@ class Warehouse_model extends App_Model {
 
 			case '4':
 		//internal delivery note
-			
+
 			$data_update['approval'] = $status;
 			$this->db->where('id', $rel_id);
 			$this->db->update(db_prefix() . 'internal_delivery_note', $data_update);
@@ -2326,7 +2324,7 @@ class Warehouse_model extends App_Model {
 
 			foreach ($internal_delivery_detail as $internal_delivery_detail_value) {
 				// add goods transaction detail (log) after update invetory number
-				
+
 				$this->approval_internal_delivery_detail($internal_delivery_detail_value);
 
 			}
@@ -2426,7 +2424,7 @@ class Warehouse_model extends App_Model {
 			$bill_to .= get_vendor_company_name($this->db->query('select tblpur_orders.vendor as pur from tblpur_orders INNER JOIN tblgoods_receipt ON tblpur_orders.id = tblgoods_receipt.pr_order_id  where tblgoods_receipt.id ='.$goods_receipt->id)->row()->pur);
 			$bill_to .= '</div>';
 		}
-        
+
 		//invoice_data_date
 		$invoice_date = '<b>' . _l('Date: ') . ' ' . _d($goods_receipt->date_c) . '</b>';
 
@@ -2531,7 +2529,7 @@ class Warehouse_model extends App_Model {
 		<td class="text_left"><b>' . _l('value_of_inventory') . '</b></td>
 		<td class="text_right">' .$base_currency->symbol. app_format_money((float) $goods_receipt->value_of_inventory, '') . '</td>
 		</tr>
-		
+
 		</tbody>
 		</table>
 		<br><br><br>
@@ -2641,7 +2639,7 @@ class Warehouse_model extends App_Model {
 						}
 
 						//send mail
-						
+
 						$this->emails_model->send_simple_email($staff->email, _l('request_approval'), _l('email_send_request_approve', $type) .' <a href="'.admin_url($link).'">'.admin_url($link).'</a> '._l('from_staff', get_staff_full_name($staff_addedfrom)));
 					}
 				}
@@ -2673,7 +2671,7 @@ class Warehouse_model extends App_Model {
 			}
 
 			//send mail
-			
+
 			$this->emails_model->send_simple_email($staff->email, _l('approval_notification'), _l($mail_template, $type.' <a href="'.admin_url($link).'">'.admin_url($link).'</a> ').' '._l('by_staff', get_staff_full_name(get_staff_user_id())));
 
 
@@ -2713,7 +2711,7 @@ class Warehouse_model extends App_Model {
 	public function create_goods_delivery_code() {
 
 		$goods_code = get_warehouse_option('inventory_delivery_number_prefix') . (get_warehouse_option('next_inventory_delivery_mumber'));
-		
+
 		return $goods_code;
 	}
 
@@ -3024,15 +3022,15 @@ class Warehouse_model extends App_Model {
 			if(isset($result_array->type)){
 				$data['type']      	.= $result_array->type;
 			}
-			
+
 			if(isset($result_array->department)){
 				$data['department'] .= $result_array->department;
 			}
-			
+
 			if(isset($result_array->requester)){
 				$data['requester'] 	.= $result_array->requester;
 			}
-			
+
 		}
 
 		return $data;
@@ -3145,7 +3143,7 @@ class Warehouse_model extends App_Model {
 		</tbody>
 		</table>
 		';
-		
+
 		$html .= '<table class="table" style="font-size: 14px;">
 		<tbody>
 		<tr>
@@ -3323,7 +3321,7 @@ class Warehouse_model extends App_Model {
 			<td class="text_left"><b>' . _l('total_money') . '</b></td>
 			<td class="text_right">......................................</td>
 			</tr>
-			
+
 			</tbody>
 			</table>
 			<br><br><br>
@@ -3489,7 +3487,7 @@ class Warehouse_model extends App_Model {
 					$arr_import_openings[$import_opening_value['commodity_id']] 	   += (float)$import_opening_value['quantity'];
 
 					break;
-					
+
 				}
 
 
@@ -3511,7 +3509,7 @@ class Warehouse_model extends App_Model {
 					$arr_import_openings[$import_opening_value['commodity_id']] 	   = (float)$import_opening_value['quantity'];
 
 					break;
-					
+
 				}
 
 			}
@@ -3533,8 +3531,6 @@ class Warehouse_model extends App_Model {
 		$arr_export_openings_amount = [];
 		foreach ($export_openings as $export_opening_key => $export_opening_value) {
 			//get purchase price of item, before version get sales price.
-			// $purchase_price = $export_opening_value['price']
-			
 			$purchase_price = $this->get_purchase_price_from_commodity_id($export_opening_value['commodity_id']);
 
 			if(isset($arr_export_openings[$export_opening_value['commodity_id']])){
@@ -3555,10 +3551,10 @@ class Warehouse_model extends App_Model {
 					$arr_export_openings[$export_opening_value['commodity_id']] 	   += (float)$export_opening_value['quantity'];
 
 					break;
-					
+
 				}
 
-				
+
 			}else{
 				switch ($export_opening_value['status']) {
 					case '2':
@@ -3577,7 +3573,7 @@ class Warehouse_model extends App_Model {
 					$arr_export_openings[$export_opening_value['commodity_id']] 	   = (float)$export_opening_value['quantity'];
 
 					break;
-					
+
 				}
 			}
 		}
@@ -3615,7 +3611,7 @@ class Warehouse_model extends App_Model {
 					$arr_import_periods[$import_period_value['commodity_id']] 	   += (float)$import_period_value['quantity'];
 
 					break;
-					
+
 				}
 
 
@@ -3638,12 +3634,12 @@ class Warehouse_model extends App_Model {
 					$arr_import_periods[$import_period_value['commodity_id']] 	   = (float)$import_period_value['quantity'];
 
 					break;
-					
+
 				}
 
 			}
 		}
-		
+
 
 		//export_periods
 		if (strlen($where_warehouse_id) > 0) {
@@ -3661,7 +3657,7 @@ class Warehouse_model extends App_Model {
 		foreach ($export_periods as $export_period_key => $export_period_value) {
 			//get purchase price of item, before version get sales price.
 			// $purchase_price = $export_opening_value['price']
-			
+
 			$purchase_price = $this->get_purchase_price_from_commodity_id($export_period_value['commodity_id']);
 
 			if(isset($arr_export_periods[$export_period_value['commodity_id']])){
@@ -3684,10 +3680,10 @@ class Warehouse_model extends App_Model {
 					$arr_export_periods[$export_period_value['commodity_id']] 	   += (float)$export_period_value['quantity'];
 
 					break;
-					
+
 				}
 
-				
+
 			}else{
 				switch ($export_period_value['status']) {
 					case '2':
@@ -3706,7 +3702,7 @@ class Warehouse_model extends App_Model {
 					$arr_export_periods[$export_period_value['commodity_id']] 	   = (float)$export_period_value['quantity'];
 
 					break;
-					
+
 				}
 
 			}
@@ -3777,7 +3773,7 @@ class Warehouse_model extends App_Model {
 		</tr>';
 		foreach ($commodity_lists as $commodity_list_key => $commodity_list) {
 			//get purchase price of item, before version get sales price.
-						
+
 			$purchase_price = $this->get_purchase_price_from_commodity_id($commodity_list['commodity_id']);
 
 			$html .= '<tr>
@@ -3796,7 +3792,7 @@ class Warehouse_model extends App_Model {
 			$import_opening_amount = isset($arr_import_openings_amount[$commodity_list['commodity_id']]) ? $arr_import_openings_amount[$commodity_list['commodity_id']] : 0;
 
 			$export_opening_amount = isset($arr_export_openings_amount[$commodity_list['commodity_id']]) ? $arr_export_openings_amount[$commodity_list['commodity_id']] : 0;
-			
+
 
 			$stock_opening_quatity = (float)$import_opening_quantity - (float)$export_opening_quantity;
 			$stock_opening_amount = (float)$import_opening_amount - (float)$export_opening_amount;
@@ -3833,19 +3829,18 @@ class Warehouse_model extends App_Model {
 			$stock_opening_amount =$stock_opening_quatity*(float)$purchase_price ;
 			$total_opening_quatity += $stock_opening_quatity;
 			$total_opening_amount += $stock_opening_amount;
-			
+
 			//closing
 			$closing_quatity = 0;
 			$closing_amount = 0;
 			$closing_quatity = $stock_opening_quatity + $import_period_quatity - $export_period_quatity;
 			// before get from fomular: $closing_amount = ($stock_opening_amount + $import_period_amount - $export_period_amount) after change below
-			
+
 			$closing_amount = $closing_quatity*(float)$purchase_price;
 
 			$total_closing_quatity += $closing_quatity;
 			$total_closing_amount += $closing_amount;
 			$closing_quatity = $this->warehouse_model->get_quantity_inventory('', $commodity_list['commodity_id'])->inventory_number;
-// 			var_dump($closing_quatity);
 			if(!isset($closing_quatity)){
 			    $closing_quatity=0;
 			}
@@ -3933,7 +3928,7 @@ class Warehouse_model extends App_Model {
 						$where_warehouse_id_with_internal_i .= ' (find_in_set('.$warehouse_id.', '.db_prefix().'goods_transaction_detail.warehouse_id) OR find_in_set('.$warehouse_id.', '.db_prefix().'goods_transaction_detail.to_stock_name)';
 
 						$where_warehouse_id_with_internal_e .= ' (find_in_set('.$warehouse_id.', '.db_prefix().'goods_transaction_detail.warehouse_id) OR find_in_set('.$warehouse_id.', '.db_prefix().'goods_transaction_detail.from_stock_name)';
-						
+
 
 
 					} else {
@@ -3942,7 +3937,7 @@ class Warehouse_model extends App_Model {
 						$where_warehouse_id_with_internal_i .= ' or find_in_set('.$warehouse_id.', '.db_prefix().'goods_transaction_detail.warehouse_id) OR find_in_set('.$warehouse_id.', '.db_prefix().'goods_transaction_detail.to_stock_name) ';
 
 						$where_warehouse_id_with_internal_e .= ' or find_in_set('.$warehouse_id.', '.db_prefix().'goods_transaction_detail.warehouse_id) OR find_in_set('.$warehouse_id.', '.db_prefix().'goods_transaction_detail.from_stock_name) ';
-						
+
 					}
 
 				}
@@ -4019,7 +4014,6 @@ class Warehouse_model extends App_Model {
 				where ( status = 1 OR status = 4 OR status = 3) AND  date_format(date_add,"%Y-%m-%d") < "' . $from_date . '" ')->result_array();
 		}
 
-        // var_dump($this->db->last_query());
 
 		$arr_import_openings = [];
 		$arr_import_openings_amount = [];
@@ -4042,10 +4036,10 @@ class Warehouse_model extends App_Model {
 					$arr_import_openings[$import_opening_value['commodity_id']] 	   += (float)$import_opening_value['quantity'];
 
 					break;
-					
+
 				}
 
-				
+
 			}else{
 				switch ($import_opening_value['status']) {
 					case '1':
@@ -4064,7 +4058,7 @@ class Warehouse_model extends App_Model {
 					$arr_import_openings[$import_opening_value['commodity_id']] 	   = (float)$import_opening_value['quantity'];
 
 					break;
-					
+
 				}
 
 			}
@@ -4088,7 +4082,7 @@ class Warehouse_model extends App_Model {
 		foreach ($export_openings as $export_opening_key => $export_opening_value) {
 				//get purchase price of item, before version get sales price.
 				// $purchase_price = $export_opening_value['price']
-				
+
 				$purchase_price = $this->get_purchase_price_from_commodity_id($export_opening_value['commodity_id']);
 
 			if(isset($arr_export_openings[$export_opening_value['commodity_id']])){
@@ -4109,10 +4103,10 @@ class Warehouse_model extends App_Model {
 					$arr_export_openings[$export_opening_value['commodity_id']] 	   += (float)$export_opening_value['quantity'];
 
 					break;
-					
+
 				}
 
-				
+
 			}else{
 				switch ($export_opening_value['status']) {
 					case '2':
@@ -4131,7 +4125,7 @@ class Warehouse_model extends App_Model {
 					$arr_export_openings[$export_opening_value['commodity_id']] 	   = (float)$export_opening_value['quantity'];
 
 					break;
-					
+
 				}
 
 			}
@@ -4174,7 +4168,7 @@ class Warehouse_model extends App_Model {
 					$arr_import_periods[$import_period_value['commodity_id']] 	   += (float)$import_period_value['quantity'];
 
 					break;
-					
+
 				}
 
 
@@ -4196,7 +4190,7 @@ class Warehouse_model extends App_Model {
 					$arr_import_periods[$import_period_value['commodity_id']] 	   = (float)$import_period_value['quantity'];
 
 					break;
-					
+
 				}
 
 
@@ -4220,7 +4214,7 @@ class Warehouse_model extends App_Model {
 		foreach ($export_periods as $export_period_key => $export_period_value) {
 				//get purchase price of item, before version get sales price.
 				// $purchase_price = $export_opening_value['price']
-				
+
 				$purchase_price = $this->get_purchase_price_from_commodity_id($export_period_value['commodity_id']);
 
 			if(isset($arr_export_periods[$export_period_value['commodity_id']])){
@@ -4242,11 +4236,11 @@ class Warehouse_model extends App_Model {
 					$arr_export_periods[$export_period_value['commodity_id']] 	   += (float)$export_period_value['quantity'];
 
 					break;
-					
+
 				}
 
 
-				
+
 			}else{
 
 				switch ($export_period_value['status']) {
@@ -4266,10 +4260,10 @@ class Warehouse_model extends App_Model {
 					$arr_export_periods[$export_period_value['commodity_id']] 	   = (float)$export_period_value['quantity'];
 
 					break;
-					
+
 				}
 
-				
+
 			}
 		}
 
@@ -4338,7 +4332,7 @@ class Warehouse_model extends App_Model {
 		</tr>';
 		foreach ($commodity_lists as $commodity_list_key => $commodity_list) {
 			//get purchase price of item, before version get sales price.
-						
+
 			$purchase_price = $this->get_purchase_price_from_commodity_id($commodity_list['commodity_id']);
 
 			$html .= '<tr>
@@ -4357,9 +4351,9 @@ class Warehouse_model extends App_Model {
 			$import_opening_amount = isset($arr_import_openings_amount[$commodity_list['commodity_id']]) ? $arr_import_openings_amount[$commodity_list['commodity_id']] : 0;
 
 			$export_opening_amount = isset($arr_export_openings_amount[$commodity_list['commodity_id']]) ? $arr_export_openings_amount[$commodity_list['commodity_id']] : 0;
-			
 
-			
+
+
 			$total_opening_quatity += $stock_opening_quatity;
 			$total_opening_amount += $stock_opening_amount;
 
@@ -4386,15 +4380,15 @@ class Warehouse_model extends App_Model {
 
 			$total_export_period_quatity += $export_period_quatity;
 			$total_export_period_amount += $export_period_amount;
-			
-			
-			
+
+
+
 			//opening
 			$stock_opening_quatity = ABS(($this->warehouse_model->get_quantity_inventory($data['warehouse_id'], $commodity_list['commodity_id'])->inventory_number)-(float)$import_period_quatity + (float)$export_period_quantity);
 			$stock_opening_amount =$stock_opening_quatity*(float)$purchase_price ;
 			$total_opening_quatity += $stock_opening_quatity;
 			$total_opening_amount += $stock_opening_amount;
-			
+
 			//closing
 			$closing_quatity = 0;
 			$closing_amount = 0;
@@ -4409,8 +4403,8 @@ class Warehouse_model extends App_Model {
 
 			$total_closing_quatity += $closing_quatity;
 			$total_closing_amount += $closing_amount;
-			
-		    
+
+
 
 			$html .= '<td class="bor_alir">' . $stock_opening_quatity . '</td>
 			<td class="bor_alir">' . app_format_money((float) $stock_opening_amount, '') . '</td>
@@ -4494,7 +4488,7 @@ class Warehouse_model extends App_Model {
 	 * @return integer
 	 */
 	public function add_commodity_one_item($data) {
-		
+
 		$arr_insert_cf=[];
 		$arr_variation=[];
 		/*get custom fields*/
@@ -4551,7 +4545,7 @@ class Warehouse_model extends App_Model {
 		$data['rate'] = reformat_currency_j($data['rate']);
 
 		if(isset($data['purchase_price']) && $data['purchase_price']){
-			
+
 			$data['purchase_price'] = reformat_currency_j($data['purchase_price']);
 		}
 		/*create sku code*/
@@ -4863,8 +4857,8 @@ class Warehouse_model extends App_Model {
 		}else{
 			$data['commodity_barcode'] = $this->generate_commodity_barcode();
 		}
-		
-		
+
+
 		/*create sku code*/
 		if($data['sku_code'] != ''){
 			$data['sku_code'] = str_replace(' ', '', $data['sku_code']) ;
@@ -4897,19 +4891,19 @@ class Warehouse_model extends App_Model {
 			/*get profit*/
 
 			$data['profif_ratio'] = $this->caculator_profit_rate_model($data['purchase_price'], $data['rate']);
-			
+
 		}
 
 		/*caculator  pur, sale, profit*/
 
-		
+
 		/*check update*/
 
 		$item = $this->db->query('select * from tblitems where commodity_code = "'.$data['commodity_code'].'"')->row();
 
 		if($item){
 			//check sku code dulicate
-			
+
 // 			if($this->check_sku_duplicate(['sku_code' => $data['sku_code'], 'item_id' => $item->id]) == false){
 // 				return ['status' => false, 'message' => _l('commodity_code').': '. $data['commodity_code'] ._l('wh_has').  _l('sku_code') ._l('exist')];
 // 			}
@@ -4940,7 +4934,7 @@ class Warehouse_model extends App_Model {
 
 			/*habdle add tags*/
 			handle_tags_save($tags_value, $item->id, 'item_tags');
-			
+
 
 			/*check update or insert inventory min with commodity code*/
 			$this->db->where('commodity_code', $data['commodity_code']);
@@ -5300,7 +5294,7 @@ class Warehouse_model extends App_Model {
 					}
 				}
 				foreach ($rq_val as $key => $rq) {
-					
+
 					if ($rq['items'] != '') {
 						foreach ($rq_val[$key] as $key_d => $d_value) {
 							if($key_d == 'expiry_date'){
@@ -6394,13 +6388,13 @@ public function delete_goods_receipt($id) {
 			unset($data['hot_purchase']);
 		}
 
-		
+
 		if(!$this->check_format_date($data['date_c'])){
 			$data['date_c'] = to_sql_date($data['date_c']);
 		}else{
 			$data['date_c'] = $data['date_c'];
 		}
-		
+
 		if(!$this->check_format_date($data['date_add'])){
 			$data['date_add'] = to_sql_date($data['date_add']);
 		}else{
@@ -6754,7 +6748,7 @@ public function delete_goods_receipt($id) {
 			return false;
 		}
 	}
-	
+
 	/**
 	 * update profit rate by purchase price sale
 	 * @param  array $data 
@@ -6936,17 +6930,17 @@ public function delete_goods_receipt($id) {
     	$total_money = 0;
     	$total_tax_money = 0;
     	$value_of_inventory = 0;
-    	
+
     	/*get purchase order*/
     	$this->db->where('id', $data['id']);
     	$purchase_order = $this->db->get(db_prefix().'pur_orders')->row();
-    	
+
     	$coffi=1;
     	if(($purchase_order->returns)==1){
     	    $coffi = -1;
     	}
-    
-    	
+
+
 
     	$sql = 'select item_code as commodity_code, ' . db_prefix() . 'items.description, ' . db_prefix() . 'items.unit_id, unit_price, (quantity * '. $coffi .') as quantities, ' . db_prefix() . 'pur_order_detail.tax as tax, into_money, (' . db_prefix() . 'pur_order_detail.total-' . db_prefix() . 'pur_order_detail.into_money) as tax_money, total as goods_money from ' . db_prefix() . 'pur_order_detail
     	left join ' . db_prefix() . 'items on ' . db_prefix() . 'pur_order_detail.item_code =  ' . db_prefix() . 'items.id
@@ -6956,7 +6950,7 @@ public function delete_goods_receipt($id) {
     	foreach ($results as $key => $value) {
     		$total_goods_money += $value['into_money'];
     		$total_tax_money += $value['tax_money'];
-    		
+
     	}
 
     	$total_money = $total_goods_money + $total_tax_money;
@@ -6994,10 +6988,10 @@ public function delete_goods_receipt($id) {
 
     	return $status;
 
-    	
+
     }
 
-    
+
 
     /**
      * update goods receipt warehouse
@@ -7285,7 +7279,7 @@ public function delete_goods_receipt($id) {
     	return false;
 
     }
-    
+
     public function auto_create_goods_delivery_with_credit($invoice_id, $invoice_update='')
     {
 
@@ -7439,11 +7433,11 @@ public function delete_goods_receipt($id) {
     			if(1){
 
     				$inventory = $this->get_inventory_by_commodity($delivery_detail_value['commodity_code']);
-    				
+
                     if(isset($inventory)){
                         $inventory->inventory_number=0;
                     }
-                    
+
     				if(true){
     					$inventory_number =  $inventory->inventory_number;
                         $flag_export_warehouse = 1;
@@ -7508,7 +7502,7 @@ public function delete_goods_receipt($id) {
 
     			if(1){
     				$this->add_inventory_from_invoices($goods_delivery_detail_value);
-    				
+
     			}
 
     		}
@@ -7659,7 +7653,7 @@ public function delete_goods_receipt($id) {
     public function copy_invoice($invoice_id)
     {
 
-    	
+
     	$this->db->where('id', $invoice_id);
     	$invoice_value = $this->db->get(db_prefix().'invoices')->row();
     	$data_insert=[];
@@ -7833,7 +7827,7 @@ public function delete_goods_receipt($id) {
     	}else{
     		return true;
     	}
-    	
+
     }
 
 
@@ -7847,7 +7841,7 @@ public function delete_goods_receipt($id) {
     	$count_result=0;
 
     	$goods_delivery_value = $this->get_goods_delivery($goods_delivery);
-    	
+
     	$invoice = false;
     	if($goods_delivery_value){
     		if( ($goods_delivery_value->invoice_id != '') && ($goods_delivery_value->invoice_id != 0) ){
@@ -7872,7 +7866,7 @@ public function delete_goods_receipt($id) {
     		}
 
     		//delete goods delivery (goods delivery, goods delivery detail)
-    		
+
     		$re_delete_goods_delivery = $this->delete_goods_delivery($goods_delivery);
     		if($re_revert_goods_transaction_detail){
     			$count_result++;
@@ -7925,7 +7919,7 @@ public function delete_goods_receipt($id) {
 				$inventory_number = $result->inventory_number;
 				$update_id = $result->id;
 
-				
+
 				//Goods receipt
 				$data_update['inventory_number'] = (int) $inventory_number - (int) $data['quantities'];
 				if((float)$data_update['inventory_number'] < 0){
@@ -7961,7 +7955,7 @@ public function delete_goods_receipt($id) {
 
 
 			}
-			
+
 		}else{
 			$result_with_invoice=0;
 			//status == 2 export
@@ -8043,7 +8037,7 @@ public function delete_goods_receipt($id) {
 								if ($this->db->affected_rows() > 0) {
 									$result_with_invoice++;
 								}
-								
+
 							}
 
 						}
@@ -8067,7 +8061,7 @@ public function delete_goods_receipt($id) {
 							$result_with_invoice++;
 						}
 
-						
+
 					}
 
 
@@ -8101,7 +8095,7 @@ public function delete_goods_receipt($id) {
 
 				$total_quatity_revert = $data['quantities'];
 				//goods delivery with invoice
-				
+
 
 				$arr_warehouse = explode(',', $data['warehouse_id']);
 					//with key lot number
@@ -8240,7 +8234,7 @@ public function delete_goods_receipt($id) {
 
 
 				}
-				
+
 
 				//check last update
 				if($total_quatity_revert > 0){
@@ -8726,7 +8720,7 @@ public function delete_goods_receipt($id) {
 
     		}
     		break;
-    		
+
     	}
 
     	//round purchase_price
@@ -9268,7 +9262,7 @@ public function delete_goods_receipt($id) {
     	$count_result=0;
 
     	$goods_delivery_value = $this->get_goods_delivery($goods_delivery);
-    	
+
     	$invoice = false;
     	if($goods_delivery_value){
     		if( ($goods_delivery_value->invoice_id != '') && ($goods_delivery_value->invoice_id != 0) ){
@@ -9293,7 +9287,7 @@ public function delete_goods_receipt($id) {
     		}
 
     		//delete goods delivery  detail not delete goods delivery
-    		
+
     		$this->db->where('goods_delivery_id', $goods_delivery);
     		$this->db->delete(db_prefix() . 'goods_delivery_detail');
 
@@ -9324,7 +9318,7 @@ public function delete_goods_receipt($id) {
     	/*get goods delivery from invoice*/
     	$this->db->where('invoice_id', $invoice_id);
     	$goods_delivery_update = $this->db->get(db_prefix().'goods_delivery')->result_array();
-    	
+
     	if(count($goods_delivery_update) > 0){
     		foreach ($goods_delivery_update as $value) {
 
@@ -9343,7 +9337,7 @@ public function delete_goods_receipt($id) {
     			$insert_id = $value['id'];
     		}
     		//update
-    		
+
     	}else{
 
     		//insert new
@@ -10029,7 +10023,7 @@ public function delete_goods_receipt($id) {
 	 * @return array               
 	 */
 	public function get_inventory_by_warehouse($warehouse_id) {
-		
+
 		$sql = 'SELECT sum(inventory_number) as inventory_number, commodity_id, warehouse_id FROM '.db_prefix().'inventory_manage
 		where '.db_prefix().'inventory_manage.warehouse_id = '.$warehouse_id.' 
 		group by commodity_id
@@ -10161,7 +10155,7 @@ public function delete_goods_receipt($id) {
      * @param  array  $where 
      * @return array        
      */
-    
+
     public function get_client_lead($id = '', $q)
     {	
     	//customer where
@@ -10427,7 +10421,7 @@ public function delete_goods_receipt($id) {
 				$this->delete_model($value['id']);
 			}
 		}
-		
+
 
 		//delete brand
 		$this->db->where('id', $id);
@@ -10720,7 +10714,7 @@ public function delete_goods_receipt($id) {
 
 	    //get item from []
 		$items = [];
-		
+
 		if(count($items_id) > 0){
 
 			$this->db->order_by('name', 'asc');
@@ -11157,7 +11151,7 @@ public function delete_goods_receipt($id) {
 		<br><br>
 		';
 
-		
+
 		$html .= '<table class="table">
 		<tbody>
 		<tr>
@@ -11193,7 +11187,7 @@ public function delete_goods_receipt($id) {
 			$flag_from_warehouse = true;
 			$flag_to_warehouse   = true;
 
-			
+
 
 			$item_order = $delivery_key +1;
 
@@ -11277,7 +11271,7 @@ public function delete_goods_receipt($id) {
 					$to_stock_name = '';
 				}
 			}
-			
+
 
 
 			$unit_name = '';
@@ -11295,7 +11289,7 @@ public function delete_goods_receipt($id) {
 
 			$html .= ' <td class="td_style_r_ep">' . app_format_money((float) $unit_price, '') . '</td>
 			<td class="td_style_r_ep"><b>' . app_format_money((float) $into_money, '') . '</b></td>';
-			
+
 			$html .= '</tr>';
 		}
 
@@ -11324,7 +11318,7 @@ public function delete_goods_receipt($id) {
 
 		$html .=  '<h4 class="note-align">' . _l('warehouse_address') . ':</h4>
 		<p>' . $warehouse_address . '</p>';
-		
+
 		$html .=  '<h4 class="note-align">' . _l('note_') . ':</h4>
 		<p>' . $internal_delivery->description . '</p>';
 
@@ -11379,7 +11373,7 @@ public function delete_goods_receipt($id) {
 
 		$html .= '<table class="table">
 		<tbody>';
-		
+
 
 		if($data['select_item'] == 0){
 			//select all
@@ -11439,7 +11433,7 @@ public function delete_goods_receipt($id) {
 		$html .= '<link href="' . module_dir_url(WAREHOUSE_MODULE_NAME, 'assets/css/pdf_style.css') . '"  rel="stylesheet" type="text/css" />';
 		return $html;
 	}
-	
+
 
 	/**
 	 * getBarcode
@@ -11535,7 +11529,7 @@ public function delete_goods_receipt($id) {
             }
 
 		}
-	   
+
     	$data_return =[];
     	$data_return['item_options'] = $item_options;
 
@@ -11665,7 +11659,7 @@ public function delete_goods_receipt($id) {
     	//parent_id, item_id
     	$index=0;
 		$html = '';
-    	
+
     	if(isset($data['item_id']) && $data['item_id'] != 0 && $data['item_id'] != ''){
     	// update
     	//case has parent id, don't parent_id
@@ -11680,11 +11674,11 @@ public function delete_goods_receipt($id) {
     				$parent_variation = json_encode($parent_value->parent_attributes);
 
     			}
-    			
+
     		}else{
     			//parent item
     		}
-    	
+
     	}else{
     	//insert
     	//case has parent_id, don't parent_id
@@ -11693,7 +11687,7 @@ public function delete_goods_receipt($id) {
     		}else{
     			//parent item
     		}
-    	
+
     	}
     }
 }
