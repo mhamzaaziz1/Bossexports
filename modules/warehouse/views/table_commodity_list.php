@@ -109,18 +109,15 @@ if (isset($tags_ft)) {
 }
 
 
-// $custom_fields = get_custom_fields('items', [
-//     'show_on_table' => 1,
-//     'ASC'
-//     ]);
+$custom_fields = get_custom_fields('items', [
+    'show_on_table' => 1,
+    'ASC'
+    ]);
 
 
 foreach ($custom_fields as $key => $field) {
     $selectAs = (is_cf_date($field) ? 'date_picker_cvalue_' . $key : 'cvalue_' . $key);
-    $customFieldsColumns=['weight','Volume'];
-    $selectAs=['weight','Volume'];
 
-    array_push($customFieldsColumns, $selectAs);
     array_push($aColumns, 'ctable_' . $key . '.value as ' . $selectAs);
     array_push($join, 'LEFT JOIN ' . db_prefix() . 'customfieldsvalues as ctable_' . $key . ' ON ' . db_prefix() . 'items.id = ctable_' . $key . '.relid AND ctable_' . $key . '.fieldto="items_pr" AND ctable_' . $key . '.fieldid=' . $field['id'] .' ');
 }
@@ -374,21 +371,20 @@ foreach ($rResult as $aRow) {
             // var_dump($query[0]->value);die;
             $_data = $query[0]->value;
 
-        }
-        // 		elseif ($aColumns[$i] == 'RETAILER') {
-        // 		    $this->ci->db->select("value");
-        //             $this->ci->db->from('tblcustomfieldsvalues');
-        //             $this->ci->db->where('tblcustomfieldsvalues.relid',$aRow['id']);
-        //             $this->ci->db->where('tblcustomfieldsvalues.fieldid',1);
-        //             $query = $this->ci->db->get()->result();
-        //             if ($query[0]->value==""){
-        //                 $query[0]->value=0;
-        //             }
+        } elseif (strpos($aColumns[$i], 'cvalue_') !== false || strpos($aColumns[$i], 'date_picker_cvalue_') !== false) {
+            // This is a custom field
+            if (strpos($aColumns[$i], 'date_picker_cvalue_') !== false) {
+                // This is a date custom field
+                if ($_data != '') {
+                    $_data = _d($_data);
+                }
+            }
 
-        //             // var_dump($query[0]->value);die;
-        //             // $_data = " ";
-        //             $_data = $query[0]->value;
-        // 		}
+            // Format the custom field value with a consistent style
+            if ($_data != '') {
+                $_data = '<span class="label label-tag tag-id-1"><span class="tag">' . $_data . '</span><span class="hide">, </span></span>&nbsp';
+            }
+        }
         // var_dump($_data);die;
         $row[] = $_data;
 
@@ -396,4 +392,3 @@ foreach ($rResult as $aRow) {
 // 		var_dump($row);die;
     $output['aaData'][] = $row;
 }
-

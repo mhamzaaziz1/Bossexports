@@ -28,6 +28,35 @@
     </table>
   </div>
 </div>
+<div class="col-md-7">
+  <div>
+    <h4 class="no-margin bold">Aging Summary</h4>
+    <p class="text-muted">Outstanding invoices by age</p>
+    <hr />
+    <table class="table table-bordered">
+      <thead>
+        <tr>
+          <th class="text-center">Current</th>
+          <th class="text-center">1-30 Days</th>
+          <th class="text-center">31-60 Days</th>
+          <th class="text-center">61-90 Days</th>
+          <th class="text-center">Over 90 Days</th>
+          <th class="text-center">Total</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="text-center"><?php echo isset($statement['aging']) ? app_format_money($statement['aging']['current'], $statement['currency']) : app_format_money(0, $statement['currency']); ?></td>
+          <td class="text-center"><?php echo isset($statement['aging']) ? app_format_money($statement['aging']['1_30'], $statement['currency']) : app_format_money(0, $statement['currency']); ?></td>
+          <td class="text-center"><?php echo isset($statement['aging']) ? app_format_money($statement['aging']['31_60'], $statement['currency']) : app_format_money(0, $statement['currency']); ?></td>
+          <td class="text-center"><?php echo isset($statement['aging']) ? app_format_money($statement['aging']['61_90'], $statement['currency']) : app_format_money(0, $statement['currency']); ?></td>
+          <td class="text-center"><?php echo isset($statement['aging']) ? app_format_money($statement['aging']['over_90'], $statement['currency']) : app_format_money(0, $statement['currency']); ?></td>
+          <td class="text-center"><strong><?php echo isset($statement['aging']) ? app_format_money($statement['aging']['total'], $statement['currency']) : app_format_money(0, $statement['currency']); ?></strong></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
 <div class="col-md-12">
   <div class="text-center bold padding-10">
     <?php echo _l('customer_statement_info',array($from,$to)); ?>
@@ -70,7 +99,7 @@
         else{
             echo _l('statement_invoice_details',array('<a href="'.admin_url('invoices/list_invoices/'.$data['invoice_id']).'" target="_blank">'.format_invoice_number($data['invoice_id']).'</a>',_d($data['duedate'])));
         }
-              
+
             } else if(isset($data['payment_id'])){
                 if(!empty($data['payment_invoice_id'])){
                     echo _l('statement_payment_details',array('<a href="'.admin_url('payments/payment/'.$data['payment_id']).'" target="_blank">'.'#'.$data['payment_id'].'</a>',format_invoice_number($data['payment_invoice_id'])));
@@ -82,7 +111,7 @@
                      $query = $CI->db->get()->result();
                   echo '<a href="'.admin_url('payments/payment/'.$data['payment_id']).'" target="_blank">'.'Payment (#'.$data['payment_id'].')<br></a>'. $query[0]->note;
                 }
-                    
+
                 } else if(isset($data['credit_note_id'])) {
             echo _l('statement_credit_note_details',array('<a href="'.admin_url('credit_notes/list_credit_notes/'.$data['credit_note_id']).'" target="_blank">'.format_credit_note_number($data['credit_note_id']).'</a>'));
           } else if(isset($data['credit_id'])) {

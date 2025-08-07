@@ -2996,6 +2996,60 @@ class Reports extends AdminController
      * @param  integer $contact_id     contact id
      * @return view
      */
+    /**
+     * AVG purchase aging report
+     * Shows the average age of items from the time they were purchased
+     */
+    public function avg_purchase_aging()
+    {
+        $data = [];
+
+        // Load required models
+        $this->load->model('currencies_model');
+        $this->load->model('Invoice_items_model', 'items_model');
+
+        // Get all items for the dropdown
+        $data['items'] = $this->items_model->get();
+
+        if ($this->input->post()) {
+            $transaction_type = $this->input->post('transaction_type') ? $this->input->post('transaction_type') : 'both';
+
+            // Get time period filter
+            $report_months = $this->input->post('report_months');
+            $report_from = $this->input->post('report_from');
+            $report_to = $this->input->post('report_to');
+
+            // Store selected values for the view
+            $data['report_months'] = $report_months;
+            if ($report_months == 'custom') {
+                $data['report_from'] = $report_from;
+                $data['report_to'] = $report_to;
+            }
+
+            // Get date filter SQL
+            $date_filter = '';
+            if ($report_months) {
+                $date_filter = $this->get_where_report_period('date');
+            }
+
+            $data['report_data'] = $this->reports_model->get_avg_purchase_aging(
+                $transaction_type,
+                $date_filter
+            );
+
+            // Store the selected parameters for the view
+            $data['selected_transaction_type'] = $transaction_type;
+        }
+
+        $data['title'] = _l('avg_purchase_aging');
+
+        if ($this->input->is_ajax_request()) {
+            $this->load->view('admin/reports/avg_purchase_aging', $data);
+        } else {
+            $this->load->view('admin/reports/avg_purchase_aging_wrapper', $data);
+        }
+    }
+
     public function contact_items_report($contact_type = '', $contact_id = '')
     {
         $data = [];
@@ -3078,6 +3132,326 @@ class Reports extends AdminController
             $this->load->view('admin/reports/contact_items_report', $data);
         } else {
             $this->load->view('admin/reports/contact_items_report_wrapper', $data);
+        }
+    }
+    /**
+     * Sales aging report based on items sold
+     * Shows aging of sales based on items sold
+     *
+     * @return view
+     */
+    public function sales_aging()
+    {
+        if ($this->input->is_ajax_request()) {
+            $this->load->model('currencies_model');
+
+            $aColumns = [
+                'tblitems.description as description',
+                'tblitemable.rel_id as invoice_id',
+                'tblinvoices.date as invoice_date',
+                'tblinvoices.duedate as due_date',
+                'DATEDIFF(NOW(), tblinvoices.duedate) as days_overdue',
+                'tblitemable.qty as quantity',
+                'tblitemable.rate as rate',
+                'tblitemable.qty * tblitemable.rate as total_amount',
+                'tblinvoices.status as invoice_status',
+                'tblclients.company as customer_name'
+            ];
+
+            $sIndexColumn = 'id';
+            $sTable       = db_prefix() . 'itemable';
+
+            $join = [
+                'JOIN ' . db_prefix() . 'invoices ON ' . db_prefix() . 'invoices.id = ' . db_prefix() . 'itemable.rel_id',
+                'JOIN ' . db_prefix() . 'clients ON ' . db_prefix() . 'clients.userid = ' . db_prefix() . 'invoices.clientid',
+                'LEFT JOIN ' . db_prefix() . 'items ON ' . db_prefix() . 'items.description = ' . db_prefix() . 'itemable.description'
+            ];
+
+            $where = ['AND rel_type="invoice"'];
+
+            $custom_date_select = $this->get_where_report_period('date');
+            if ($custom_date_select != '') {
+                array_push($where, $custom_date_select);
+            }
+
+            $by_currency = $this->input->post('report_currency');
+            if ($by_currency) {
+                $currency = $this->currencies_model->get($by_currency);
+                array_push($where, 'AND currency=' . $this->db->escape_str($by_currency));
+            } else {
+                $currency = $this->currencies_model->get_base_currency();
+            }
+
+            if ($this->input->post('sale_agent_items')) {
+                $agents  = $this->input->post('sale_agent_items');
+                $_agents = [];
+                if (is_array($agents)) {
+                    foreach ($agents as $agent) {
+                        if ($agent != '') {
+                            array_push($_agents, $this->db->escape_str($agent));
+                        }
+                    }
+                }
+                if (count($_agents) > 0) {
+                    array_push($where, 'AND tblinvoices.clientid IN (' . implode(', ', $_agents) . ')');
+                }
+            }
+
+            if ($this->input->post('sale_product_items')) {
+                $products  = $this->input->post('sale_product_items');
+                $_products = [];
+                if (is_array($products)) {
+                    foreach ($products as $product) {
+                        if ($product != '') {
+                            array_push($_products, $this->db->escape_str($product));
+                        }
+                    }
+                }
+                if (count($_products) > 0) {
+                    array_push($where, 'AND tblitems.id IN (' . implode(', ', $_products) . ')');
+                }
+            }
+
+            $result = data_tables_init($aColumns, $sIndexColumn, $sTable, $join, $where, [
+                'tblitemable.id',
+                'tblinvoices.clientid',
+                'tblinvoices.number',
+                'tblinvoices.prefix'
+            ]);
+
+            $output  = $result['output'];
+            $rResult = $result['rResult'];
+
+            $footer_data = [
+                'total_amount' => 0,
+                'total_qty'    => 0,
+                'aging_30'     => 0,
+                'aging_60'     => 0,
+                'aging_90'     => 0,
+                'aging_120'    => 0,
+                'aging_older'  => 0,
+            ];
+
+            foreach ($rResult as $aRow) {
+                $row = [];
+
+                // Item description
+                $row[] = $aRow['description'];
+
+                // Invoice number
+                $this->db->select('prefix, number');
+                $this->db->from(db_prefix() . 'invoices');
+                $this->db->where('id', $aRow['invoice_id']);
+                $invoice = $this->db->get()->row();
+                $invoice_number = $invoice ? $invoice->prefix . $invoice->number : '';
+                $row[] = '<a href="' . admin_url('invoices/list_invoices/' . $aRow['invoice_id']) . '" target="_blank">' . $invoice_number . '</a>';
+
+                // Customer name
+                $row[] = '<a href="' . admin_url('clients/client/' . $aRow['clientid']) . '" target="_blank">' . $aRow['customer_name'] . '</a>';
+
+                // Invoice date
+                $row[] = _d($aRow['invoice_date']);
+
+                // Due date
+                $row[] = _d($aRow['due_date']);
+
+                // Days overdue
+                $days_overdue = $aRow['days_overdue'];
+                $row[] = $days_overdue > 0 ? $days_overdue : 0;
+
+                // Aging category
+                $aging_category = '';
+                if ($days_overdue <= 0) {
+                    $aging_category = _l('current');
+                } elseif ($days_overdue <= 30) {
+                    $aging_category = '1-30 ' . _l('days');
+                    $footer_data['aging_30'] += $aRow['total_amount'];
+                } elseif ($days_overdue <= 60) {
+                    $aging_category = '31-60 ' . _l('days');
+                    $footer_data['aging_60'] += $aRow['total_amount'];
+                } elseif ($days_overdue <= 90) {
+                    $aging_category = '61-90 ' . _l('days');
+                    $footer_data['aging_90'] += $aRow['total_amount'];
+                } elseif ($days_overdue <= 120) {
+                    $aging_category = '91-120 ' . _l('days');
+                    $footer_data['aging_120'] += $aRow['total_amount'];
+                } else {
+                    $aging_category = '120+ ' . _l('days');
+                    $footer_data['aging_older'] += $aRow['total_amount'];
+                }
+                $row[] = $aging_category;
+
+                // Quantity
+                $row[] = $aRow['quantity'];
+                $footer_data['total_qty'] += $aRow['quantity'];
+
+                // Rate
+                $row[] = app_format_money($aRow['rate'], $currency->name);
+
+                // Total amount
+                $row[] = app_format_money($aRow['total_amount'], $currency->name);
+                $footer_data['total_amount'] += $aRow['total_amount'];
+
+                $output['aaData'][] = $row;
+            }
+
+            $footer_data['total_amount'] = app_format_money($footer_data['total_amount'], $currency->name);
+            $footer_data['aging_30'] = app_format_money($footer_data['aging_30'], $currency->name);
+            $footer_data['aging_60'] = app_format_money($footer_data['aging_60'], $currency->name);
+            $footer_data['aging_90'] = app_format_money($footer_data['aging_90'], $currency->name);
+            $footer_data['aging_120'] = app_format_money($footer_data['aging_120'], $currency->name);
+            $footer_data['aging_older'] = app_format_money($footer_data['aging_older'], $currency->name);
+
+            $output['sums'] = $footer_data;
+            echo json_encode($output);
+            die();
+        }
+    }
+    /**
+     * Average sale aging report based on items sold
+     * Shows average aging of sales based on items sold
+     *
+     * @return view
+     */
+    public function avg_sale_aging()
+    {
+        if ($this->input->is_ajax_request()) {
+            $this->load->model('currencies_model');
+
+            $aColumns = [
+                'tblitems.description as description',
+                'COUNT(tblitemable.rel_id) as invoice_count',
+                'AVG(DATEDIFF(NOW(), tblinvoices.duedate)) as avg_days_overdue',
+                'SUM(tblitemable.qty) as total_quantity',
+                'SUM(tblitemable.qty * tblitemable.rate) as total_amount',
+                'AVG(tblitemable.rate) as avg_rate'
+            ];
+
+            $sIndexColumn = 'id';
+            $sTable       = db_prefix() . 'itemable';
+
+            $join = [
+                'JOIN ' . db_prefix() . 'invoices ON ' . db_prefix() . 'invoices.id = ' . db_prefix() . 'itemable.rel_id',
+                'JOIN ' . db_prefix() . 'clients ON ' . db_prefix() . 'clients.userid = ' . db_prefix() . 'invoices.clientid',
+                'LEFT JOIN ' . db_prefix() . 'items ON ' . db_prefix() . 'items.description = ' . db_prefix() . 'itemable.description'
+            ];
+
+            $where = ['AND rel_type="invoice"'];
+
+            $custom_date_select = $this->get_where_report_period('date');
+            if ($custom_date_select != '') {
+                array_push($where, $custom_date_select);
+            }
+
+            $by_currency = $this->input->post('report_currency');
+            if ($by_currency) {
+                $currency = $this->currencies_model->get($by_currency);
+                array_push($where, 'AND currency=' . $this->db->escape_str($by_currency));
+            } else {
+                $currency = $this->currencies_model->get_base_currency();
+            }
+
+            if ($this->input->post('sale_agent_items')) {
+                $agents  = $this->input->post('sale_agent_items');
+                $_agents = [];
+                if (is_array($agents)) {
+                    foreach ($agents as $agent) {
+                        if ($agent != '') {
+                            array_push($_agents, $this->db->escape_str($agent));
+                        }
+                    }
+                }
+                if (count($_agents) > 0) {
+                    array_push($where, 'AND tblinvoices.clientid IN (' . implode(', ', $_agents) . ')');
+                }
+            }
+
+            if ($this->input->post('sale_product_items')) {
+                $products  = $this->input->post('sale_product_items');
+                $_products = [];
+                if (is_array($products)) {
+                    foreach ($products as $product) {
+                        if ($product != '') {
+                            array_push($_products, $this->db->escape_str($product));
+                        }
+                    }
+                }
+                if (count($_products) > 0) {
+                    array_push($where, 'AND tblitems.id IN (' . implode(', ', $_products) . ')');
+                }
+            }
+
+            $result = data_tables_init($aColumns, $sIndexColumn, $sTable, $join, $where, [
+                'tblitemable.id',
+                'tblinvoices.clientid'
+            ], 'GROUP BY tblitemable.description');
+
+            $output  = $result['output'];
+            $rResult = $result['rResult'];
+
+            $footer_data = [
+                'total_amount' => 0,
+                'total_qty'    => 0,
+                'avg_days'     => 0,
+                'total_items'  => 0
+            ];
+
+            $total_days = 0;
+            $item_count = 0;
+
+            foreach ($rResult as $aRow) {
+                $row = [];
+
+                // Item description
+                $row[] = $aRow['description'];
+
+                // Invoice count
+                $row[] = $aRow['invoice_count'];
+
+                // Average days overdue
+                $avg_days = round($aRow['avg_days_overdue']);
+                $row[] = $avg_days > 0 ? $avg_days : 0;
+                $total_days += $avg_days > 0 ? $avg_days : 0;
+                $item_count++;
+
+                // Aging category
+                $aging_category = '';
+                if ($avg_days <= 0) {
+                    $aging_category = _l('current');
+                } elseif ($avg_days <= 30) {
+                    $aging_category = '1-30 ' . _l('days');
+                } elseif ($avg_days <= 60) {
+                    $aging_category = '31-60 ' . _l('days');
+                } elseif ($avg_days <= 90) {
+                    $aging_category = '61-90 ' . _l('days');
+                } elseif ($avg_days <= 120) {
+                    $aging_category = '91-120 ' . _l('days');
+                } else {
+                    $aging_category = '120+ ' . _l('days');
+                }
+                $row[] = $aging_category;
+
+                // Total quantity
+                $row[] = $aRow['total_quantity'];
+                $footer_data['total_qty'] += $aRow['total_quantity'];
+
+                // Average rate
+                $row[] = app_format_money($aRow['avg_rate'], $currency->name);
+
+                // Total amount
+                $row[] = app_format_money($aRow['total_amount'], $currency->name);
+                $footer_data['total_amount'] += $aRow['total_amount'];
+
+                $output['aaData'][] = $row;
+            }
+
+            $footer_data['total_amount'] = app_format_money($footer_data['total_amount'], $currency->name);
+            $footer_data['avg_days'] = $item_count > 0 ? round($total_days / $item_count) : 0;
+            $footer_data['total_items'] = $item_count;
+
+            $output['sums'] = $footer_data;
+            echo json_encode($output);
+            die();
         }
     }
 }

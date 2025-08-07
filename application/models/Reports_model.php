@@ -813,6 +813,115 @@ class Reports_model extends App_Model
         return array_slice($result, 0, $limit);
     }
     /**
+     * Get average purchase aging report data
+     * Shows the average age of items from the time they were purchased
+     * @param  string  $transaction_type sales, purchases, or both
+     * @param  string  $date_filter     SQL date filter string
+     * @return array
+     */
+    public function get_avg_purchase_aging($transaction_type = 'both', $date_filter = '')
+    {
+        $result = [];
+
+        // Get purchase data from purchase orders if transaction_type is 'purchases' or 'both'
+        if ($transaction_type == 'purchases' || $transaction_type == 'both') {
+            // Check if purchase module is installed
+            $purchase_model_loaded = false;
+            try {
+                $this->load->model('purchase/purchase_model');
+                $purchase_model_loaded = true;
+            } catch (Exception $e) {
+                log_activity('Failed to load purchase model in get_avg_purchase_aging: ' . $e->getMessage());
+            }
+
+            if ($purchase_model_loaded) {
+                $this->db->select('it.description, AVG(DATEDIFF(CURDATE(), po.order_date)) as avg_age, COUNT(it.id) as total_purchases, SUM(it.qty) as total_quantity');
+                $this->db->from(db_prefix() . 'itemable as it');
+                $this->db->join(db_prefix() . 'pur_orders as po', 'po.id = it.rel_id');
+                $this->db->where('it.rel_type', 'pur_order');
+                $this->db->where('po.approve_status', 2); // Only approved purchase orders
+
+                // Apply date filter if provided
+                if (!empty($date_filter)) {
+                    $this->db->where($date_filter, null, false);
+                }
+
+                $this->db->group_by('it.description');
+                $this->db->order_by('avg_age', 'DESC');
+
+                $purchase_data = $this->db->get()->result_array();
+
+                // Add type and format data
+                foreach ($purchase_data as &$row) {
+                    $row['type'] = 'purchase';
+                    // Get item details
+                    $item = $this->db->get_where(db_prefix() . 'items', ['description' => $row['description']])->row();
+                    $row['item_id'] = $item ? $item->id : 0;
+                    $row['avg_age'] = round($row['avg_age'], 2); // Round to 2 decimal places
+                }
+
+                $result = $purchase_data;
+            }
+        }
+
+        // Get sales data from invoices if transaction_type is 'sales' or 'both'
+        if ($transaction_type == 'sales' || $transaction_type == 'both') {
+            $this->db->select('it.description, AVG(DATEDIFF(CURDATE(), i.date)) as avg_age, COUNT(it.id) as total_purchases, SUM(it.qty) as total_quantity');
+            $this->db->from(db_prefix() . 'itemable as it');
+            $this->db->join(db_prefix() . 'invoices as i', 'i.id = it.rel_id');
+            $this->db->where('it.rel_type', 'invoice');
+            $this->db->where('i.status !=', 5); // Exclude cancelled invoices
+
+            // Apply date filter if provided
+            if (!empty($date_filter)) {
+                $this->db->where($date_filter, null, false);
+            }
+
+            $this->db->group_by('it.description');
+            $this->db->order_by('avg_age', 'DESC');
+
+            $sales_data = $this->db->get()->result_array();
+
+            // Add type and format data
+            foreach ($sales_data as &$row) {
+                $row['type'] = 'sale';
+                // Get item details
+                $item = $this->db->get_where(db_prefix() . 'items', ['description' => $row['description']])->row();
+                $row['item_id'] = $item ? $item->id : 0;
+                $row['avg_age'] = round($row['avg_age'], 2); // Round to 2 decimal places
+            }
+
+            // Combine data if transaction_type is 'both'
+            if ($transaction_type == 'both') {
+                // Create a combined array with unique items
+                $combined = [];
+                foreach (array_merge($result, $sales_data) as $row) {
+                    if (!isset($combined[$row['description']])) {
+                        $combined[$row['description']] = [
+                            'description' => $row['description'],
+                            'item_id' => $row['item_id'],
+                            'avg_age' => $row['avg_age'],
+                            'total_purchases' => $row['total_purchases'],
+                            'total_quantity' => $row['total_quantity'],
+                            'type' => 'combined'
+                        ];
+                    } else {
+                        // Update existing item with combined data
+                        $combined[$row['description']]['avg_age'] = ($combined[$row['description']]['avg_age'] + $row['avg_age']) / 2;
+                        $combined[$row['description']]['total_purchases'] += $row['total_purchases'];
+                        $combined[$row['description']]['total_quantity'] += $row['total_quantity'];
+                    }
+                }
+                $result = array_values($combined);
+            } else {
+                $result = $sales_data;
+            }
+        }
+
+        return $result;
+    }
+
+    /**
      * Get items bought by a specific contact (customer or vendor)
      * @param  integer $contact_id     contact id to filter by
      * @param  string  $contact_type   customer or vendor

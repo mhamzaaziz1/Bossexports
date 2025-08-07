@@ -16,6 +16,72 @@ class Statement_model extends App_Model
      * @param  string $to          date to
      * @return array
      */
+    /**
+     * Calculate aging buckets for customer invoices
+     * @param  mixed $customer_id customer id
+     * @return array
+     */
+    public function get_invoices_aging($customer_id)
+    {
+        // Define aging buckets
+        $aging = [
+            'current' => 0,
+            '1_30' => 0,
+            '31_60' => 0,
+            '61_90' => 0,
+            'over_90' => 0,
+            'total' => 0
+        ];
+
+        // Get all unpaid/partially paid invoices for this customer
+        $this->db->select('id, total, date, duedate, status');
+        $this->db->from(db_prefix() . 'invoices');
+        $this->db->where('clientid', $customer_id);
+        $this->db->where('status !=', Invoices_model::STATUS_PAID);
+        $this->db->where('status !=', Invoices_model::STATUS_CANCELLED);
+        $this->db->where('status !=', Invoices_model::STATUS_DRAFT);
+        $invoices = $this->db->get()->result_array();
+
+        // Get current date for aging calculation
+        $today = new DateTime(date('Y-m-d'));
+
+        foreach ($invoices as $invoice) {
+            // Calculate amount due for this invoice
+            $this->db->select('SUM(amount) as total_paid');
+            $this->db->from(db_prefix() . 'invoicepaymentrecords');
+            $this->db->where('invoiceid', $invoice['id']);
+            $payments = $this->db->get()->row();
+
+            $total_paid = $payments ? $payments->total_paid : 0;
+            $amount_due = $invoice['total'] - $total_paid;
+
+            if ($amount_due <= 0) {
+                continue; // Skip if fully paid
+            }
+
+            // Calculate days overdue
+            $due_date = new DateTime($invoice['duedate']);
+            $days_overdue = $today->diff($due_date)->days;
+
+            // If due date is in the future, it's not overdue
+            if ($today < $due_date) {
+                $aging['current'] += $amount_due;
+            } elseif ($days_overdue <= 30) {
+                $aging['1_30'] += $amount_due;
+            } elseif ($days_overdue <= 60) {
+                $aging['31_60'] += $amount_due;
+            } elseif ($days_overdue <= 90) {
+                $aging['61_90'] += $amount_due;
+            } else {
+                $aging['over_90'] += $amount_due;
+            }
+
+            $aging['total'] += $amount_due;
+        }
+
+        return $aging;
+    }
+
     public function get_statement($customer_id, $from, $to)
     {
         if (!class_exists('Invoices_model', false)) {
@@ -93,7 +159,7 @@ class Statement_model extends App_Model
         ORDER by ' . db_prefix() . 'invoicepaymentrecords.date DESC';
 
         $payments = $this->db->query($sql_payments)->result_array();
-        
+
         $sql_payments = 'SELECT
         ' . db_prefix() . 'invoicepaymentrecords.id as payment_id,
         ' . db_prefix() . 'invoicepaymentrecords.date as date,
@@ -108,8 +174,8 @@ class Statement_model extends App_Model
 
         $payments02 = $this->db->query($sql_payments)->result_array();
         // var_dump($this->db->last_query());die;
-        
-        
+
+
         $sql_payments = 'SELECT
         ' . db_prefix() . 'invoicepaymentrecords.id as payment_id,
         ' . db_prefix() . 'invoicepaymentrecords.date as date,
@@ -121,7 +187,7 @@ class Statement_model extends App_Model
         ORDER by ' . db_prefix() . 'invoicepaymentrecords.date DESC';
 
         $payments01 = $this->db->query($sql_payments)->result_array();
-        
+
         $sqlDateexpense = str_replace('date', db_prefix() . 'expenses.date', $sqlDate);
         $sql_expense = 'SELECT
         ' . db_prefix() . 'expenses.id as invoice_id,
@@ -134,8 +200,8 @@ class Statement_model extends App_Model
         ORDER by ' . db_prefix() . 'expenses.date DESC';
 
         $expense = $this->db->query($sql_expense)->result_array();
-        
-        
+
+
         $sql_expense = 'SELECT
         SUM(' . db_prefix() . 'expenses.amount) as invoice_amount
         FROM ' . db_prefix() . 'expenses
@@ -143,7 +209,7 @@ class Statement_model extends App_Model
         ORDER by ' . db_prefix() . 'expenses.date DESC';
 
         $sumexpense = $this->db->query($sql_expense)->row()->invoice_amount;
-        
+
 
         $sqlCreditNoteRefunds = str_replace('date', 'refunded_on', $sqlDate);
 
@@ -160,7 +226,7 @@ class Statement_model extends App_Model
         // merge results
         $merged = array_merge($invoices, $payments,$payments01,$payments02,$expense,  $credits_applied, $credit_notes_refunds);
         //var_dump($merged);
-        
+
         // sort by date
         usort($merged, function ($a, $b) {
             // fake date select sorting
@@ -218,8 +284,8 @@ class Statement_model extends App_Model
         if ($result['amount_paid'] === null) {
             $result['amount_paid'] = 0;
         }
-        
-        
+
+
         $result['direct_paid'] = $this->db->query('SELECT
         SUM(' . db_prefix() . 'invoicepaymentrecords.amount) as amount_paid
         FROM ' . db_prefix() . 'invoicepaymentrecords
@@ -309,6 +375,9 @@ class Statement_model extends App_Model
         }
 
         $result['currency'] = $currency;
+
+        // Add aging data to the result
+        $result['aging'] = $this->get_invoices_aging($customer_id);
 
         return hooks()->apply_filters('(statement)', $result);
     }

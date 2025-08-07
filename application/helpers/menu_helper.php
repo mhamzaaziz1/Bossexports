@@ -344,6 +344,15 @@ function app_init_admin_sidebar_menu_items()
             'position' => 40,
             'badge'    => [],
         ]);
+
+        // AVG Purchase Aging Report
+        $CI->app_menu->add_sidebar_children_item('reports', [
+            'slug'     => 'avg-purchase-aging-reports',
+            'name'     => _l('avg_purchase_aging'),
+            'href'     => admin_url('reports/avg_purchase_aging'),
+            'position' => 45,
+            'badge'    => [],
+        ]);
     }
 
     // Setup menu

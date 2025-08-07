@@ -22,6 +22,14 @@
                       </p>
                       <hr class="hr-10" />
                       <p>
+                        <a href="#" class="font-medium" onclick="init_report(this,'sales-aging-report'); return false;"><i class="fa fa-caret-down" aria-hidden="true"></i> <?php echo _l('Sales Aging Report'); ?></a>
+                      </p>
+                      <hr class="hr-10" />
+                      <p>
+                        <a href="#" class="font-medium" onclick="init_report(this,'avg-sale-aging-report'); return false;"><i class="fa fa-caret-down" aria-hidden="true"></i> <?php echo _l('AVG Sale Aging Report'); ?></a>
+                      </p>
+                      <hr class="hr-10" />
+                      <p>
                         <a href="#" class="font-medium" onclick="init_report(this,'payments-received'); return false;"><i class="fa fa-caret-down" aria-hidden="true"></i> <?php echo _l('payments_received'); ?></a>
                       </p>
                       <hr class="hr-10" />
@@ -136,6 +144,8 @@
                <?php $this->load->view('admin/reports/includes/sales_invoices'); ?>
                <?php $this->load->view('admin/reports/includes/sales_credit_notes'); ?>
                <?php $this->load->view('admin/reports/includes/sales_items'); ?>
+               <?php $this->load->view('admin/reports/includes/sales_aging'); ?>
+               <?php $this->load->view('admin/reports/includes/avg_sale_aging'); ?>
                <?php $this->load->view('admin/reports/includes/sales_estimates'); ?>
                <?php $this->load->view('admin/reports/includes/sales_payments'); ?>
                <?php $this->load->view('admin/reports/includes/sales_proposals'); ?>
@@ -149,5 +159,7 @@
 </div>
 <?php init_tail(); ?>
 <?php $this->load->view('admin/reports/includes/sales_js'); ?>
+<?php $this->load->view('admin/reports/includes/avg_sale_aging_js'); ?>
+<?php $this->load->view('admin/reports/includes/sales_aging_js'); ?>
 </body>
 </html>

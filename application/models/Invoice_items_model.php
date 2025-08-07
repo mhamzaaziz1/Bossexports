@@ -68,7 +68,7 @@ class Invoice_items_model extends App_Model
 
         return false;
     }
-    
+
     public function get_inv($id){
         $sql = 'SELECT ' . db_prefix() . 'warehouse.warehouse_code, sum(inventory_number) as inventory_number, unit_name FROM ' . db_prefix() . 'inventory_manage
 			LEFT JOIN ' . db_prefix() . 'items on ' . db_prefix() . 'inventory_manage.commodity_id = ' . db_prefix() . 'items.id
@@ -77,6 +77,47 @@ class Invoice_items_model extends App_Model
 			 where commodity_id = ' . $id . '  group by ' . db_prefix() . 'inventory_manage.warehouse_id';
             $data['inventory_commodity'] = $this->db->query($sql)->result_array();
             return number_format($data['inventory_commodity'][0]["inventory_number"]);
+    }
+
+    /**
+     * Get the last sale price for a specific item to a specific customer
+     * @param  integer $item_id    The item ID
+     * @param  integer $customer_id The customer ID
+     * @return mixed  The last sale price or null if no previous sale
+     */
+    public function get_last_sale_price($item_id, $customer_id) {
+        if (!$item_id || !$customer_id) {
+            return null;
+        }
+
+        // Query to get the last sale price from invoices, estimates, or proposals
+        $this->db->select('rate');
+        $this->db->from(db_prefix() . 'itemable');
+        $this->db->where('description', function($db) use ($item_id) {
+            $db->select('description');
+            $db->from(db_prefix() . 'items');
+            $db->where('id', $item_id);
+            $db->limit(1);
+        });
+
+        // Join with invoices, estimates, and proposals to filter by customer
+        $this->db->join(db_prefix() . 'invoices', db_prefix() . 'itemable.rel_id = ' . db_prefix() . 'invoices.id AND ' . db_prefix() . 'itemable.rel_type = "invoice"', 'left');
+        $this->db->join(db_prefix() . 'estimates', db_prefix() . 'itemable.rel_id = ' . db_prefix() . 'estimates.id AND ' . db_prefix() . 'itemable.rel_type = "estimate"', 'left');
+        $this->db->join(db_prefix() . 'proposals', db_prefix() . 'itemable.rel_id = ' . db_prefix() . 'proposals.id AND ' . db_prefix() . 'itemable.rel_type = "proposal"', 'left');
+
+        // Filter by customer ID
+        $this->db->where('(' . db_prefix() . 'invoices.clientid = ' . $customer_id . ' OR ' . db_prefix() . 'estimates.clientid = ' . $customer_id . ' OR ' . db_prefix() . 'proposals.rel_id = ' . $customer_id . ' AND ' . db_prefix() . 'proposals.rel_type = "customer")');
+
+        // Order by date to get the most recent
+        $this->db->order_by(db_prefix() . 'invoices.date', 'DESC');
+        $this->db->order_by(db_prefix() . 'estimates.date', 'DESC');
+        $this->db->order_by(db_prefix() . 'proposals.date', 'DESC');
+
+        $this->db->limit(1);
+
+        $result = $this->db->get()->row();
+
+        return $result ? $result->rate : null;
     }
 
     /**
@@ -270,7 +311,7 @@ class Invoice_items_model extends App_Model
         $this->db->where('a.isactive', 1);
         $this->db->from(db_prefix() . 'items as a');
         $this->db->limit(15, 0);
-        
+
         $items = $this->db->get()->result_array();
         // var_dump($this->db->last_query());die;
 
@@ -282,7 +323,7 @@ class Invoice_items_model extends App_Model
             $this->db->where('b.rel_type', 'proposal');
             $this->db->where('tblproposals.status != 3');
             $p=$this->db->get()->result();
-            
+
             $this->db->select('SUM(c.qty) as eqty');
             $this->db->from(db_prefix() . 'itemable as c');
             $this->db->join(db_prefix() . 'estimates'  , 'tblestimates.id = c.rel_id' );
@@ -290,7 +331,7 @@ class Invoice_items_model extends App_Model
             $this->db->where('c.rel_type', 'estimate');
             $this->db->where('tblestimates.status != 4');
             $e=$this->db->get()->result();
-            
+
             $this->db->select('SUM(d.qty) as iqty');
             $this->db->from(db_prefix() . 'itemable as d');
             $this->db->join(db_prefix() . 'invoices'  , 'tblinvoices.id = d.rel_id' );
@@ -298,7 +339,7 @@ class Invoice_items_model extends App_Model
             $this->db->where('d.rel_type', 'invoice');
             $this->db->where('tblinvoices.status != 2');
             $i=$this->db->get()->result();
-            
+
             $sql = 'SELECT  sum(inventory_number) as inventory_number, unit_name FROM ' . db_prefix() . 'inventory_manage
 			LEFT JOIN ' . db_prefix() . 'items on ' . db_prefix() . 'inventory_manage.commodity_id = ' . db_prefix() . 'items.id
 			LEFT JOIN ' . db_prefix() . 'ware_unit_type on ' . db_prefix() . 'items.unit_id = ' . db_prefix() . 'ware_unit_type.unit_type_id
