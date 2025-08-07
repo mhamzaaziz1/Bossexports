@@ -31,7 +31,9 @@ if (!empty($clientid)) {
 // Add HAVING condition for SUM(amount)
 if ($this->ci->input->post('amount') && $this->ci->input->post('amount') != '') {
     $escapedAmount = $this->ci->db->escape_str($this->ci->input->post('amount'));
-    $having = ' HAVING SUM(' . db_prefix() . 'invoicepaymentrecords.amount) = ' . $escapedAmount;
+    $having = ' HAVING total_amount = ' . $escapedAmount;
+} else {
+    $having = '';
 }
 
 

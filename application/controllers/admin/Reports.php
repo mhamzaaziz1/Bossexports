@@ -1712,12 +1712,48 @@ class Reports extends AdminController
             }
 
             // Get all payment modes
-            $payment_modes = $this->payment_modes_model->get();
+            $all_payment_modes = $this->payment_modes_model->get();
+
+            // Filter payment modes to cash, bank, and others
+            $payment_modes = [];
+            $cash_mode = null;
+            $bank_modes = [];
+            $other_modes = [];
+
+            foreach ($all_payment_modes as $mode) {
+                if ($mode['id'] == 2) { // Cash payment mode
+                    $cash_mode = $mode;
+                    $payment_modes[] = $mode;
+                } elseif (stripos($mode['name'], 'bank') !== false) { // Bank payment modes
+                    $bank_modes[] = $mode;
+                    $payment_modes[] = $mode;
+                } else { // Other payment modes
+                    $other_modes[] = $mode;
+                }
+            }
+
+            // Add a combined "Others" payment mode if there are any other modes
+            if (!empty($other_modes)) {
+                $payment_modes[] = [
+                    'id' => 'others',
+                    'name' => 'Others'
+                ];
+            }
 
             // Generate payment mode columns
             $payment_mode_columns = [];
             foreach ($payment_modes as $mode) {
-                $payment_mode_columns['payment_mode_' . $mode['id']] = '(SELECT COALESCE(SUM(amount),0) FROM ' . db_prefix() . 'invoicepaymentrecords WHERE invoiceid = ' . db_prefix() . 'invoices.id AND paymentmode = ' . $mode['id'] . ') as payment_mode_' . $mode['id'];
+                if ($mode['id'] === 'others') {
+                    // For "Others" category, include all payment modes that are not cash or bank
+                    $other_mode_ids = array_map(function($m) { return $m['id']; }, $other_modes);
+                    if (!empty($other_mode_ids)) {
+                        $payment_mode_columns['payment_mode_others'] = '(SELECT COALESCE(SUM(amount),0) FROM ' . db_prefix() . 'invoicepaymentrecords WHERE invoiceid = ' . db_prefix() . 'invoices.id AND paymentmode IN (' . implode(',', $other_mode_ids) . ')) as payment_mode_others';
+                    } else {
+                        $payment_mode_columns['payment_mode_others'] = '0 as payment_mode_others';
+                    }
+                } else {
+                    $payment_mode_columns['payment_mode_' . $mode['id']] = '(SELECT COALESCE(SUM(amount),0) FROM ' . db_prefix() . 'invoicepaymentrecords WHERE invoiceid = ' . db_prefix() . 'invoices.id AND paymentmode = ' . $mode['id'] . ') as payment_mode_' . $mode['id'];
+                }
             }
 
             // Define the columns to select directly from source tables
@@ -1741,6 +1777,8 @@ class Reports extends AdminController
                 '(SELECT COALESCE(SUM(total),0) FROM ' . db_prefix() . 'creditnotes WHERE ' . db_prefix() . 'creditnotes.clientid=' . db_prefix() . 'invoices.clientid AND ' . db_prefix() . 'creditnotes.date <= ' . db_prefix() . 'invoices.date) as credit_cf',
                 '(' . db_prefix() . 'invoices.total - (SELECT COALESCE(SUM(amount),0) FROM ' . db_prefix() . 'invoicepaymentrecords WHERE invoiceid = ' . db_prefix() . 'invoices.id) - (SELECT COALESCE(SUM(total),0) FROM ' . db_prefix() . 'creditnotes WHERE DATE(' . db_prefix() . 'creditnotes.date) = DATE(' . db_prefix() . 'invoices.date) AND ' . db_prefix() . 'creditnotes.clientid = ' . db_prefix() . 'invoices.clientid)) as total_balance',
                 db_prefix() . 'invoices.adminnote as director_note',
+                // Add payment date column
+                '(SELECT GROUP_CONCAT(date ORDER BY date SEPARATOR ", ") FROM ' . db_prefix() . 'invoicepaymentrecords WHERE invoiceid = ' . db_prefix() . 'invoices.id) as payment_dates',
             ];
 
             // Add payment mode columns to select array
@@ -2258,6 +2296,557 @@ class Reports extends AdminController
     {
         $data['title'] = _l('cashbook_report');
         $this->load->view('admin/reports/cashbook', $data);
+    }
+
+    /**
+     * Combined cashbook report - shows both date-based and invoice-based payment information
+     * This endpoint is used for the combined cashbook report
+     */
+    public function cashbook_combined_report()
+    {
+        try {
+            $this->load->model('currencies_model');
+            $this->load->model('invoices_model');
+            $this->load->model('payments_model');
+            $this->load->model('payment_modes_model');
+            $this->load->model('credit_notes_model');
+
+            // Get all payment modes
+            $all_payment_modes = $this->payment_modes_model->get();
+
+            // Filter payment modes to cash, bank, and others
+            $cash_mode = null;
+            $bank_modes = [];
+            $other_modes = [];
+
+            foreach ($all_payment_modes as $mode) {
+                if ($mode['id'] == 2) { // Cash payment mode
+                    $cash_mode = $mode;
+                } elseif (stripos($mode['name'], 'bank') !== false) { // Bank payment modes
+                    $bank_modes[] = $mode;
+                } else { // Other payment modes
+                    $other_modes[] = $mode;
+                }
+            }
+
+            // Get other mode IDs
+            $other_mode_ids = array_map(function($m) { return $m['id']; }, $other_modes);
+
+            // Define where conditions
+            $where = [
+                'AND ' . db_prefix() . 'invoices.status != 5', // Not cancelled
+            ];
+
+            // Enable date filtering
+            $custom_date_select = $this->get_where_report_period(db_prefix() . 'invoices.date');
+            if ($custom_date_select != '') {
+                array_push($where, $custom_date_select);
+            }
+
+            // Enable customer filtering
+            if ($this->input->post('customer_id')) {
+                $customers = $this->input->post('customer_id');
+                $_customers = [];
+                if (is_array($customers)) {
+                    foreach ($customers as $customer) {
+                        if ($customer != '') {
+                            array_push($_customers, $this->db->escape_str($customer));
+                        }
+                    }
+                }
+                if (count($_customers) > 0) {
+                    array_push($where, 'AND ' . db_prefix() . 'invoices.clientid IN (' . implode(', ', $_customers) . ')');
+                }
+            }
+
+            // Enable status filtering
+            if ($this->input->post('invoice_status')) {
+                $statuses = $this->input->post('invoice_status');
+                $_statuses = [];
+                if (is_array($statuses)) {
+                    foreach ($statuses as $status) {
+                        if ($status != '') {
+                            array_push($_statuses, $this->db->escape_str($status));
+                        }
+                    }
+                }
+                if (count($_statuses) > 0) {
+                    array_push($where, 'AND ' . db_prefix() . 'invoices.status IN (' . implode(', ', $_statuses) . ')');
+                }
+            }
+
+            // Always use base currency
+            $currency = $this->currencies_model->get_base_currency();
+
+            // Build a query to get invoices with payment information
+            $this->db->select('
+                ' . db_prefix() . 'invoices.id,
+                ' . db_prefix() . 'invoices.clientid,
+                ' . db_prefix() . 'invoices.date,
+                ' . db_prefix() . 'invoices.status,
+                ' . db_prefix() . 'invoices.number,
+                ' . db_prefix() . 'clients.company,
+                ' . db_prefix() . 'invoices.total as invoice_amount,
+                (SELECT GROUP_CONCAT(date ORDER BY date SEPARATOR ", ") FROM ' . db_prefix() . 'invoicepaymentrecords WHERE invoiceid = ' . db_prefix() . 'invoices.id) as payment_dates,
+                (SELECT COALESCE(SUM(amount),0) FROM ' . db_prefix() . 'invoicepaymentrecords WHERE invoiceid = ' . db_prefix() . 'invoices.id AND paymentmode = 2) as cash,
+                (SELECT COALESCE(SUM(amount),0) FROM ' . db_prefix() . 'invoicepaymentrecords WHERE invoiceid = ' . db_prefix() . 'invoices.id AND paymentmode != 2 AND ' . 
+                (!empty($bank_modes) ? 'paymentmode IN (' . implode(',', array_map(function($m) { return $m['id']; }, $bank_modes)) . ')' : 'FALSE') . ') as bank,
+                (SELECT COALESCE(SUM(amount),0) FROM ' . db_prefix() . 'invoicepaymentrecords WHERE invoiceid = ' . db_prefix() . 'invoices.id AND ' . 
+                (!empty($other_mode_ids) ? 'paymentmode IN (' . implode(',', $other_mode_ids) . ')' : 'FALSE') . ') as payment_mode_others,
+                (SELECT COALESCE(SUM(amount),0) FROM ' . db_prefix() . 'invoicepaymentrecords WHERE invoiceid = ' . db_prefix() . 'invoices.id) as total_amount_paid,
+                (' . db_prefix() . 'invoices.total - (SELECT COALESCE(SUM(amount),0) FROM ' . db_prefix() . 'invoicepaymentrecords WHERE invoiceid = ' . db_prefix() . 'invoices.id)) as total_invoice_due,
+                ' . db_prefix() . 'invoices.adminnote as director_note,
+
+                /* New columns for payments on invoice date */
+                (SELECT COALESCE(SUM(amount),0) FROM ' . db_prefix() . 'invoicepaymentrecords WHERE DATE(' . db_prefix() . 'invoicepaymentrecords.date) = DATE(' . db_prefix() . 'invoices.date)) as total_paid_on_invoice_date,
+                (SELECT COALESCE(SUM(amount),0) FROM ' . db_prefix() . 'invoicepaymentrecords WHERE DATE(' . db_prefix() . 'invoicepaymentrecords.date) = DATE(' . db_prefix() . 'invoices.date) AND paymentmode = 2) as cash_paid_on_invoice_date,
+                (SELECT COALESCE(SUM(amount),0) FROM ' . db_prefix() . 'invoicepaymentrecords WHERE DATE(' . db_prefix() . 'invoicepaymentrecords.date) = DATE(' . db_prefix() . 'invoices.date) AND paymentmode != 2 AND ' . 
+                (!empty($bank_modes) ? 'paymentmode IN (' . implode(',', array_map(function($m) { return $m['id']; }, $bank_modes)) . ')' : 'FALSE') . ') as bank_paid_on_invoice_date,
+                (SELECT COALESCE(SUM(amount),0) FROM ' . db_prefix() . 'invoicepaymentrecords WHERE DATE(' . db_prefix() . 'invoicepaymentrecords.date) = DATE(' . db_prefix() . 'invoices.date) AND ' . 
+                (!empty($other_mode_ids) ? 'paymentmode IN (' . implode(',', $other_mode_ids) . ')' : 'FALSE') . ') as others_paid_on_invoice_date
+            ');
+
+            $this->db->from(db_prefix() . 'invoices');
+            $this->db->join(db_prefix() . 'clients', db_prefix() . 'clients.userid = ' . db_prefix() . 'invoices.clientid', 'left');
+
+            // Apply WHERE conditions from the $where array
+            if (!empty($where)) {
+                foreach ($where as $condition) {
+                    // Remove the leading 'AND ' if present
+                    $condition = preg_replace('/^AND /', '', $condition);
+                    $this->db->where($condition, null, false);
+                }
+            }
+
+            $this->db->order_by('tblinvoices.date', 'DESC');
+
+            // Get pagination parameters from DataTables
+            $limit = $this->input->post('length') ? (int)$this->input->post('length') : 25;
+            $start = $this->input->post('start') ? (int)$this->input->post('start') : 0;
+
+            // Apply pagination only if limit is not -1 (which means show all records)
+            if ($limit > 0) {
+                $this->db->limit($limit, $start);
+            }
+
+            // Execute the query
+            $query = $this->db->get();
+
+            // Check if the query returned any results
+            if ($query->num_rows() > 0) {
+                $direct_result = $query->result_array();
+
+                // Get total count of all records (without filters)
+                $this->db->select('COUNT(*) as filtered_count');
+                $this->db->from(db_prefix() . 'invoices');
+                $this->db->join(db_prefix() . 'clients', db_prefix() . 'clients.userid = ' . db_prefix() . 'invoices.clientid', 'left');
+
+                // Apply WHERE conditions for filtering
+                if (!empty($where)) {
+                    foreach ($where as $condition) {
+                        $condition = preg_replace('/^AND /', '', $condition);
+                        $this->db->where($condition, null, false);
+                    }
+                }
+
+                $filtered_count = $this->db->get()->row()->filtered_count;
+
+                // Get total count without filters
+                $this->db->select('COUNT(*) as total_count');
+                $this->db->from(db_prefix() . 'invoices');
+                $total_count = $this->db->get()->row()->total_count;
+
+                // Use the direct query result with proper counts
+                $result = [
+                    'output' => [
+                        'draw' => $this->input->post('draw') ? $this->input->post('draw') : 1,
+                        'recordsTotal' => $total_count,
+                        'recordsFiltered' => $filtered_count,
+                        'aaData' => []
+                    ],
+                    'rResult' => $direct_result
+                ];
+            } else {
+                // Create an empty result with proper counts
+                $result = [
+                    'output' => [
+                        'draw' => $this->input->post('draw') ? $this->input->post('draw') : 1,
+                        'recordsTotal' => 0,
+                        'recordsFiltered' => 0,
+                        'aaData' => []
+                    ],
+                    'rResult' => []
+                ];
+            }
+
+            $output = $result['output'];
+            $rResult = $result['rResult'];
+
+            $footer_data = [
+                'invoice_amount' => 0,
+                'cash' => 0,
+                'bank' => 0,
+                'payment_mode_others' => 0,
+                'total_amount_paid' => 0,
+                'total_invoice_due' => 0,
+                'total_paid_on_invoice_date' => 0,
+                'cash_paid_on_invoice_date' => 0,
+                'bank_paid_on_invoice_date' => 0,
+                'others_paid_on_invoice_date' => 0,
+            ];
+
+            foreach ($rResult as $aRow) {
+                $row = [];
+
+                // Date
+                $row[] = _d(isset($aRow['date']) ? $aRow['date'] : '');
+
+                // Status
+                $row[] = format_invoice_status(isset($aRow['status']) ? $aRow['status'] : 0);
+
+                // Invoice Number
+                $row[] = '<a href="' . admin_url('invoices/list_invoices/' . $aRow['id']) . '" target="_blank">' . format_invoice_number($aRow['id']) . '</a>';
+
+                // Customer Name
+                $row[] = '<a href="' . admin_url('clients/client/' . $aRow['clientid']) . '" target="_blank">' . (isset($aRow['company']) ? $aRow['company'] : 'Unknown') . '</a>';
+
+                // Invoice Amount
+                $invoice_amount = isset($aRow['invoice_amount']) ? $aRow['invoice_amount'] : 0;
+                $row[] = app_format_money($invoice_amount, $currency->name);
+                $footer_data['invoice_amount'] += $invoice_amount;
+
+                // Payment Dates
+                $row[] = isset($aRow['payment_dates']) ? $aRow['payment_dates'] : '';
+
+                // Cash
+                $cash = isset($aRow['cash']) ? $aRow['cash'] : 0;
+                $row[] = app_format_money($cash, $currency->name);
+                $footer_data['cash'] += $cash;
+
+                // Bank
+                $bank = isset($aRow['bank']) ? $aRow['bank'] : 0;
+                $row[] = app_format_money($bank, $currency->name);
+                $footer_data['bank'] += $bank;
+
+                // Others
+                $others = isset($aRow['payment_mode_others']) ? $aRow['payment_mode_others'] : 0;
+                $row[] = app_format_money($others, $currency->name);
+                $footer_data['payment_mode_others'] += $others;
+
+                // Total Amount Paid
+                $total_amount_paid = isset($aRow['total_amount_paid']) ? $aRow['total_amount_paid'] : 0;
+                $row[] = app_format_money($total_amount_paid, $currency->name);
+                $footer_data['total_amount_paid'] += $total_amount_paid;
+
+                // Total Invoice Due
+                $total_invoice_due = isset($aRow['total_invoice_due']) ? $aRow['total_invoice_due'] : 0;
+                $row[] = app_format_money($total_invoice_due, $currency->name);
+                $footer_data['total_invoice_due'] += $total_invoice_due;
+
+                // Sales Order
+                // Find the estimate (sales order) where invoiceid matches the current invoice id
+                $this->db->select('id, number, prefix');
+                $this->db->from(db_prefix() . 'estimates');
+                $this->db->where('invoiceid', $aRow['id']);
+                $sales_order = $this->db->get()->row();
+
+                if ($sales_order) {
+                    $sales_order_display = $sales_order->prefix . $sales_order->number;
+                    $row[] = '<a href="' . admin_url('estimates/list_estimates/' . $sales_order->id) . '" target="_blank">' . $sales_order_display . '</a>';
+                } else {
+                    $row[] = '';
+                }
+
+                // Add new columns for payments on invoice date
+                // Total paid on invoice date
+                $total_paid_on_invoice_date = isset($aRow['total_paid_on_invoice_date']) ? $aRow['total_paid_on_invoice_date'] : 0;
+                $row[] = app_format_money($total_paid_on_invoice_date, $currency->name);
+                $footer_data['total_paid_on_invoice_date'] += $total_paid_on_invoice_date;
+
+                // Cash paid on invoice date
+                $cash_paid_on_invoice_date = isset($aRow['cash_paid_on_invoice_date']) ? $aRow['cash_paid_on_invoice_date'] : 0;
+                $row[] = app_format_money($cash_paid_on_invoice_date, $currency->name);
+                $footer_data['cash_paid_on_invoice_date'] += $cash_paid_on_invoice_date;
+
+                // Bank paid on invoice date
+                $bank_paid_on_invoice_date = isset($aRow['bank_paid_on_invoice_date']) ? $aRow['bank_paid_on_invoice_date'] : 0;
+                $row[] = app_format_money($bank_paid_on_invoice_date, $currency->name);
+                $footer_data['bank_paid_on_invoice_date'] += $bank_paid_on_invoice_date;
+
+                // Others paid on invoice date
+                $others_paid_on_invoice_date = isset($aRow['others_paid_on_invoice_date']) ? $aRow['others_paid_on_invoice_date'] : 0;
+                $row[] = app_format_money($others_paid_on_invoice_date, $currency->name);
+                $footer_data['others_paid_on_invoice_date'] += $others_paid_on_invoice_date;
+
+                // Director Note
+                $row[] = isset($aRow['director_note']) ? $aRow['director_note'] : '';
+
+                $output['aaData'][] = $row;
+            }
+
+            foreach ($footer_data as $key => $total) {
+                $footer_data[$key] = app_format_money($total, $currency->name);
+            }
+
+            $output['sums'] = $footer_data;
+            echo json_encode($output);
+            die();
+        } catch (Exception $e) {
+            // Return a valid JSON response with the error message
+            echo json_encode([
+                'error' => true,
+                'message' => 'An error occurred while generating the report: ' . $e->getMessage()
+            ]);
+            die();
+        }
+    }
+
+    /**
+     * Cashbook report by invoice - shows payments grouped by invoice
+     * This endpoint is used for the second tab in the cashbook report
+     */
+    public function cashbook_report_by_invoice()
+    {
+        try {
+            $this->load->model('currencies_model');
+            $this->load->model('invoices_model');
+            $this->load->model('payments_model');
+            $this->load->model('payment_modes_model');
+
+            // Get all payment modes
+            $all_payment_modes = $this->payment_modes_model->get();
+
+            // Filter payment modes to cash, bank, and others
+            $cash_mode = null;
+            $bank_modes = [];
+            $other_modes = [];
+
+            foreach ($all_payment_modes as $mode) {
+                if ($mode['id'] == 2) { // Cash payment mode
+                    $cash_mode = $mode;
+                } elseif (stripos($mode['name'], 'bank') !== false) { // Bank payment modes
+                    $bank_modes[] = $mode;
+                } else { // Other payment modes
+                    $other_modes[] = $mode;
+                }
+            }
+
+            // Get other mode IDs
+            $other_mode_ids = array_map(function($m) { return $m['id']; }, $other_modes);
+
+            // Define where conditions
+            $where = [
+                'AND ' . db_prefix() . 'invoices.status != 5', // Not cancelled
+            ];
+
+            // Enable date filtering
+            $custom_date_select = $this->get_where_report_period(db_prefix() . 'invoices.date');
+            if ($custom_date_select != '') {
+                array_push($where, $custom_date_select);
+            }
+
+            // Enable customer filtering
+            if ($this->input->post('customer_id')) {
+                $customers = $this->input->post('customer_id');
+                $_customers = [];
+                if (is_array($customers)) {
+                    foreach ($customers as $customer) {
+                        if ($customer != '') {
+                            array_push($_customers, $this->db->escape_str($customer));
+                        }
+                    }
+                }
+                if (count($_customers) > 0) {
+                    array_push($where, 'AND ' . db_prefix() . 'invoices.clientid IN (' . implode(', ', $_customers) . ')');
+                }
+            }
+
+            // Enable status filtering
+            if ($this->input->post('invoice_status')) {
+                $statuses = $this->input->post('invoice_status');
+                $_statuses = [];
+                if (is_array($statuses)) {
+                    foreach ($statuses as $status) {
+                        if ($status != '') {
+                            array_push($_statuses, $this->db->escape_str($status));
+                        }
+                    }
+                }
+                if (count($_statuses) > 0) {
+                    array_push($where, 'AND ' . db_prefix() . 'invoices.status IN (' . implode(', ', $_statuses) . ')');
+                }
+            }
+
+            // Always use base currency
+            $currency = $this->currencies_model->get_base_currency();
+
+            // Build a query to get invoices with payment information
+            $this->db->select('
+                ' . db_prefix() . 'invoices.id,
+                ' . db_prefix() . 'invoices.clientid,
+                ' . db_prefix() . 'invoices.number,
+                ' . db_prefix() . 'clients.company,
+                ' . db_prefix() . 'invoices.total as invoice_amount,
+                (SELECT GROUP_CONCAT(date ORDER BY date SEPARATOR ", ") FROM ' . db_prefix() . 'invoicepaymentrecords WHERE invoiceid = ' . db_prefix() . 'invoices.id) as payment_dates,
+                (SELECT COALESCE(SUM(amount),0) FROM ' . db_prefix() . 'invoicepaymentrecords WHERE invoiceid = ' . db_prefix() . 'invoices.id AND paymentmode = 2) as cash,
+                (SELECT COALESCE(SUM(amount),0) FROM ' . db_prefix() . 'invoicepaymentrecords WHERE invoiceid = ' . db_prefix() . 'invoices.id AND paymentmode != 2 AND ' . 
+                (!empty($bank_modes) ? 'paymentmode IN (' . implode(',', array_map(function($m) { return $m['id']; }, $bank_modes)) . ')' : 'FALSE') . ') as bank,
+                (SELECT COALESCE(SUM(amount),0) FROM ' . db_prefix() . 'invoicepaymentrecords WHERE invoiceid = ' . db_prefix() . 'invoices.id AND ' . 
+                (!empty($other_mode_ids) ? 'paymentmode IN (' . implode(',', $other_mode_ids) . ')' : 'FALSE') . ') as payment_mode_others,
+                (SELECT COALESCE(SUM(amount),0) FROM ' . db_prefix() . 'invoicepaymentrecords WHERE invoiceid = ' . db_prefix() . 'invoices.id) as total_amount_paid,
+                (' . db_prefix() . 'invoices.total - (SELECT COALESCE(SUM(amount),0) FROM ' . db_prefix() . 'invoicepaymentrecords WHERE invoiceid = ' . db_prefix() . 'invoices.id)) as total_invoice_due
+            ');
+
+            $this->db->from(db_prefix() . 'invoices');
+            $this->db->join(db_prefix() . 'clients', db_prefix() . 'clients.userid = ' . db_prefix() . 'invoices.clientid', 'left');
+
+            // Apply WHERE conditions from the $where array
+            if (!empty($where)) {
+                foreach ($where as $condition) {
+                    // Remove the leading 'AND ' if present
+                    $condition = preg_replace('/^AND /', '', $condition);
+                    $this->db->where($condition, null, false);
+                }
+            }
+
+            // Only include invoices that have payments
+            $this->db->having('total_amount_paid > 0');
+
+            $this->db->order_by('tblinvoices.number', 'ASC');
+
+            // Get pagination parameters from DataTables
+            $limit = $this->input->post('length') ? (int)$this->input->post('length') : 25;
+            $start = $this->input->post('start') ? (int)$this->input->post('start') : 0;
+
+            // Apply pagination only if limit is not -1 (which means show all records)
+            if ($limit > 0) {
+                $this->db->limit($limit, $start);
+            }
+
+            // Execute the query
+            $query = $this->db->get();
+
+            // Check if the query returned any results
+            if ($query->num_rows() > 0) {
+                $direct_result = $query->result_array();
+
+                // Get total count of all records (without filters)
+                $this->db->select('COUNT(*) as filtered_count');
+                $this->db->from(db_prefix() . 'invoices');
+                $this->db->join(db_prefix() . 'clients', db_prefix() . 'clients.userid = ' . db_prefix() . 'invoices.clientid', 'left');
+                $this->db->where('(SELECT COALESCE(SUM(amount),0) FROM ' . db_prefix() . 'invoicepaymentrecords WHERE invoiceid = ' . db_prefix() . 'invoices.id) > 0', null, false);
+
+                // Apply WHERE conditions for filtering
+                if (!empty($where)) {
+                    foreach ($where as $condition) {
+                        $condition = preg_replace('/^AND /', '', $condition);
+                        $this->db->where($condition, null, false);
+                    }
+                }
+
+                $filtered_count = $this->db->get()->row()->filtered_count;
+
+                // Get total count without filters but only including invoices with payments
+                $this->db->select('COUNT(*) as total_count');
+                $this->db->from(db_prefix() . 'invoices');
+                $this->db->where('(SELECT COALESCE(SUM(amount),0) FROM ' . db_prefix() . 'invoicepaymentrecords WHERE invoiceid = ' . db_prefix() . 'invoices.id) > 0', null, false);
+                $total_count = $this->db->get()->row()->total_count;
+
+                // Use the direct query result with proper counts
+                $result = [
+                    'output' => [
+                        'draw' => $this->input->post('draw') ? $this->input->post('draw') : 1,
+                        'recordsTotal' => $total_count,
+                        'recordsFiltered' => $filtered_count,
+                        'aaData' => []
+                    ],
+                    'rResult' => $direct_result
+                ];
+            } else {
+                // Create an empty result with proper counts
+                $result = [
+                    'output' => [
+                        'draw' => $this->input->post('draw') ? $this->input->post('draw') : 1,
+                        'recordsTotal' => 0,
+                        'recordsFiltered' => 0,
+                        'aaData' => []
+                    ],
+                    'rResult' => []
+                ];
+            }
+
+            $output = $result['output'];
+            $rResult = $result['rResult'];
+
+            $footer_data = [
+                'invoice_amount' => 0,
+                'cash' => 0,
+                'bank' => 0,
+                'payment_mode_others' => 0,
+                'total_amount_paid' => 0,
+                'total_invoice_due' => 0,
+            ];
+
+            foreach ($rResult as $aRow) {
+                $row = [];
+
+                // Invoice Number
+                $row[] = '<a href="' . admin_url('invoices/list_invoices/' . $aRow['id']) . '" target="_blank">' . format_invoice_number($aRow['id']) . '</a>';
+
+                // Customer Name
+                $row[] = '<a href="' . admin_url('clients/client/' . $aRow['clientid']) . '" target="_blank">' . (isset($aRow['company']) ? $aRow['company'] : 'Unknown') . '</a>';
+
+                // Invoice Amount
+                $invoice_amount = isset($aRow['invoice_amount']) ? $aRow['invoice_amount'] : 0;
+                $row[] = app_format_money($invoice_amount, $currency->name);
+                $footer_data['invoice_amount'] += $invoice_amount;
+
+                // Payment Dates
+                $row[] = isset($aRow['payment_dates']) ? $aRow['payment_dates'] : '';
+
+                // Cash
+                $cash = isset($aRow['cash']) ? $aRow['cash'] : 0;
+                $row[] = app_format_money($cash, $currency->name);
+                $footer_data['cash'] += $cash;
+
+                // Bank
+                $bank = isset($aRow['bank']) ? $aRow['bank'] : 0;
+                $row[] = app_format_money($bank, $currency->name);
+                $footer_data['bank'] += $bank;
+
+                // Others
+                $others = isset($aRow['payment_mode_others']) ? $aRow['payment_mode_others'] : 0;
+                $row[] = app_format_money($others, $currency->name);
+                $footer_data['payment_mode_others'] += $others;
+
+                // Total Amount Paid
+                $total_amount_paid = isset($aRow['total_amount_paid']) ? $aRow['total_amount_paid'] : 0;
+                $row[] = app_format_money($total_amount_paid, $currency->name);
+                $footer_data['total_amount_paid'] += $total_amount_paid;
+
+                // Total Invoice Due
+                $total_invoice_due = isset($aRow['total_invoice_due']) ? $aRow['total_invoice_due'] : 0;
+                $row[] = app_format_money($total_invoice_due, $currency->name);
+                $footer_data['total_invoice_due'] += $total_invoice_due;
+
+                $output['aaData'][] = $row;
+            }
+
+            foreach ($footer_data as $key => $total) {
+                $footer_data[$key] = app_format_money($total, $currency->name);
+            }
+
+            $output['sums'] = $footer_data;
+            echo json_encode($output);
+            die();
+        } catch (Exception $e) {
+            // Return a valid JSON response with the error message
+            echo json_encode([
+                'error' => true,
+                'message' => 'An error occurred while generating the report: ' . $e->getMessage()
+            ]);
+            die();
+        }
     }
 
 

@@ -346,6 +346,14 @@ $lang['bank'] = 'Bank';
 $lang['cash'] = 'Cash';
 $lang['credit_bf'] = 'Credit B/F';
 $lang['credit_cf'] = 'Credit C/F';
+$lang['others'] = 'Others';
+$lang['total_amount_paid'] = 'Total Amount Paid';
+$lang['total_invoice_due'] = 'Total Invoice Due';
+$lang['sales_order'] = 'Sales Order';
+$lang['total_paid_on_invoice_date'] = 'Total Paid on Invoice Date';
+$lang['cash_paid_on_invoice_date'] = 'Cash Paid on Invoice Date';
+$lang['bank_paid_on_invoice_date'] = 'Bank Paid on Invoice Date';
+$lang['others_paid_on_invoice_date'] = 'Others Paid on Invoice Date';
 
 # Roles
 $lang['new_role']           = 'New Role';

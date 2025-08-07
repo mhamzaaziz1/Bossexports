@@ -69,6 +69,8 @@
                      </div>
                   </div>
                   <hr class="hr-panel-heading" />
+
+                  <!-- Combined Cashbook Report -->
                   <div class="table-responsive">
                      <table class="table table-cashbook-report scroll-responsive">
                         <thead>
@@ -78,27 +80,20 @@
                               <th><?php echo _l('report_invoice_number'); ?></th>
                               <th><?php echo _l('report_invoice_customer'); ?></th>
                               <th><?php echo _l('invoice_amount'); ?></th>
-                              <th><?php echo _l('cash_paid'); ?></th>
+                              <th><?php echo _l('payment_date'); ?></th>
+                              <!-- Payment modes -->
+                              <th><?php echo _l('cash'); ?></th>
+                              <th><?php echo _l('bank'); ?></th>
+                              <th><?php echo _l('others'); ?></th>
+                              <!-- Totals -->
                               <th><?php echo _l('total_amount_paid'); ?></th>
-                              <th><?php echo _l('today_amount_due'); ?></th>
                               <th><?php echo _l('total_invoice_due'); ?></th>
                               <th><?php echo _l('sales_order'); ?></th>
-                              <th><?php echo _l('zim_account'); ?></th>
-                              <th><?php echo _l('credit_note'); ?></th>
-                              <th><?php echo _l('bank'); ?></th>
-                              <th><?php echo _l('cash'); ?></th>
-                              <?php
-                              // Add column headers for all payment modes
-                              $CI =& get_instance();
-                              $CI->load->model('payment_modes_model');
-                              $payment_modes = $CI->payment_modes_model->get();
-                              foreach ($payment_modes as $mode) {
-                                 echo '<th>' . $mode['name'] . '</th>';
-                              }
-                              ?>
-                              <th><?php echo _l('credit_bf'); ?></th>
-                              <th><?php echo _l('credit_cf'); ?></th>
-                              <th><?php echo _l('total'); ?></th>
+                              <!-- New columns for payments on invoice date -->
+                              <th><?php echo _l('total_paid_on_invoice_date'); ?></th>
+                              <th><?php echo _l('cash_paid_on_invoice_date'); ?></th>
+                              <th><?php echo _l('bank_paid_on_invoice_date'); ?></th>
+                              <th><?php echo _l('others_paid_on_invoice_date'); ?></th>
                               <th><?php echo _l('director_note'); ?></th>
                            </tr>
                         </thead>
@@ -110,24 +105,17 @@
                               <td></td>
                               <td></td>
                               <td class="invoice_amount"></td>
-                              <td class="cash_paid"></td>
+                              <td></td>
+                              <td class="cash"></td>
+                              <td class="bank"></td>
+                              <td class="payment_mode_others"></td>
                               <td class="total_amount_paid"></td>
-                              <td class="today_amount_due"></td>
                               <td class="total_invoice_due"></td>
                               <td></td>
-                              <td class="zim_account"></td>
-                              <td class="credit_note"></td>
-                              <td class="bank"></td>
-                              <td class="cash"></td>
-                              <?php
-                              // Add footer cells for all payment modes
-                              foreach ($payment_modes as $mode) {
-                                 echo '<td class="payment_mode_' . $mode['id'] . '"></td>';
-                              }
-                              ?>
-                              <td class="credit_bf"></td>
-                              <td class="credit_cf"></td>
-                              <td class="total_balance"></td>
+                              <td class="total_paid_on_invoice_date"></td>
+                              <td class="cash_paid_on_invoice_date"></td>
+                              <td class="bank_paid_on_invoice_date"></td>
+                              <td class="others_paid_on_invoice_date"></td>
                               <td></td>
                            </tr>
                         </tfoot>
@@ -217,6 +205,7 @@ $(function() {
 
    // Initialize the DataTable
    function generateCashbookReport() {
+      // Initialize the combined table
       if ($.fn.DataTable.isDataTable('.table-cashbook-report')) {
          $('.table-cashbook-report').DataTable().destroy();
       }
@@ -232,32 +221,6 @@ $(function() {
          var today = new Date();
          $('input[name="report_to"]').datepicker('setDate', today);
       }
-
-      // Create a function that returns the current value when called
-      function getReportFrom() {
-         return $('input[name="report_from"]').val();
-      }
-
-      function getReportTo() {
-         return $('input[name="report_to"]').val();
-      }
-
-      function getInvoiceStatus() {
-         return $('select[name="invoice_status"]').val();
-      }
-
-      function getCustomerId() {
-         return $('select[name="customer_id"]').val();
-      }
-
-      function getVendorPaymentFrom() {
-         return $('input[name="vendor_payment_from"]').val();
-      }
-
-      function getVendorPaymentTo() {
-         return $('input[name="vendor_payment_to"]').val();
-      }
-
 
       // Create hidden inputs for the parameters
       if (!$('#report_months_param').length) {
@@ -277,12 +240,11 @@ $(function() {
          "report_from": 'input[name="report_from"]',
          "report_to": 'input[name="report_to"]',
          "invoice_status": 'select[name="invoice_status"]',
-         "customer_id": 'select[name="customer_id"]',
-         "vendor_payment_from": 'input[name="vendor_payment_from"]',
-         "vendor_payment_to": 'input[name="vendor_payment_to"]'
+         "customer_id": 'select[name="customer_id"]'
       };
 
-      initDataTable('.table-cashbook-report', admin_url + 'reports/cashbook_report', false, false, fnServerParams, [0, 'desc']);
+      // Initialize the combined table
+      initDataTable('.table-cashbook-report', admin_url + 'reports/cashbook_combined_report', false, false, fnServerParams, [0, 'desc']);
 
       // Add event handler for DataTable draw event to update footer
       $('.table-cashbook-report').on('draw.dt', function() {
@@ -291,22 +253,16 @@ $(function() {
          if (sums) {
             $(this).find('tfoot').addClass('bold');
             $(this).find('tfoot td.invoice_amount').html(sums.invoice_amount);
-            $(this).find('tfoot td.cash_paid').html(sums.cash_paid);
-            $(this).find('tfoot td.total_amount_paid').html(sums.total_amount_paid);
-            $(this).find('tfoot td.today_amount_due').html(sums.today_amount_due);
-            $(this).find('tfoot td.total_invoice_due').html(sums.total_invoice_due);
-            $(this).find('tfoot td.zim_account').html(sums.zim_account);
-            $(this).find('tfoot td.credit_note').html(sums.credit_note);
-            $(this).find('tfoot td.bank').html(sums.bank);
             $(this).find('tfoot td.cash').html(sums.cash);
-
-            // Update payment mode columns
-            <?php foreach ($payment_modes as $mode) : ?>
-            $(this).find('tfoot td.payment_mode_<?php echo $mode['id']; ?>').html(sums.payment_mode_<?php echo $mode['id']; ?>);
-            <?php endforeach; ?>
-            $(this).find('tfoot td.credit_bf').html(sums.credit_bf);
-            $(this).find('tfoot td.credit_cf').html(sums.credit_cf);
-            $(this).find('tfoot td.total_balance').html(sums.total_balance);
+            $(this).find('tfoot td.bank').html(sums.bank);
+            $(this).find('tfoot td.payment_mode_others').html(sums.payment_mode_others);
+            $(this).find('tfoot td.total_amount_paid').html(sums.total_amount_paid);
+            $(this).find('tfoot td.total_invoice_due').html(sums.total_invoice_due);
+            // Update new columns
+            $(this).find('tfoot td.total_paid_on_invoice_date').html(sums.total_paid_on_invoice_date);
+            $(this).find('tfoot td.cash_paid_on_invoice_date').html(sums.cash_paid_on_invoice_date);
+            $(this).find('tfoot td.bank_paid_on_invoice_date').html(sums.bank_paid_on_invoice_date);
+            $(this).find('tfoot td.others_paid_on_invoice_date').html(sums.others_paid_on_invoice_date);
          }
       });
    }
