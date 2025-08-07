@@ -19,7 +19,6 @@ $aColumns = [
     db_prefix() . 'items.warehouse_id',
     'tax',
     'origin',
-    'isactive',
     'ECOMM',
     'SELLER',
     'RETAILER'
@@ -167,21 +166,7 @@ foreach ($rResult as $aRow) {
         }
 
         if ($aColumns[$i] == 'commodity_code') {
-            $code = '<a href="' . admin_url('warehouse/view_commodity_detail/' . $aRow['id']) . '">' . $aRow['commodity_code'] . '</a>';
-            $code .= '<div class="row-options">';
-
-            $code .= '<a href="' . admin_url('warehouse/view_commodity_detail/' . $aRow['id']) . '" >' . _l('view') . '</a>';
-
-            if (has_permission('warehouse', '', 'edit') || is_admin()) {
-                $code .= ' | <a href="#" onclick="edit_commodity_item(this); return false;"  data-commodity_id="' . $aRow['id'] . '" data-description="' . $aRow['description'] . '" data-unit_id="' . $aRow['unit_id'] . '" data-commodity_code="' . $aRow['commodity_code'] . '" data-commodity_barcode="' . $aRow['commodity_barcode'] . '" data-commodity_type="' . $aRow['commodity_type'] . '" data-origin="' . $aRow['origin'] . '" data-color_id="' . $aRow['color_id'] . '" data-style_id="' . $aRow['style_id'] . '" data-model_id="' . $aRow['model_id'] . '" data-size_id="' . $aRow['size_id'] . '"  data-rate="' . app_format_money($aRow['rate'], '') . '" data-group_id="' . $aRow['group_id'] . '" data-tax="' . $aRow['tax'] . '"  data-warehouse_id="' . $aRow['warehouse_id'] . '" data-sku_code="' . $aRow['sku_code'] . '" data-sku_name="' . $aRow['sku_name'] . '" data-sub_group="' . $aRow['sub_group'] . '" data-purchase_price="' . $aRow['purchase_price'] . '" data-color="' . $aRow['color'] . '" data-guarantee="' . $aRow['guarantee'] . '" data-profif_ratio="' . $aRow['profif_ratio'] . '" data-without_checking_warehouse="' . $aRow['without_checking_warehouse'] . '" data-parent_id="' . $aRow['parent_id'] . '" >' . _l('edit') . '</a>';
-            }
-            if (has_permission('warehouse', '', 'delete') || is_admin()) {
-                $code .= ' | <a href="' . admin_url('warehouse/delete_commodity/' . $aRow['id']) . '" class="text-danger _delete">' . _l('delete') . '</a>';
-            }
-
-            $code .= '</div>';
-
-            $_data = $code;
+            $_data = '<a href="' . admin_url('warehouse/view_commodity_detail/' . $aRow['id']) . '">' . $aRow['commodity_code'] . '</a>';
 
         }elseif($aColumns[$i] == '1'){
             $_data = '<div class="checkbox"><input type="checkbox" value="' . $aRow['id'] . '"><label></label></div>';
@@ -199,11 +184,7 @@ foreach ($rResult as $aRow) {
         }elseif($aColumns[$i] == 'sku_code'){
             $_data = '<span class="label label-tag tag-id-1"><span class="tag">' . $aRow['sku_code'] . '</span><span class="hide">, </span></span>&nbsp';
         } elseif ($aColumns[$i] == 'group_id') {
-            if($aRow['isactive']){
-                $_data = '<a href="' . admin_url('warehouse/isactive?id=' . $aRow['id']) . '&status=0"><span class="label label-tag tag-id-1 "><span class="tag">Active</span><span class="hide">, </span></span>&nbsp</a>';
-            }else{
-                $_data ='<a href="' . admin_url('warehouse/isactive?id=' . $aRow['id']) . '&status=1"><span class="label label-tag tag-id-1 label-tabus "><span class="tag text-danger">' . _l('Inactive') . '</span><span class="hide">, </span></span>&nbsp</a>';
-            }
+            $_data = get_group_name_item($aRow['group_id']);
         } elseif ($aColumns[$i] == db_prefix() . 'items.warehouse_id') {
             $_data ='';
             $arr_warehouse = get_warehouse_by_commodity($aRow['id']);
