@@ -336,6 +336,7 @@ $lang['reports_sales_dt_items_customers_amount']          = 'Amount';
 $lang['reports_sales_dt_items_customers_amount_with_tax'] = 'Amount with Tax';
 $lang['cashbook_report'] = 'Cashbook Report';
 $lang['avg_purchase_aging'] = 'AVG Purchase Aging';
+$lang['purchase_aging'] = 'Purchase Aging';
 $lang['avg_age_days'] = 'Average Age (Days)';
 $lang['total_purchases'] = 'Total Purchases';
 $lang['total_quantity'] = 'Total Quantity';

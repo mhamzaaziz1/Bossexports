@@ -2403,7 +2403,10 @@ class Reports extends AdminController
                 (SELECT COALESCE(SUM(amount),0) FROM ' . db_prefix() . 'invoicepaymentrecords WHERE DATE(' . db_prefix() . 'invoicepaymentrecords.date) = DATE(' . db_prefix() . 'invoices.date) AND paymentmode != 2 AND ' . 
                 (!empty($bank_modes) ? 'paymentmode IN (' . implode(',', array_map(function($m) { return $m['id']; }, $bank_modes)) . ')' : 'FALSE') . ') as bank_paid_on_invoice_date,
                 (SELECT COALESCE(SUM(amount),0) FROM ' . db_prefix() . 'invoicepaymentrecords WHERE DATE(' . db_prefix() . 'invoicepaymentrecords.date) = DATE(' . db_prefix() . 'invoices.date) AND ' . 
-                (!empty($other_mode_ids) ? 'paymentmode IN (' . implode(',', $other_mode_ids) . ')' : 'FALSE') . ') as others_paid_on_invoice_date
+                (!empty($other_mode_ids) ? 'paymentmode IN (' . implode(',', $other_mode_ids) . ')' : 'FALSE') . ') as others_paid_on_invoice_date,
+
+                /* Sales Order data for searching */
+                (SELECT CONCAT(prefix, number) FROM ' . db_prefix() . 'estimates WHERE invoiceid = ' . db_prefix() . 'invoices.id) as sales_order_number
             ');
 
             $this->db->from(db_prefix() . 'invoices');
@@ -2544,15 +2547,18 @@ class Reports extends AdminController
                 $footer_data['total_invoice_due'] += $total_invoice_due;
 
                 // Sales Order
-                // Find the estimate (sales order) where invoiceid matches the current invoice id
-                $this->db->select('id, number, prefix');
-                $this->db->from(db_prefix() . 'estimates');
-                $this->db->where('invoiceid', $aRow['id']);
-                $sales_order = $this->db->get()->row();
+                if (!empty($aRow['sales_order_number'])) {
+                    // Find the estimate (sales order) ID for the link
+                    $this->db->select('id');
+                    $this->db->from(db_prefix() . 'estimates');
+                    $this->db->where('invoiceid', $aRow['id']);
+                    $sales_order = $this->db->get()->row();
 
-                if ($sales_order) {
-                    $sales_order_display = $sales_order->prefix . $sales_order->number;
-                    $row[] = '<a href="' . admin_url('estimates/list_estimates/' . $sales_order->id) . '" target="_blank">' . $sales_order_display . '</a>';
+                    if ($sales_order) {
+                        $row[] = '<a href="' . admin_url('estimates/list_estimates/' . $sales_order->id) . '" target="_blank">' . $aRow['sales_order_number'] . '</a>';
+                    } else {
+                        $row[] = $aRow['sales_order_number'];
+                    }
                 } else {
                     $row[] = '';
                 }
@@ -3452,6 +3458,207 @@ class Reports extends AdminController
             $output['sums'] = $footer_data;
             echo json_encode($output);
             die();
+        }
+    }
+
+    /**
+     * Purchase aging report based on items purchased
+     * Shows aging of purchases based on items purchased
+     *
+     * @return view
+     */
+    public function purchase_aging()
+    {
+        if ($this->input->is_ajax_request()) {
+            $this->load->model('currencies_model');
+
+            $aColumns = [
+                'tblitems.description as description',
+                'tblitemable.rel_id as purchase_id',
+                'tblpur_orders.order_date as purchase_date',
+                'tblpur_orders.delivery_date as delivery_date',
+                'DATEDIFF(NOW(), tblpur_orders.delivery_date) as days_overdue',
+                'tblitemable.qty as quantity',
+                'tblitemable.rate as rate',
+                'tblitemable.qty * tblitemable.rate as total_amount',
+                'tblpur_orders.status as purchase_status',
+                'tblpur_vendor.company as vendor_name'
+            ];
+
+            $sIndexColumn = 'id';
+            $sTable       = db_prefix() . 'itemable';
+
+            $join = [
+                'JOIN ' . db_prefix() . 'pur_orders ON ' . db_prefix() . 'pur_orders.id = ' . db_prefix() . 'itemable.rel_id',
+                'JOIN ' . db_prefix() . 'pur_vendor ON ' . db_prefix() . 'pur_vendor.userid = ' . db_prefix() . 'pur_orders.vendor',
+                'LEFT JOIN ' . db_prefix() . 'items ON ' . db_prefix() . 'items.description = ' . db_prefix() . 'itemable.description'
+            ];
+
+            $where = ['AND rel_type="pur_order"'];
+
+            $custom_date_select = $this->get_where_report_period('order_date');
+            if ($custom_date_select != '') {
+                array_push($where, $custom_date_select);
+            }
+
+            $by_currency = $this->input->post('report_currency');
+            if ($by_currency) {
+                $currency = $this->currencies_model->get($by_currency);
+                array_push($where, 'AND currency=' . $this->db->escape_str($by_currency));
+            } else {
+                $currency = $this->currencies_model->get_base_currency();
+            }
+
+            if ($this->input->post('vendor_items')) {
+                $vendors  = $this->input->post('vendor_items');
+                $_vendors = [];
+                if (is_array($vendors)) {
+                    foreach ($vendors as $vendor) {
+                        if ($vendor != '') {
+                            array_push($_vendors, $this->db->escape_str($vendor));
+                        }
+                    }
+                }
+                if (count($_vendors) > 0) {
+                    array_push($where, 'AND tblpur_orders.vendor IN (' . implode(', ', $_vendors) . ')');
+                }
+            }
+
+            if ($this->input->post('purchase_product_items')) {
+                $products  = $this->input->post('purchase_product_items');
+                $_products = [];
+                if (is_array($products)) {
+                    foreach ($products as $product) {
+                        if ($product != '') {
+                            array_push($_products, $this->db->escape_str($product));
+                        }
+                    }
+                }
+                if (count($_products) > 0) {
+                    array_push($where, 'AND tblitems.id IN (' . implode(', ', $_products) . ')');
+                }
+            }
+
+            $result = data_tables_init($aColumns, $sIndexColumn, $sTable, $join, $where, [
+                'tblitemable.id',
+                'tblpur_orders.vendor',
+                'tblpur_orders.po_number',
+                'tblpur_orders.prefix'
+            ]);
+
+            $output  = $result['output'];
+            $rResult = $result['rResult'];
+
+            $footer_data = [
+                'total_amount' => 0,
+                'total_qty'    => 0,
+                'aging_30'     => 0,
+                'aging_60'     => 0,
+                'aging_90'     => 0,
+                'aging_120'    => 0,
+                'aging_older'  => 0,
+            ];
+
+            foreach ($rResult as $aRow) {
+                $row = [];
+
+                // Item description
+                $row[] = $aRow['description'];
+
+                // Purchase order number
+                $this->db->select('prefix, po_number');
+                $this->db->from(db_prefix() . 'pur_orders');
+                $this->db->where('id', $aRow['purchase_id']);
+                $purchase = $this->db->get()->row();
+                $purchase_number = $purchase ? $purchase->prefix . $purchase->po_number : '';
+                $row[] = '<a href="' . admin_url('purchase/purchase_order/' . $aRow['purchase_id']) . '" target="_blank">' . $purchase_number . '</a>';
+
+                // Vendor name
+                $row[] = '<a href="' . admin_url('purchase/vendor/' . $aRow['vendor']) . '" target="_blank">' . $aRow['vendor_name'] . '</a>';
+
+                // Purchase date
+                $row[] = _d($aRow['purchase_date']);
+
+                // Delivery date
+                $row[] = _d($aRow['delivery_date']);
+
+                // Days overdue
+                $days_overdue = $aRow['days_overdue'];
+                $row[] = $days_overdue > 0 ? $days_overdue : 0;
+
+                // Aging category
+                $aging_category = '';
+                if ($days_overdue <= 0) {
+                    $aging_category = _l('current');
+                } elseif ($days_overdue <= 30) {
+                    $aging_category = '1-30 ' . _l('days');
+                    $footer_data['aging_30'] += $aRow['total_amount'];
+                } elseif ($days_overdue <= 60) {
+                    $aging_category = '31-60 ' . _l('days');
+                    $footer_data['aging_60'] += $aRow['total_amount'];
+                } elseif ($days_overdue <= 90) {
+                    $aging_category = '61-90 ' . _l('days');
+                    $footer_data['aging_90'] += $aRow['total_amount'];
+                } elseif ($days_overdue <= 120) {
+                    $aging_category = '91-120 ' . _l('days');
+                    $footer_data['aging_120'] += $aRow['total_amount'];
+                } else {
+                    $aging_category = '120+ ' . _l('days');
+                    $footer_data['aging_older'] += $aRow['total_amount'];
+                }
+                $row[] = $aging_category;
+
+                // Quantity
+                $row[] = $aRow['quantity'];
+                $footer_data['total_qty'] += $aRow['quantity'];
+
+                // Rate
+                $row[] = app_format_money($aRow['rate'], $currency->name);
+
+                // Total amount
+                $row[] = app_format_money($aRow['total_amount'], $currency->name);
+                $footer_data['total_amount'] += $aRow['total_amount'];
+
+                $output['aaData'][] = $row;
+            }
+
+            $footer_data['total_amount'] = app_format_money($footer_data['total_amount'], $currency->name);
+            $footer_data['aging_30'] = app_format_money($footer_data['aging_30'], $currency->name);
+            $footer_data['aging_60'] = app_format_money($footer_data['aging_60'], $currency->name);
+            $footer_data['aging_90'] = app_format_money($footer_data['aging_90'], $currency->name);
+            $footer_data['aging_120'] = app_format_money($footer_data['aging_120'], $currency->name);
+            $footer_data['aging_older'] = app_format_money($footer_data['aging_older'], $currency->name);
+
+            $output['sums'] = $footer_data;
+            echo json_encode($output);
+            die();
+        }
+
+        // Load required models
+        $this->load->model('currencies_model');
+        $this->load->model('Invoice_items_model', 'items_model');
+
+        // Try to load the purchase model
+        $purchase_model_loaded = false;
+        try {
+            $this->load->model('purchase/purchase_model');
+            $purchase_model_loaded = true;
+        } catch (Exception $e) {
+            log_activity('Failed to load purchase model in purchase_aging: ' . $e->getMessage());
+        }
+
+        if ($purchase_model_loaded) {
+            $data = [];
+            $data['title'] = _l('purchase_aging');
+            $data['vendors'] = $this->purchase_model->get_vendor();
+            $data['items'] = $this->items_model->get();
+            $data['currencies'] = $this->currencies_model->get();
+            $data['base_currency'] = $this->currencies_model->get_base_currency();
+
+            $this->load->view('admin/reports/purchase_aging', $data);
+        } else {
+            set_alert('warning', _l('purchase_module_not_available'));
+            redirect(admin_url('reports'));
         }
     }
 }

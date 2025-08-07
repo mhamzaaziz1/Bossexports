@@ -353,6 +353,15 @@ function app_init_admin_sidebar_menu_items()
             'position' => 45,
             'badge'    => [],
         ]);
+
+        // Purchase Aging Report
+        $CI->app_menu->add_sidebar_children_item('reports', [
+            'slug'     => 'purchase-aging-reports',
+            'name'     => _l('purchase_aging'),
+            'href'     => admin_url('reports/purchase_aging'),
+            'position' => 46,
+            'badge'    => [],
+        ]);
     }
 
     // Setup menu
