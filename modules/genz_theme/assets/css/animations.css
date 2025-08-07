@@ -1,0 +1,280 @@
+/**
+ * GenZ Theme - Animations
+ * Modern animations for Gen Z aesthetics
+ */
+
+/* Define keyframes for animations */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideInUp {
+    from {
+        transform: translateY(20px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+@keyframes slideInLeft {
+    from {
+        transform: translateX(-20px);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes slideInRight {
+    from {
+        transform: translateX(20px);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+@keyframes shimmer {
+    0% { background-position: -1000px 0; }
+    100% { background-position: 1000px 0; }
+}
+
+@keyframes float {
+    0% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+    100% { transform: translateY(0px); }
+}
+
+@keyframes rotate {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* Apply animations to elements */
+
+/* Page transitions */
+.content-wrapper {
+    animation: fadeIn 0.5s ease-out;
+}
+
+/* Card animations */
+.card {
+    animation: slideInUp 0.5s ease-out;
+}
+
+/* Button hover animations */
+.btn:hover {
+    animation: pulse 1s infinite;
+}
+
+/* Sidebar menu item animations */
+.sidebar-menu-item {
+    animation: slideInLeft 0.3s ease-out;
+    animation-fill-mode: both;
+}
+
+.sidebar-menu-item:nth-child(1) { animation-delay: 0.1s; }
+.sidebar-menu-item:nth-child(2) { animation-delay: 0.2s; }
+.sidebar-menu-item:nth-child(3) { animation-delay: 0.3s; }
+.sidebar-menu-item:nth-child(4) { animation-delay: 0.4s; }
+.sidebar-menu-item:nth-child(5) { animation-delay: 0.5s; }
+.sidebar-menu-item:nth-child(6) { animation-delay: 0.6s; }
+.sidebar-menu-item:nth-child(7) { animation-delay: 0.7s; }
+.sidebar-menu-item:nth-child(8) { animation-delay: 0.8s; }
+.sidebar-menu-item:nth-child(9) { animation-delay: 0.9s; }
+.sidebar-menu-item:nth-child(10) { animation-delay: 1s; }
+
+/* Table row animations */
+.table tbody tr {
+    animation: fadeIn 0.5s ease-out;
+    animation-fill-mode: both;
+}
+
+.table tbody tr:nth-child(1) { animation-delay: 0.1s; }
+.table tbody tr:nth-child(2) { animation-delay: 0.15s; }
+.table tbody tr:nth-child(3) { animation-delay: 0.2s; }
+.table tbody tr:nth-child(4) { animation-delay: 0.25s; }
+.table tbody tr:nth-child(5) { animation-delay: 0.3s; }
+.table tbody tr:nth-child(6) { animation-delay: 0.35s; }
+.table tbody tr:nth-child(7) { animation-delay: 0.4s; }
+.table tbody tr:nth-child(8) { animation-delay: 0.45s; }
+.table tbody tr:nth-child(9) { animation-delay: 0.5s; }
+.table tbody tr:nth-child(10) { animation-delay: 0.55s; }
+
+/* Form control focus animation */
+.form-control:focus {
+    animation: pulse 1s;
+}
+
+/* Alert animations */
+.alert {
+    animation: slideInRight 0.5s ease-out;
+}
+
+/* Badge animations */
+.badge {
+    transition: all 0.3s ease;
+}
+
+.badge:hover {
+    transform: scale(1.2);
+}
+
+/* Loading animation */
+.loading {
+    position: relative;
+    overflow: hidden;
+}
+
+.loading::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    animation: shimmer 2s infinite;
+}
+
+/* Floating elements */
+.float-animation {
+    animation: float 3s ease-in-out infinite;
+}
+
+/* Rotating elements */
+.rotate-animation {
+    animation: rotate 2s linear infinite;
+}
+
+/* Notification bell animation */
+.notification-bell {
+    position: relative;
+    display: inline-block;
+}
+
+.notification-bell.active {
+    animation: pulse 1s infinite;
+}
+
+/* Modal animations */
+.modal.fade .modal-dialog {
+    transform: scale(0.8);
+    transition: transform 0.3s ease-out;
+}
+
+.modal.show .modal-dialog {
+    transform: scale(1);
+}
+
+/* Dropdown menu animations */
+.dropdown-menu {
+    animation: slideInUp 0.3s ease-out;
+}
+
+.dropdown-item {
+    transition: all 0.2s ease;
+}
+
+.dropdown-item:hover {
+    transform: translateX(5px);
+}
+
+/* Progress bar animations */
+.progress-bar {
+    transition: width 0.6s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.progress-bar::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    animation: shimmer 2s infinite;
+}
+
+/* Page loader animation */
+.page-loader {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: var(--genz-bg-color);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    transition: opacity 0.5s ease, visibility 0.5s ease;
+}
+
+.page-loader.loaded {
+    opacity: 0;
+    visibility: hidden;
+}
+
+.loader-spinner {
+    width: 50px;
+    height: 50px;
+    border: 5px solid rgba(255, 94, 122, 0.3);
+    border-radius: 50%;
+    border-top-color: var(--genz-accent-color);
+    animation: rotate 1s linear infinite;
+}
+
+/* Hover card effect - popular in Gen Z designs */
+.hover-card {
+    transition: all 0.3s ease;
+}
+
+.hover-card:hover {
+    transform: translateY(-10px) rotate(2deg);
+    box-shadow: var(--genz-shadow-lg);
+}
+
+/* Typing animation for chat or messaging interfaces */
+.typing-animation::after {
+    content: '...';
+    animation: typing 1.5s infinite;
+}
+
+@keyframes typing {
+    0% { content: '.'; }
+    33% { content: '..'; }
+    66% { content: '...'; }
+    100% { content: '.'; }
+}
+
+/* Gradient text animation - very Gen Z */
+.gradient-text {
+    background: linear-gradient(90deg, var(--genz-accent-color), var(--genz-secondary-color), var(--genz-accent-color));
+    background-size: 200% auto;
+    color: transparent;
+    -webkit-background-clip: text;
+    background-clip: text;
+    animation: gradient 3s linear infinite;
+}
+
+@keyframes gradient {
+    0% { background-position: 0% center; }
+    100% { background-position: 200% center; }
+}

@@ -1,0 +1,210 @@
+/**
+ * GenZ Theme - Dark Mode Styles
+ * Dark mode variant with Gen Z aesthetics
+ */
+
+:root {
+    /* Override neutral colors for dark mode */
+    --genz-bg-color: #121212;
+    --genz-card-bg: #1E1E1E;
+    --genz-text-color: #E2E8F0;
+    --genz-text-muted: #A0AEC0;
+    --genz-border-color: #2D3748;
+    
+    /* Adjust shadows for dark mode */
+    --genz-shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.3);
+    --genz-shadow-md: 0 4px 6px rgba(0, 0, 0, 0.4);
+    --genz-shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.5);
+}
+
+/* Body and global styles */
+body {
+    background-color: var(--genz-bg-color);
+    color: var(--genz-text-color);
+}
+
+/* Links in dark mode */
+a {
+    color: var(--genz-accent-color);
+}
+
+a:hover {
+    color: var(--genz-secondary-color);
+}
+
+/* Cards in dark mode */
+.card {
+    background-color: var(--genz-card-bg);
+}
+
+/* Form controls in dark mode */
+.form-control {
+    background-color: #2D3748;
+    border-color: var(--genz-border-color);
+    color: var(--genz-text-color);
+}
+
+.form-control:focus {
+    background-color: #2D3748;
+    color: var(--genz-text-color);
+}
+
+/* Tables in dark mode */
+.table {
+    color: var(--genz-text-color);
+}
+
+.table th {
+    color: var(--genz-text-muted);
+}
+
+.table td {
+    border-color: var(--genz-border-color);
+}
+
+.table tbody tr:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+/* Navbar in dark mode */
+.navbar {
+    background-color: var(--genz-card-bg);
+}
+
+/* Sidebar in dark mode */
+.sidebar {
+    background-color: var(--genz-card-bg);
+    border-color: var(--genz-border-color);
+}
+
+/* Modal in dark mode */
+.modal-content {
+    background-color: var(--genz-card-bg);
+    border-color: var(--genz-border-color);
+}
+
+.modal-header, .modal-footer {
+    border-color: var(--genz-border-color);
+}
+
+/* Dropdown in dark mode */
+.dropdown-menu {
+    background-color: var(--genz-card-bg);
+    border-color: var(--genz-border-color);
+}
+
+.dropdown-item {
+    color: var(--genz-text-color);
+}
+
+.dropdown-item:hover, .dropdown-item:focus {
+    background-color: rgba(255, 255, 255, 0.05);
+    color: var(--genz-accent-color);
+}
+
+.dropdown-divider {
+    border-color: var(--genz-border-color);
+}
+
+/* Buttons in dark mode - subtle adjustments */
+.btn-light {
+    background-color: #2D3748;
+    color: var(--genz-text-color);
+}
+
+.btn-light:hover {
+    background-color: #4A5568;
+    color: var(--genz-text-color);
+}
+
+/* Input groups */
+.input-group-text {
+    background-color: #2D3748;
+    border-color: var(--genz-border-color);
+    color: var(--genz-text-muted);
+}
+
+/* List groups */
+.list-group-item {
+    background-color: var(--genz-card-bg);
+    border-color: var(--genz-border-color);
+    color: var(--genz-text-color);
+}
+
+/* Pagination */
+.page-link {
+    background-color: var(--genz-card-bg);
+    border-color: var(--genz-border-color);
+    color: var(--genz-text-color);
+}
+
+.page-link:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+    border-color: var(--genz-border-color);
+    color: var(--genz-accent-color);
+}
+
+.page-item.active .page-link {
+    background-color: var(--genz-accent-color);
+    border-color: var(--genz-accent-color);
+    color: white;
+}
+
+.page-item.disabled .page-link {
+    background-color: var(--genz-card-bg);
+    border-color: var(--genz-border-color);
+    color: var(--genz-text-muted);
+}
+
+/* Custom scrollbar for dark mode */
+::-webkit-scrollbar-track {
+    background: var(--genz-bg-color);
+}
+
+::-webkit-scrollbar-thumb {
+    background: #4A5568;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--genz-accent-color);
+}
+
+/* Code blocks */
+pre, code {
+    background-color: #2D3748;
+    color: #E2E8F0;
+    border-color: var(--genz-border-color);
+}
+
+/* Neon glow effect for some elements in dark mode - very Gen Z */
+.btn-primary, .btn-secondary {
+    box-shadow: 0 0 10px rgba(var(--genz-accent-color-rgb, 255, 94, 122), 0.5);
+}
+
+.btn-primary:hover, .btn-secondary:hover {
+    box-shadow: 0 0 15px rgba(var(--genz-accent-color-rgb, 255, 94, 122), 0.7);
+}
+
+/* Dark mode toggle button with special styling */
+.dark-mode-toggle {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background-color: var(--genz-card-bg);
+    color: var(--genz-accent-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 0 10px rgba(var(--genz-accent-color-rgb, 255, 94, 122), 0.5);
+    z-index: 1000;
+    transition: all 0.3s ease;
+}
+
+.dark-mode-toggle:hover {
+    transform: scale(1.1);
+    box-shadow: 0 0 15px rgba(var(--genz-accent-color-rgb, 255, 94, 122), 0.7);
+}

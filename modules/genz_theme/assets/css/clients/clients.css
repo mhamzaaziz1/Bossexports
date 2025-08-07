@@ -1,0 +1,460 @@
+/**
+ * GenZ Theme - Client Area Styles
+ * Modern client area styling with Gen Z aesthetics
+ */
+
+/* Import Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+/* Variables */
+:root {
+    --genz-accent-color: #FF5E7A;
+    --genz-secondary-color: #6C63FF;
+    --genz-success-color: #00F5A0;
+    --genz-warning-color: #FFD166;
+    --genz-danger-color: #FF6B6B;
+    --genz-info-color: #00C6FF;
+    
+    --genz-bg-color: #FFFFFF;
+    --genz-card-bg: #F8F9FE;
+    --genz-text-color: #2D3748;
+    --genz-text-muted: #718096;
+    --genz-border-color: #E2E8F0;
+    
+    --genz-spacing-xs: 0.25rem;
+    --genz-spacing-sm: 0.5rem;
+    --genz-spacing-md: 1rem;
+    --genz-spacing-lg: 1.5rem;
+    --genz-spacing-xl: 2rem;
+    
+    --genz-border-radius-sm: 0.5rem;
+    --genz-border-radius-md: 0.75rem;
+    --genz-border-radius-lg: 1rem;
+    --genz-border-radius-pill: 50rem;
+    
+    --genz-shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.05);
+    --genz-shadow-md: 0 4px 6px rgba(0, 0, 0, 0.07);
+    --genz-shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+    
+    --genz-font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+}
+
+/* Global styles */
+body {
+    font-family: var(--genz-font-family);
+    color: var(--genz-text-color);
+    background-color: var(--genz-bg-color);
+    transition: all 0.3s ease;
+}
+
+/* Typography */
+h1, h2, h3, h4, h5, h6 {
+    font-weight: 600;
+    margin-bottom: var(--genz-spacing-md);
+}
+
+p {
+    line-height: 1.6;
+    margin-bottom: var(--genz-spacing-md);
+}
+
+/* Links */
+a {
+    color: var(--genz-accent-color);
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+a:hover {
+    color: var(--genz-secondary-color);
+    text-decoration: none;
+}
+
+/* Buttons */
+.btn {
+    border-radius: var(--genz-border-radius-md);
+    font-weight: 500;
+    padding: 0.5rem 1.25rem;
+    transition: all 0.3s ease;
+    border: none;
+    box-shadow: var(--genz-shadow-sm);
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--genz-shadow-md);
+}
+
+.btn-primary {
+    background-color: var(--genz-accent-color);
+    color: white;
+}
+
+.btn-primary:hover {
+    background-color: var(--genz-accent-color);
+    opacity: 0.9;
+}
+
+.btn-secondary {
+    background-color: var(--genz-secondary-color);
+    color: white;
+}
+
+.btn-success {
+    background-color: var(--genz-success-color);
+    color: var(--genz-text-color);
+}
+
+.btn-danger {
+    background-color: var(--genz-danger-color);
+    color: white;
+}
+
+.btn-warning {
+    background-color: var(--genz-warning-color);
+    color: var(--genz-text-color);
+}
+
+.btn-info {
+    background-color: var(--genz-info-color);
+    color: white;
+}
+
+.btn-outline-primary {
+    border: 2px solid var(--genz-accent-color);
+    color: var(--genz-accent-color);
+    background: transparent;
+}
+
+.btn-outline-primary:hover {
+    background-color: var(--genz-accent-color);
+    color: white;
+}
+
+/* Cards/Panels */
+.panel_s, .card {
+    border-radius: var(--genz-border-radius-lg);
+    border: none;
+    background-color: var(--genz-card-bg);
+    box-shadow: var(--genz-shadow-sm);
+    transition: all 0.3s ease;
+    overflow: hidden;
+    margin-bottom: var(--genz-spacing-lg);
+}
+
+.panel_s:hover, .card:hover {
+    box-shadow: var(--genz-shadow-md);
+}
+
+.panel-heading, .card-header {
+    background-color: transparent;
+    border-bottom: 1px solid var(--genz-border-color);
+    padding: var(--genz-spacing-lg);
+    font-weight: 600;
+}
+
+.panel-body, .card-body {
+    padding: var(--genz-spacing-lg);
+}
+
+/* Forms */
+.form-control {
+    border-radius: var(--genz-border-radius-md);
+    border: 1px solid var(--genz-border-color);
+    padding: 0.75rem 1rem;
+    transition: all 0.3s ease;
+}
+
+.form-control:focus {
+    border-color: var(--genz-accent-color);
+    box-shadow: 0 0 0 0.2rem rgba(255, 94, 122, 0.25);
+}
+
+.form-label, label {
+    font-weight: 500;
+    margin-bottom: var(--genz-spacing-sm);
+}
+
+/* Tables */
+.table {
+    border-collapse: separate;
+    border-spacing: 0;
+    width: 100%;
+}
+
+.table th {
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 0.5px;
+    color: var(--genz-text-muted);
+    padding: var(--genz-spacing-md) var(--genz-spacing-lg);
+    border-bottom: 1px solid var(--genz-border-color);
+}
+
+.table td {
+    padding: var(--genz-spacing-md) var(--genz-spacing-lg);
+    border-bottom: 1px solid var(--genz-border-color);
+    vertical-align: middle;
+}
+
+.table tbody tr:hover {
+    background-color: rgba(0, 0, 0, 0.02);
+}
+
+/* Badges */
+.badge {
+    border-radius: var(--genz-border-radius-pill);
+    padding: 0.35em 0.65em;
+    font-weight: 500;
+    font-size: 75%;
+}
+
+.badge-primary {
+    background-color: var(--genz-accent-color);
+    color: white;
+}
+
+.badge-secondary {
+    background-color: var(--genz-secondary-color);
+    color: white;
+}
+
+.badge-success {
+    background-color: var(--genz-success-color);
+    color: var(--genz-text-color);
+}
+
+.badge-danger {
+    background-color: var(--genz-danger-color);
+    color: white;
+}
+
+.badge-warning {
+    background-color: var(--genz-warning-color);
+    color: var(--genz-text-color);
+}
+
+.badge-info {
+    background-color: var(--genz-info-color);
+    color: white;
+}
+
+/* Alerts */
+.alert {
+    border-radius: var(--genz-border-radius-md);
+    border: none;
+    padding: var(--genz-spacing-md) var(--genz-spacing-lg);
+    margin-bottom: var(--genz-spacing-lg);
+    position: relative;
+}
+
+.alert-primary {
+    background-color: rgba(255, 94, 122, 0.1);
+    color: var(--genz-accent-color);
+}
+
+.alert-secondary {
+    background-color: rgba(108, 99, 255, 0.1);
+    color: var(--genz-secondary-color);
+}
+
+.alert-success {
+    background-color: rgba(0, 245, 160, 0.1);
+    color: var(--genz-success-color);
+}
+
+.alert-danger {
+    background-color: rgba(255, 107, 107, 0.1);
+    color: var(--genz-danger-color);
+}
+
+.alert-warning {
+    background-color: rgba(255, 209, 102, 0.1);
+    color: var(--genz-warning-color);
+}
+
+.alert-info {
+    background-color: rgba(0, 198, 255, 0.1);
+    color: var(--genz-info-color);
+}
+
+/* Navigation */
+.navbar {
+    background-color: var(--genz-bg-color);
+    box-shadow: var(--genz-shadow-sm);
+    padding: var(--genz-spacing-md) var(--genz-spacing-lg);
+}
+
+.navbar-brand {
+    font-weight: 700;
+    color: var(--genz-accent-color);
+}
+
+.nav-link {
+    color: var(--genz-text-color);
+    font-weight: 500;
+    padding: var(--genz-spacing-sm) var(--genz-spacing-md);
+    border-radius: var(--genz-border-radius-md);
+    transition: all 0.3s ease;
+}
+
+.nav-link:hover, .nav-link.active {
+    color: var(--genz-accent-color);
+    background-color: rgba(255, 94, 122, 0.1);
+}
+
+/* Client Dashboard */
+.customers-nav-item-profile-picture {
+    border-radius: 50%;
+    overflow: hidden;
+    border: 3px solid var(--genz-accent-color);
+    box-shadow: var(--genz-shadow-sm);
+}
+
+.customers-nav-item-profile-picture img {
+    transition: all 0.3s ease;
+}
+
+.customers-nav-item-profile-picture:hover img {
+    transform: scale(1.1);
+}
+
+.customers-nav-item {
+    transition: all 0.3s ease;
+}
+
+.customers-nav-item:hover {
+    transform: translateX(5px);
+}
+
+.customers-nav-item-icon {
+    color: var(--genz-accent-color);
+}
+
+.customer-profile-group-heading {
+    background: linear-gradient(90deg, var(--genz-accent-color), var(--genz-secondary-color));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    display: inline-block;
+}
+
+/* Dashboard Widgets */
+.widget, .widget-data {
+    border-radius: var(--genz-border-radius-lg);
+    overflow: hidden;
+    box-shadow: var(--genz-shadow-sm);
+    transition: all 0.3s ease;
+}
+
+.widget:hover, .widget-data:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--genz-shadow-md);
+}
+
+.widget-dragger {
+    background-color: var(--genz-accent-color);
+    opacity: 0.9;
+}
+
+/* Invoices & Estimates */
+.invoice-status, .estimate-status {
+    border-radius: var(--genz-border-radius-pill);
+    padding: 0.35em 0.65em;
+    font-weight: 500;
+    font-size: 75%;
+}
+
+/* Projects */
+.project-status {
+    border-radius: var(--genz-border-radius-pill);
+    padding: 0.35em 0.65em;
+    font-weight: 500;
+    font-size: 75%;
+}
+
+.project-progress {
+    height: 8px;
+    border-radius: var(--genz-border-radius-pill);
+    overflow: hidden;
+}
+
+.project-progress .progress-bar {
+    background-color: var(--genz-accent-color);
+}
+
+/* Tickets */
+.ticket-status {
+    border-radius: var(--genz-border-radius-pill);
+    padding: 0.35em 0.65em;
+    font-weight: 500;
+    font-size: 75%;
+}
+
+/* Pagination */
+.pagination {
+    display: flex;
+    padding-left: 0;
+    list-style: none;
+    border-radius: var(--genz-border-radius-md);
+}
+
+.pagination .page-link {
+    position: relative;
+    display: block;
+    padding: 0.5rem 0.75rem;
+    margin-left: -1px;
+    line-height: 1.25;
+    color: var(--genz-accent-color);
+    background-color: var(--genz-bg-color);
+    border: 1px solid var(--genz-border-color);
+    transition: all 0.3s ease;
+}
+
+.pagination .page-link:hover {
+    z-index: 2;
+    color: var(--genz-secondary-color);
+    text-decoration: none;
+    background-color: var(--genz-card-bg);
+    border-color: var(--genz-border-color);
+}
+
+.pagination .page-item.active .page-link {
+    z-index: 3;
+    color: #fff;
+    background-color: var(--genz-accent-color);
+    border-color: var(--genz-accent-color);
+}
+
+/* DataTables */
+.dataTables_wrapper .dataTables_filter input {
+    border-radius: var(--genz-border-radius-md);
+    border: 1px solid var(--genz-border-color);
+    padding: 0.5rem 1rem;
+    transition: all 0.3s ease;
+}
+
+.dataTables_wrapper .dataTables_filter input:focus {
+    border-color: var(--genz-accent-color);
+    box-shadow: 0 0 0 0.2rem rgba(255, 94, 122, 0.25);
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--genz-card-bg);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--genz-text-muted);
+    border-radius: var(--genz-border-radius-pill);
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--genz-accent-color);
+}
