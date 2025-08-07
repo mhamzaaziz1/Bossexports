@@ -36,4 +36,5 @@ register_language_files(GENZ_THEME_MODULE_NAME, ['genz_theme']);
 /**
  * Load the theme helper
  */
-$CI->load->helper(GENZ_THEME_MODULE_NAME . '/genz_theme_helper');
+// Helper loading removed to smooth installation
+// $CI->load->helper(GENZ_THEME_MODULE_NAME . '/genz_theme_helper');
