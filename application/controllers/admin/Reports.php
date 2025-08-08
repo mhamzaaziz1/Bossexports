@@ -1216,17 +1216,22 @@ class Reports extends AdminController
 
     public function get_sum_payments_today($customer_id,$date)
     {
-        // Select the sum of the 'amount' column
-        $this->db->select_sum('amount');
+        // Get payments for this customer on this date, grouped by transaction ID
+        $this->db->select('transactionid, amount');
         $this->db->from('tblinvoicepaymentrecords'); // Use your actual table name
         $this->db->where('client_id', $customer_id); // Filter by customer ID
         // Filter for today's date using DATE() function for the 'date' column
         $this->db->where('DATE(date)', $date);
+        $this->db->group_by('transactionid'); // Group by transaction ID to avoid summing all payments
         $query = $this->db->get();
+
         // Check if any rows were returned
         if ($query->num_rows() > 0) {
-            $row = $query->row();
-            return floatval($row->amount); // Return the sum as a float
+            $total = 0;
+            foreach ($query->result() as $row) {
+                $total += floatval($row->amount);
+            }
+            return $total;
         }
         return 0; // Return 0 if no payments found
     }
@@ -1892,7 +1897,7 @@ class Reports extends AdminController
                 ' . db_prefix() . 'invoices.total as invoice_amount,
                 (SELECT COALESCE(SUM(amount),0) FROM ' . db_prefix() . 'invoicepaymentrecords WHERE invoiceid = ' . db_prefix() . 'invoices.id AND paymentmode = 2) as cash_paid,
                 (SELECT COALESCE(SUM(amount),0) FROM ' . db_prefix() . 'invoicepaymentrecords WHERE invoiceid = ' . db_prefix() . 'invoices.id) as cash_paid_out,
-                (SELECT COALESCE(SUM(amount),0) FROM ' . db_prefix() . 'invoicepaymentrecords WHERE invoiceid = ' . db_prefix() . 'invoices.id AND DATE(' . db_prefix() . 'invoicepaymentrecords.date) = DATE(' . db_prefix() . 'invoices.date)) as today_amount_due,
+                (SELECT COALESCE(SUM(t.amount),0) FROM (SELECT amount, transactionid FROM ' . db_prefix() . 'invoicepaymentrecords WHERE invoiceid = ' . db_prefix() . 'invoices.id AND DATE(' . db_prefix() . 'invoicepaymentrecords.date) = DATE(' . db_prefix() . 'invoices.date) GROUP BY transactionid) as t) as today_amount_due,
                 (' . db_prefix() . 'invoices.total - (SELECT COALESCE(SUM(amount),0) FROM ' . db_prefix() . 'invoicepaymentrecords WHERE invoiceid = ' . db_prefix() . 'invoices.id)) as total_invoice_due,
                 ' . db_prefix() . 'invoices.adminnote as director_note
             ');
@@ -3660,5 +3665,266 @@ class Reports extends AdminController
             set_alert('warning', _l('purchase_module_not_available'));
             redirect(admin_url('reports'));
         }
+    }
+    /**
+     * Purchase & Sales Aging Report
+     * Shows aging of purchases and sales based on selected product
+     *
+     * @return view
+     */
+    public function purchase_sales_aging()
+    {
+        if ($this->input->is_ajax_request()) {
+            $this->load->model('currencies_model');
+            $this->load->model('Invoice_items_model', 'items_model');
+
+            // Get filter parameters
+            $product_id = $this->input->post('product_id');
+            $report_from = $this->input->post('report_from');
+            $report_to = $this->input->post('report_to');
+            $report_months = $this->input->post('report_months');
+
+            // Prepare date filters
+            $custom_date_select = '';
+            if ($report_months) {
+                if ($report_months == 'this_month') {
+                    $custom_date_select = 'AND MONTH(date) = MONTH(CURDATE()) AND YEAR(date) = YEAR(CURDATE())';
+                } elseif ($report_months == 'this_year') {
+                    $custom_date_select = 'AND YEAR(date) = YEAR(CURDATE())';
+                } elseif ($report_months == 'last_year') {
+                    $custom_date_select = 'AND YEAR(date) = YEAR(CURDATE()) - 1';
+                } elseif ($report_months == '3') {
+                    $custom_date_select = 'AND date >= DATE_SUB(CURDATE(), INTERVAL 3 MONTH)';
+                } elseif ($report_months == '6') {
+                    $custom_date_select = 'AND date >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH)';
+                } elseif ($report_months == '12') {
+                    $custom_date_select = 'AND date >= DATE_SUB(CURDATE(), INTERVAL 12 MONTH)';
+                } elseif (is_numeric($report_months)) {
+                    $custom_date_select = 'AND date >= DATE_SUB(CURDATE(), INTERVAL ' . $report_months . ' MONTH)';
+                }
+            }
+
+            if ($report_from && $report_to) {
+                $custom_date_select = 'AND date BETWEEN "' . $report_from . '" AND "' . $report_to . '"';
+            }
+
+            // Initialize response data
+            $response = [
+                'purchase_summary' => [
+                    'total_amount' => 0,
+                    'transaction_count' => 0,
+                    'average_amount' => 0,
+                    'time_intervals' => [
+                        '1_week' => ['total' => 0, 'count' => 0, 'average' => 0],
+                        '2_weeks' => ['total' => 0, 'count' => 0, 'average' => 0],
+                        '1_month' => ['total' => 0, 'count' => 0, 'average' => 0],
+                        '2_months' => ['total' => 0, 'count' => 0, 'average' => 0],
+                        '3_months' => ['total' => 0, 'count' => 0, 'average' => 0],
+                        '6_months' => ['total' => 0, 'count' => 0, 'average' => 0],
+                        '12_months' => ['total' => 0, 'count' => 0, 'average' => 0]
+                    ]
+                ],
+                'sales_summary' => [
+                    'total_amount' => 0,
+                    'transaction_count' => 0,
+                    'average_amount' => 0,
+                    'time_intervals' => [
+                        '1_week' => ['total' => 0, 'count' => 0, 'average' => 0],
+                        '2_weeks' => ['total' => 0, 'count' => 0, 'average' => 0],
+                        '1_month' => ['total' => 0, 'count' => 0, 'average' => 0],
+                        '2_months' => ['total' => 0, 'count' => 0, 'average' => 0],
+                        '3_months' => ['total' => 0, 'count' => 0, 'average' => 0],
+                        '6_months' => ['total' => 0, 'count' => 0, 'average' => 0],
+                        '12_months' => ['total' => 0, 'count' => 0, 'average' => 0]
+                    ]
+                ]
+            ];
+
+            // Get purchase data
+            $purchase_model_loaded = false;
+            try {
+                $this->load->model('purchase/purchase_model');
+                $purchase_model_loaded = true;
+            } catch (Exception $e) {
+                log_activity('Failed to load purchase model in purchase_sales_aging: ' . $e->getMessage());
+            }
+
+            if ($purchase_model_loaded) {
+                // Query for purchase data
+                $this->db->select('tblpur_orders.id, tblpur_orders.order_date, tblpur_order_detail.quantity, tblpur_order_detail.unit_price, tblpur_order_detail.total');
+                $this->db->from(db_prefix() . 'pur_order_detail');
+                $this->db->join(db_prefix() . 'pur_orders', db_prefix() . 'pur_orders.id = ' . db_prefix() . 'pur_order_detail.pur_order');
+                $this->db->where('tblpur_order_detail.item_code', $product_id);
+
+                if ($custom_date_select != '') {
+                    $this->db->where($custom_date_select);
+                }
+
+                $purchases = $this->db->get()->result_array();
+
+                // Process purchase data
+                foreach ($purchases as $purchase) {
+                    $purchase_date = new DateTime($purchase['order_date']);
+                    $now = new DateTime();
+                    $interval = $purchase_date->diff($now);
+                    $days_ago = $interval->days;
+
+                    // Add to total
+                    $response['purchase_summary']['total_amount'] += $purchase['total'];
+                    $response['purchase_summary']['transaction_count']++;
+
+                    // Add to time intervals
+                    if ($days_ago <= 7) {
+                        $response['purchase_summary']['time_intervals']['1_week']['total'] += $purchase['total'];
+                        $response['purchase_summary']['time_intervals']['1_week']['count']++;
+                    }
+                    if ($days_ago <= 14) {
+                        $response['purchase_summary']['time_intervals']['2_weeks']['total'] += $purchase['total'];
+                        $response['purchase_summary']['time_intervals']['2_weeks']['count']++;
+                    }
+                    if ($days_ago <= 30) {
+                        $response['purchase_summary']['time_intervals']['1_month']['total'] += $purchase['total'];
+                        $response['purchase_summary']['time_intervals']['1_month']['count']++;
+                    }
+                    if ($days_ago <= 60) {
+                        $response['purchase_summary']['time_intervals']['2_months']['total'] += $purchase['total'];
+                        $response['purchase_summary']['time_intervals']['2_months']['count']++;
+                    }
+                    if ($days_ago <= 90) {
+                        $response['purchase_summary']['time_intervals']['3_months']['total'] += $purchase['total'];
+                        $response['purchase_summary']['time_intervals']['3_months']['count']++;
+                    }
+                    if ($days_ago <= 180) {
+                        $response['purchase_summary']['time_intervals']['6_months']['total'] += $purchase['total'];
+                        $response['purchase_summary']['time_intervals']['6_months']['count']++;
+                    }
+                    if ($days_ago <= 365) {
+                        $response['purchase_summary']['time_intervals']['12_months']['total'] += $purchase['total'];
+                        $response['purchase_summary']['time_intervals']['12_months']['count']++;
+                    }
+                }
+
+                // Calculate averages
+                if ($response['purchase_summary']['transaction_count'] > 0) {
+                    $response['purchase_summary']['average_amount'] = $response['purchase_summary']['total_amount'] / $response['purchase_summary']['transaction_count'];
+                }
+
+                foreach ($response['purchase_summary']['time_intervals'] as $interval => $data) {
+                    if ($data['count'] > 0) {
+                        $response['purchase_summary']['time_intervals'][$interval]['average'] = $data['total'] / $data['count'];
+                    }
+                }
+            }
+
+            // Get sales data
+            $this->db->select('tblinvoices.id, tblinvoices.date, tblitems_in.qty, tblitems_in.rate, (tblitems_in.qty * tblitems_in.rate) as total');
+            $this->db->from(db_prefix() . 'items_in');
+            $this->db->join(db_prefix() . 'invoices', db_prefix() . 'invoices.id = ' . db_prefix() . 'items_in.rel_id');
+            $this->db->where('tblitems_in.rel_type', 'invoice');
+            $this->db->where('tblitems_in.itemid', $product_id);
+
+            if ($custom_date_select != '') {
+                $this->db->where($custom_date_select);
+            }
+
+            $sales = $this->db->get()->result_array();
+
+            // Process sales data
+            foreach ($sales as $sale) {
+                $sale_date = new DateTime($sale['date']);
+                $now = new DateTime();
+                $interval = $sale_date->diff($now);
+                $days_ago = $interval->days;
+
+                // Add to total
+                $response['sales_summary']['total_amount'] += $sale['total'];
+                $response['sales_summary']['transaction_count']++;
+
+                // Add to time intervals
+                if ($days_ago <= 7) {
+                    $response['sales_summary']['time_intervals']['1_week']['total'] += $sale['total'];
+                    $response['sales_summary']['time_intervals']['1_week']['count']++;
+                }
+                if ($days_ago <= 14) {
+                    $response['sales_summary']['time_intervals']['2_weeks']['total'] += $sale['total'];
+                    $response['sales_summary']['time_intervals']['2_weeks']['count']++;
+                }
+                if ($days_ago <= 30) {
+                    $response['sales_summary']['time_intervals']['1_month']['total'] += $sale['total'];
+                    $response['sales_summary']['time_intervals']['1_month']['count']++;
+                }
+                if ($days_ago <= 60) {
+                    $response['sales_summary']['time_intervals']['2_months']['total'] += $sale['total'];
+                    $response['sales_summary']['time_intervals']['2_months']['count']++;
+                }
+                if ($days_ago <= 90) {
+                    $response['sales_summary']['time_intervals']['3_months']['total'] += $sale['total'];
+                    $response['sales_summary']['time_intervals']['3_months']['count']++;
+                }
+                if ($days_ago <= 180) {
+                    $response['sales_summary']['time_intervals']['6_months']['total'] += $sale['total'];
+                    $response['sales_summary']['time_intervals']['6_months']['count']++;
+                }
+                if ($days_ago <= 365) {
+                    $response['sales_summary']['time_intervals']['12_months']['total'] += $sale['total'];
+                    $response['sales_summary']['time_intervals']['12_months']['count']++;
+                }
+            }
+
+            // Calculate averages
+            if ($response['sales_summary']['transaction_count'] > 0) {
+                $response['sales_summary']['average_amount'] = $response['sales_summary']['total_amount'] / $response['sales_summary']['transaction_count'];
+            }
+
+            foreach ($response['sales_summary']['time_intervals'] as $interval => $data) {
+                if ($data['count'] > 0) {
+                    $response['sales_summary']['time_intervals'][$interval]['average'] = $data['total'] / $data['count'];
+                }
+            }
+
+            // Format currency values
+            $currency = $this->currencies_model->get_base_currency();
+
+            $response['purchase_summary']['total_amount'] = app_format_money($response['purchase_summary']['total_amount'], $currency->name);
+            $response['purchase_summary']['average_amount'] = app_format_money($response['purchase_summary']['average_amount'], $currency->name);
+
+            $response['sales_summary']['total_amount'] = app_format_money($response['sales_summary']['total_amount'], $currency->name);
+            $response['sales_summary']['average_amount'] = app_format_money($response['sales_summary']['average_amount'], $currency->name);
+
+            foreach ($response['purchase_summary']['time_intervals'] as $interval => $data) {
+                $response['purchase_summary']['time_intervals'][$interval]['total'] = app_format_money($data['total'], $currency->name);
+                $response['purchase_summary']['time_intervals'][$interval]['average'] = app_format_money($data['average'], $currency->name);
+            }
+
+            foreach ($response['sales_summary']['time_intervals'] as $interval => $data) {
+                $response['sales_summary']['time_intervals'][$interval]['total'] = app_format_money($data['total'], $currency->name);
+                $response['sales_summary']['time_intervals'][$interval]['average'] = app_format_money($data['average'], $currency->name);
+            }
+
+            echo json_encode($response);
+            die();
+        }
+
+        // Load required models
+        $this->load->model('currencies_model');
+        $this->load->model('Invoice_items_model', 'items_model');
+
+        // Try to load the purchase model
+        $purchase_model_loaded = false;
+        try {
+            $this->load->model('purchase/purchase_model');
+            $purchase_model_loaded = true;
+        } catch (Exception $e) {
+            log_activity('Failed to load purchase model in purchase_sales_aging: ' . $e->getMessage());
+        }
+
+        $data = [];
+        $data['title'] = _l('purchase_sales_aging');
+        $data['items'] = $this->items_model->get();
+        $data['currencies'] = $this->currencies_model->get();
+        $data['base_currency'] = $this->currencies_model->get_base_currency();
+        $data['purchase_model_loaded'] = $purchase_model_loaded;
+
+        $this->load->view('admin/reports/purchase_sales_aging', $data);
     }
 }
