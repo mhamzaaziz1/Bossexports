@@ -57,7 +57,46 @@ if( ! ini_get('date.timezone') )
  *
  * NOTE: If you change these, also change the error_reporting() code below
  */
-    	define('ENVIRONMENT', 'production');
+    // Default to production, will be overridden by database setting if available
+    define('ENVIRONMENT', 'production');
+
+    // Try to get environment mode from database
+    // This is done early before the framework is fully loaded
+    try {
+        // Connect to database using credentials from app-config.php
+        if (file_exists('application/config/app-config.php')) {
+            include_once('application/config/app-config.php');
+
+            if (defined('APP_DB_HOSTNAME') && defined('APP_DB_USERNAME') && defined('APP_DB_PASSWORD') && defined('APP_DB_NAME')) {
+                $connection = new mysqli(APP_DB_HOSTNAME, APP_DB_USERNAME, APP_DB_PASSWORD, APP_DB_NAME);
+
+                if (!$connection->connect_error) {
+                    // Get the environment_mode option from the database
+                    $prefix = '';
+                    if (defined('DB_PREFIX')) {
+                        $prefix = DB_PREFIX;
+                    }
+
+                    $result = $connection->query("SELECT value FROM ".$prefix."options WHERE name = 'environment_mode'");
+
+                    if ($result && $result->num_rows > 0) {
+                        $row = $result->fetch_assoc();
+                        $env_mode = $row['value'];
+
+                        // Only accept valid environment modes
+                        if (in_array($env_mode, ['development', 'testing', 'production'])) {
+                            define('ENVIRONMENT', $env_mode);
+                        }
+                    }
+
+                    $connection->close();
+                }
+            }
+        }
+    } catch (Exception $e) {
+        // If there's any error, we'll use the default 'production' environment
+        // No need to do anything here as ENVIRONMENT is already defined
+    }
 
 /*
  *---------------------------------------------------------------

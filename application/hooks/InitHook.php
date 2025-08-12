@@ -26,6 +26,9 @@ function _app_init()
 
     _app_init_load();
 
+    // Initialize environment mode setting
+    init_environment_mode();
+
     /**
      * In case of failures, users can skip the modules to be loaded
      */

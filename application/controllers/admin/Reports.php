@@ -1912,7 +1912,7 @@ class Reports extends AdminController
                     $this->db->where($condition, null, false);
                 }
             }
-            $this->db->order_by('tblinvoices.date', 'DESC');
+            $this->db->order_by(db_prefix() . 'invoices.date', 'DESC');
 
             // Get pagination parameters from DataTables
             $limit = $this->input->post('length') ? (int)$this->input->post('length') : 25;
@@ -2392,7 +2392,7 @@ class Reports extends AdminController
                 ' . db_prefix() . 'invoices.number,
                 ' . db_prefix() . 'clients.company,
                 ' . db_prefix() . 'invoices.total as invoice_amount,
-                (SELECT GROUP_CONCAT(date ORDER BY date SEPARATOR ", ") FROM ' . db_prefix() . 'invoicepaymentrecords WHERE invoiceid = ' . db_prefix() . 'invoices.id) as payment_dates,
+                (SELECT IF(COUNT(*) > 0, GROUP_CONCAT(date ORDER BY date SEPARATOR ", "), DATE(' . db_prefix() . 'invoices.date)) FROM ' . db_prefix() . 'invoicepaymentrecords WHERE invoiceid = ' . db_prefix() . 'invoices.id) as payment_dates,
                 (SELECT COALESCE(SUM(amount),0) FROM ' . db_prefix() . 'invoicepaymentrecords WHERE invoiceid = ' . db_prefix() . 'invoices.id AND paymentmode = 2) as cash,
                 (SELECT COALESCE(SUM(amount),0) FROM ' . db_prefix() . 'invoicepaymentrecords WHERE invoiceid = ' . db_prefix() . 'invoices.id AND paymentmode != 2 AND ' . 
                 (!empty($bank_modes) ? 'paymentmode IN (' . implode(',', array_map(function($m) { return $m['id']; }, $bank_modes)) . ')' : 'FALSE') . ') as bank,
@@ -2403,11 +2403,11 @@ class Reports extends AdminController
                 ' . db_prefix() . 'invoices.adminnote as director_note,
 
                 /* New columns for payments on invoice date */
-                (SELECT COALESCE(SUM(amount),0) FROM ' . db_prefix() . 'invoicepaymentrecords WHERE DATE(' . db_prefix() . 'invoicepaymentrecords.date) = DATE(' . db_prefix() . 'invoices.date)) as total_paid_on_invoice_date,
-                (SELECT COALESCE(SUM(amount),0) FROM ' . db_prefix() . 'invoicepaymentrecords WHERE DATE(' . db_prefix() . 'invoicepaymentrecords.date) = DATE(' . db_prefix() . 'invoices.date) AND paymentmode = 2) as cash_paid_on_invoice_date,
-                (SELECT COALESCE(SUM(amount),0) FROM ' . db_prefix() . 'invoicepaymentrecords WHERE DATE(' . db_prefix() . 'invoicepaymentrecords.date) = DATE(' . db_prefix() . 'invoices.date) AND paymentmode != 2 AND ' . 
+                (SELECT COALESCE(SUM(amount),0) FROM ' . db_prefix() . 'invoicepaymentrecords WHERE invoiceid = ' . db_prefix() . 'invoices.id AND DATE(' . db_prefix() . 'invoicepaymentrecords.date) = DATE(' . db_prefix() . 'invoices.date)) as total_paid_on_invoice_date,
+                (SELECT COALESCE(SUM(amount),0) FROM ' . db_prefix() . 'invoicepaymentrecords WHERE invoiceid = ' . db_prefix() . 'invoices.id AND DATE(' . db_prefix() . 'invoicepaymentrecords.date) = DATE(' . db_prefix() . 'invoices.date) AND paymentmode = 2) as cash_paid_on_invoice_date,
+                (SELECT COALESCE(SUM(amount),0) FROM ' . db_prefix() . 'invoicepaymentrecords WHERE invoiceid = ' . db_prefix() . 'invoices.id AND DATE(' . db_prefix() . 'invoicepaymentrecords.date) = DATE(' . db_prefix() . 'invoices.date) AND paymentmode != 2 AND ' . 
                 (!empty($bank_modes) ? 'paymentmode IN (' . implode(',', array_map(function($m) { return $m['id']; }, $bank_modes)) . ')' : 'FALSE') . ') as bank_paid_on_invoice_date,
-                (SELECT COALESCE(SUM(amount),0) FROM ' . db_prefix() . 'invoicepaymentrecords WHERE DATE(' . db_prefix() . 'invoicepaymentrecords.date) = DATE(' . db_prefix() . 'invoices.date) AND ' . 
+                (SELECT COALESCE(SUM(amount),0) FROM ' . db_prefix() . 'invoicepaymentrecords WHERE invoiceid = ' . db_prefix() . 'invoices.id AND DATE(' . db_prefix() . 'invoicepaymentrecords.date) = DATE(' . db_prefix() . 'invoices.date) AND ' . 
                 (!empty($other_mode_ids) ? 'paymentmode IN (' . implode(',', $other_mode_ids) . ')' : 'FALSE') . ') as others_paid_on_invoice_date,
 
                 /* Sales Order data for searching */
@@ -2426,7 +2426,7 @@ class Reports extends AdminController
                 }
             }
 
-            $this->db->order_by('tblinvoices.date', 'DESC');
+            $this->db->order_by(db_prefix() . 'invoices.date', 'DESC');
 
             // Get pagination parameters from DataTables
             $limit = $this->input->post('length') ? (int)$this->input->post('length') : 25;
@@ -2569,11 +2569,47 @@ class Reports extends AdminController
                 }
 
                 // Add new columns for payments on invoice date
-                // Total paid on invoice date
-                $total_paid_on_invoice_date = isset($aRow['total_paid_on_invoice_date']) ? $aRow['total_paid_on_invoice_date'] : 0;
+                // Get customer ID
+                $customer_id = isset($aRow['clientid']) ? $aRow['clientid'] : 0;
+
+                // Define date condition for payments
+                $sqlDatePayments = $custom_date_select != '' ? $custom_date_select : '1=1';
+
+                // For amount_paid, including the date condition
+                $result = [];
+                $result['amount_paid'] = $this->db->query('SELECT
+                        SUM(' . db_prefix() . 'invoicepaymentrecords.amount) as amount_paid
+                        FROM ' . db_prefix() . 'invoicepaymentrecords
+                        JOIN ' . db_prefix() . 'invoices ON ' . db_prefix() . 'invoices.id = ' . db_prefix() . 'invoicepaymentrecords.invoiceid
+                        WHERE ' . preg_replace('/^\s*AND\s+/i', '', $sqlDatePayments). ' 
+                        AND ' . db_prefix() . 'invoices.clientid = ' . $this->db->escape_str($customer_id) . '
+                        AND ' . db_prefix() . 'invoicepaymentrecords.date = "' . $this->db->escape_str($aRow['date']) . '"')
+                    ->row()->amount_paid;
+
+                if ($result['amount_paid'] === null) {
+                    $result['amount_paid'] = 0;
+                }
+
+                // For direct_paid, including the date condition
+                $result['direct_paid'] = $this->db->query('SELECT
+                        SUM(' . db_prefix() . 'invoicepaymentrecords.amount) as amount_paid
+                        FROM ' . db_prefix() . 'invoicepaymentrecords
+                        JOIN ' . db_prefix() . 'invoices ON ' . db_prefix() . 'invoices.id = ' . db_prefix() . 'invoicepaymentrecords.invoiceid
+                        WHERE ' . preg_replace('/^\s*AND\s+/i', '', $sqlDatePayments) . ' 
+                        AND ' . db_prefix() . 'invoices.clientid = ' . $this->db->escape_str($customer_id) . '
+                        AND ' . db_prefix() . 'invoicepaymentrecords.date = "' . $this->db->escape_str($aRow['date']) . '"')
+                    ->row()->amount_paid;
+
+                if ($result['direct_paid'] === null) {
+                    $result['direct_paid'] = 0;
+                }
+
+                // Total paid on invoice date (sum of amount_paid and direct_paid)
+                $total_paid_on_invoice_date = $result['amount_paid'] + $result['direct_paid'];
                 $row[] = app_format_money($total_paid_on_invoice_date, $currency->name);
                 $footer_data['total_paid_on_invoice_date'] += $total_paid_on_invoice_date;
 
+                // Use the existing values for payment mode breakdowns
                 // Cash paid on invoice date
                 $cash_paid_on_invoice_date = isset($aRow['cash_paid_on_invoice_date']) ? $aRow['cash_paid_on_invoice_date'] : 0;
                 $row[] = app_format_money($cash_paid_on_invoice_date, $currency->name);
@@ -2723,7 +2759,7 @@ class Reports extends AdminController
             // Only include invoices that have payments
             $this->db->having('total_amount_paid > 0');
 
-            $this->db->order_by('tblinvoices.number', 'ASC');
+            $this->db->order_by(db_prefix() . 'invoices.number', 'ASC');
 
             // Get pagination parameters from DataTables
             $limit = $this->input->post('length') ? (int)$this->input->post('length') : 25;

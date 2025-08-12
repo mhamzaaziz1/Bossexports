@@ -89,8 +89,9 @@
 
 		// Define server parameters for the datatable
 		var fnServerParams = {
-			"payment_from": 'input[name="payment_from"]',
-			"payment_to": 'input[name="payment_to"]',
+			"report_months": function() { return 'custom'; },
+			"report_from": 'input[name="payment_from"]',
+			"report_to": 'input[name="payment_to"]',
 			"amount": 'input[name="amount"]'
 		};
 

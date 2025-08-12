@@ -314,7 +314,7 @@ function render_datatable($headings = [], $class = '', $additional_classes = [''
     $table = '<div class="' . $IEfix . '"><table' . $_table_attributes . 'class="dt-table-loading table table-' . $class . '' . $_additional_classes . '">';
     $table .= '<thead>';
     $table .= '<tr>';
-    
+
     foreach ($headings as $heading) {
         if (!is_array($heading)) {
             $table .= '<th>' . $heading . '</th>';
@@ -333,7 +333,7 @@ function render_datatable($headings = [], $class = '', $additional_classes = [''
     $table .= '</thead>';
     $table .= '<tbody></tbody>';
     $table .= '</table></div>';
-    // var_dump($table);die;
+    // var_dump($table);
     echo $table;
 }
 

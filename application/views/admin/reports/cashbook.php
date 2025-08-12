@@ -244,7 +244,7 @@ $(function() {
       };
 
       // Initialize the combined table
-      initDataTable('.table-cashbook-report', admin_url + 'reports/cashbook_combined_report', false, false, fnServerParams, [0, 'desc']);
+      initDataTable('.table-cashbook-report', admin_url + 'reports/cashbook_report', false, false, fnServerParams, [0, 'desc']);
 
       // Add event handler for DataTable draw event to update footer
       $('.table-cashbook-report').on('draw.dt', function() {
@@ -252,17 +252,18 @@ $(function() {
          var sums = cashbookTable.ajax.json().sums;
          if (sums) {
             $(this).find('tfoot').addClass('bold');
+            // Map field names from cashbook_report to what the table expects
             $(this).find('tfoot td.invoice_amount').html(sums.invoice_amount);
-            $(this).find('tfoot td.cash').html(sums.cash);
+            $(this).find('tfoot td.cash').html(sums.cash || sums.cash_paid);
             $(this).find('tfoot td.bank').html(sums.bank);
-            $(this).find('tfoot td.payment_mode_others').html(sums.payment_mode_others);
-            $(this).find('tfoot td.total_amount_paid').html(sums.total_amount_paid);
+            $(this).find('tfoot td.payment_mode_others').html(sums.payment_mode_others || '0.00');
+            $(this).find('tfoot td.total_amount_paid').html(sums.total_amount_paid || sums.total_amount_paid || sums.cash_paid_out);
             $(this).find('tfoot td.total_invoice_due').html(sums.total_invoice_due);
-            // Update new columns
-            $(this).find('tfoot td.total_paid_on_invoice_date').html(sums.total_paid_on_invoice_date);
-            $(this).find('tfoot td.cash_paid_on_invoice_date').html(sums.cash_paid_on_invoice_date);
-            $(this).find('tfoot td.bank_paid_on_invoice_date').html(sums.bank_paid_on_invoice_date);
-            $(this).find('tfoot td.others_paid_on_invoice_date').html(sums.others_paid_on_invoice_date);
+            // Update new columns - use fallbacks for fields that might not exist in cashbook_report
+            $(this).find('tfoot td.total_paid_on_invoice_date').html(sums.total_paid_on_invoice_date || sums.today_amount_due || '0.00');
+            $(this).find('tfoot td.cash_paid_on_invoice_date').html(sums.cash_paid_on_invoice_date || '0.00');
+            $(this).find('tfoot td.bank_paid_on_invoice_date').html(sums.bank_paid_on_invoice_date || '0.00');
+            $(this).find('tfoot td.others_paid_on_invoice_date').html(sums.others_paid_on_invoice_date || '0.00');
          }
       });
    }

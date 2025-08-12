@@ -239,4 +239,10 @@ function app_init_settings_tabs()
         'view'     => 'admin/settings/includes/misc',
         'position' => 95,
     ]);
+
+    $CI->app_tabs->add_settings_tab('environment', [
+        'name'     => _l('settings_group_environment'),
+        'view'     => 'admin/settings/includes/environment',
+        'position' => 100,
+    ]);
 }

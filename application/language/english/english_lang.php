@@ -1986,6 +1986,11 @@ $lang['home_announcements']           = 'Announcements';
 # Settings
 $lang['settings_leads_kanban_limit']                                    = 'Limit leads kan ban rows per status';
 $lang['settings_group_misc']                                            = 'Misc';
+$lang['settings_group_environment']                                      = 'Environment';
+$lang['environment_settings']                                            = 'Environment Settings';
+$lang['environment_settings_info']                                       = 'Change the application environment mode. This affects error reporting and display.';
+$lang['environment_mode']                                                = 'Environment Mode';
+$lang['environment_mode_warning']                                        = 'Changing the environment mode will affect how errors are handled and displayed. Use development mode for debugging and testing, and production mode for live sites.';
 $lang['show_projects_on_calendar']                                      = 'Projects';
 $lang['settings_media_max_file_size_upload']                            = 'Max file size upload in Media (MB)';
 $lang['settings_client_staff_add_edit_delete_task_comments_first_hour'] = 'Allow customer/staff to add/edit task comments only in the first hour (administrators not applied)';
