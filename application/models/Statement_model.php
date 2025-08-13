@@ -33,51 +33,44 @@ class Statement_model extends App_Model
             'total' => 0
         ];
 
-        // Get all unpaid/partially paid invoices for this customer
-        $this->db->select('id, total, date, duedate, status');
-        $this->db->from(db_prefix() . 'invoices');
-        $this->db->where('clientid', $customer_id);
-        $this->db->where('status !=', Invoices_model::STATUS_PAID);
-        $this->db->where('status !=', Invoices_model::STATUS_CANCELLED);
-        $this->db->where('status !=', Invoices_model::STATUS_DRAFT);
-        $invoices = $this->db->get()->result_array();
-
         // Get current date for aging calculation
-        $today = new DateTime(date('Y-m-d'));
+        $today = date('Y-m-d');
+        $tomorrow = date('Y-m-d', strtotime('+1 day'));
 
-        foreach ($invoices as $invoice) {
-            // Calculate amount due for this invoice
-            $this->db->select('SUM(amount) as total_paid');
-            $this->db->from(db_prefix() . 'invoicepaymentrecords');
-            $this->db->where('invoiceid', $invoice['id']);
-            $payments = $this->db->get()->row();
+        // Get decimal places for formatting
+        $dec = get_decimal_places();
 
-            $total_paid = $payments ? $payments->total_paid : 0;
-            $amount_due = $invoice['total'] - $total_paid;
+        // Calculate current balance (as of tomorrow)
+        $total_balance = (float)before_balance($customer_id, $tomorrow);
+        $aging['current'] = $total_balance;
 
-            if ($amount_due <= 0) {
-                continue; // Skip if fully paid
-            }
+        // Calculate balance for 30 days ago
+        $date_30 = date('Y-m-d', strtotime('-30 days'));
+        $balance_30 = (float)before_balance($customer_id, $date_30);
 
-            // Calculate days overdue
-            $due_date = new DateTime($invoice['duedate']);
-            $days_overdue = $today->diff($due_date)->days;
+        // Calculate balance for 60 days ago
+        $date_60 = date('Y-m-d', strtotime('-60 days'));
+        $balance_60 = (float)before_balance($customer_id, $date_60);
 
-            // If due date is in the future, it's not overdue
-            if ($today < $due_date) {
-                $aging['current'] += $amount_due;
-            } elseif ($days_overdue <= 30) {
-                $aging['1_30'] += $amount_due;
-            } elseif ($days_overdue <= 60) {
-                $aging['31_60'] += $amount_due;
-            } elseif ($days_overdue <= 90) {
-                $aging['61_90'] += $amount_due;
-            } else {
-                $aging['over_90'] += $amount_due;
-            }
+        // Calculate balance for 90 days ago
+        $date_90 = date('Y-m-d', strtotime('-90 days'));
+        $balance_90 = (float)before_balance($customer_id, $date_90);
 
-            $aging['total'] += $amount_due;
-        }
+        // Calculate aging buckets based on the differences between balances
+            // Use bcmath for precise decimal arithmetic if available
+            $aging['over_90'] = (float)before_balance($customer_id, date('Y-m-d', strtotime('-91 days')));
+            $aging['61_90'] = (float)bcsub($balance_60, $balance_90, $dec);
+            $aging['31_60'] = (float)bcsub($balance_30, $balance_60, $dec);
+            $aging['1_30'] = (float)bcsub($total_balance, $balance_30, $dec);
+
+        // Ensure no negative values in buckets (can happen due to payments)
+        $aging['over_90'] = max(0, $aging['over_90']);
+        $aging['61_90'] = max(0, $aging['61_90']);
+        $aging['31_60'] = max(0, $aging['31_60']);
+        $aging['1_30'] = max(0, $aging['1_30']);
+
+        // Recalculate total to ensure it matches the sum of buckets
+        $aging['total'] = $total_balance;
 
         return $aging;
     }

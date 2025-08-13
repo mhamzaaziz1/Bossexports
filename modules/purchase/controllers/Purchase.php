@@ -24,18 +24,18 @@ class purchase extends AdminController
     }
 
     public function check_order_name()
-  {
-    $order_name = $this->input->post('pur_order_name');
+    {
+        $order_name = $this->input->post('pur_order_name');
 
 
-    $result = $this->purchase_model->check_order_name($order_name);
-    // var_dump($this->db->last_query()); die;
-    if ($result) {
-      echo 'true'; // order name exists
-    } else {
-      echo 'false'; // order name does not exist
+        $result = $this->purchase_model->check_order_name($order_name);
+        // var_dump($this->db->last_query()); die;
+        if ($result) {
+            echo 'true'; // order name exists
+        } else {
+            echo 'false'; // order name does not exist
+        }
     }
-  }
 
     /**
      * { vendors }
@@ -48,7 +48,7 @@ class purchase extends AdminController
     }
 
 
-     /**
+    /**
      * { vendors Aging }
      */
     public function vendor_aging(){
@@ -143,23 +143,23 @@ class purchase extends AdminController
 
             $data['group'] = $this->input->get('group');
 
-	        $data['title']                 = _l('setting');
-	        $data['tab'][] = ['name' => 'profile', 'icon' => '<i class="fa fa-user-circle menu-icon"></i>'];
-	        $data['tab'][] = ['name' => 'contacts','icon' => '<i class="fa fa-users menu-icon"></i>'];
+            $data['title']                 = _l('setting');
+            $data['tab'][] = ['name' => 'profile', 'icon' => '<i class="fa fa-user-circle menu-icon"></i>'];
+            $data['tab'][] = ['name' => 'contacts','icon' => '<i class="fa fa-users menu-icon"></i>'];
             $data['tab'][] = ['name' => 'contracts', 'icon' => '<i class="fa fa-file-text-o menu-icon"></i>'];
             $data['tab'][] = ['name' => 'purchase_order', 'icon' => '<i class="fa fa-cart-plus menu-icon"></i>'];
-            $data['tab'][] = ['name' => 'Statement', 'icon' => '<i class="fa fa-area-chart menu-icon"></i>']; 
+            $data['tab'][] = ['name' => 'Statement', 'icon' => '<i class="fa fa-area-chart menu-icon"></i>'];
             $data['tab'][] = ['name' => 'purchase_summary', 'icon' => '<i class="fa fa-shopping-cart menu-icon"></i>'];
             $data['tab'][] = ['name' => 'notes', 'icon' => '<i class="fa fa-sticky-note-o menu-icon"></i>'];
             $data['tab'][] = ['name' => 'attachments', 'icon' => '<i class="fa fa-paperclip menu-icon"></i>'];
 
-	        if($data['group'] == ''){
-	            $data['group'] = 'profile';
-	        }
-	        $data['tabs']['view'] = 'vendors/groups/'.$data['group'];
+            if($data['group'] == ''){
+                $data['group'] = 'profile';
+            }
+            $data['tabs']['view'] = 'vendors/groups/'.$data['group'];
             // Fetch data based on groups
             if ($data['group'] == 'profile') {
-               $data['customer_admins'] = $this->purchase_model->get_vendor_admins($id);
+                $data['customer_admins'] = $this->purchase_model->get_vendor_admins($id);
             }  elseif ($group == 'estimates') {
                 $this->load->model('estimates_model');
                 $data['estimate_statuses'] = $this->estimates_model->get_statuses();
@@ -258,6 +258,65 @@ class purchase extends AdminController
         $data['title']     = $title;
 
         $this->load->view('vendors/vendor', $data);
+    }
+
+    /**
+     * Get vendor aging data
+     * @param  mixed $vendor_id vendor id
+     * @return array
+     */
+    public function get_vendor_aging($vendor_id)
+    {
+        // Define aging buckets
+        $aging = [
+            'current' => 0,
+            '1_30' => 0,
+            '31_60' => 0,
+            '61_90' => 0,
+            'over_90' => 0,
+            'total' => 0
+        ];
+
+        // Get current date for aging calculation
+        $today = date('Y-m-d');
+        $tomorrow = date('Y-m-d', strtotime('+1 day'));
+
+        // Get decimal places for formatting
+        $dec = get_decimal_places();
+
+        // Calculate current balance (as of tomorrow)
+        $total_balance = (float)vendor_before_balance($vendor_id, $tomorrow);
+        $aging['current'] = $total_balance;
+
+        // Calculate balance for 30 days ago
+        $date_30 = date('Y-m-d', strtotime('-30 days'));
+        $balance_30 = (float)vendor_before_balance($vendor_id, $date_30);
+
+        // Calculate balance for 60 days ago
+        $date_60 = date('Y-m-d', strtotime('-60 days'));
+        $balance_60 = (float)vendor_before_balance($vendor_id, $date_60);
+
+        // Calculate balance for 90 days ago
+        $date_90 = date('Y-m-d', strtotime('-90 days'));
+        $balance_90 = (float)vendor_before_balance($vendor_id, $date_90);
+
+        // Calculate aging buckets based on the differences between balances
+        // Use bcmath for precise decimal arithmetic if available
+        $aging['over_90'] = (float)vendor_before_balance($vendor_id, date('Y-m-d', strtotime('-91 days')));
+        $aging['61_90'] = (float)bcsub($balance_60, $balance_90, $dec);
+        $aging['31_60'] = (float)bcsub($balance_30, $balance_60, $dec);
+        $aging['1_30'] = (float)bcsub($total_balance, $balance_30, $dec);
+
+        // Ensure no negative values in buckets (can happen due to payments)
+        $aging['over_90'] = max(0, $aging['over_90']);
+        $aging['61_90'] = max(0, $aging['61_90']);
+        $aging['31_60'] = max(0, $aging['31_60']);
+        $aging['1_30'] = max(0, $aging['1_30']);
+
+        // Recalculate total to ensure it matches the sum of buckets
+        $aging['total'] = $total_balance;
+
+        return $aging;
     }
 
     public function get_statement($id, $from, $to)
@@ -404,37 +463,8 @@ class purchase extends AdminController
         }
         $result['amount_paid']=$result['amount_paid1']+$result['amount_paid'];
 
-        // Beginning balance is all invoices amount before the FROM date - payments received before FROM date
-        $result['beginning_balance'] = $this->db->query('
-            SELECT (
-            (SELECT COALESCE(SUM(' . db_prefix() . 'pur_orders.total),0)
-            FROM ' . db_prefix() . 'pur_orders
-            WHERE ' . db_prefix() . 'pur_orders.order_date < "' . $this->db->escape_str($from) . '" and ' . db_prefix() . 'pur_orders.returns = 0 AND vendor = ' . $this->db->escape_str($id).')
-             - (SELECT COALESCE(SUM(' . db_prefix() . 'pur_orders.total),0)
-            FROM ' . db_prefix() . 'pur_orders
-            WHERE ' . db_prefix() . 'pur_orders.order_date < "' . $this->db->escape_str($from) . '" and ' . db_prefix() . 'pur_orders.returns = 1 AND vendor = ' . $this->db->escape_str($id).'
-            )-
-            (
-            SELECT COALESCE(SUM(' . db_prefix() . 'pur_order_payment.amount),0)
-            FROM ' . db_prefix() . 'pur_order_payment
-            JOIN ' . db_prefix() . 'pur_orders ON ' . db_prefix() . 'pur_orders.id = ' . db_prefix() . 'pur_order_payment.pur_order
-            WHERE ' . db_prefix() . 'pur_order_payment.date < "' . $this->db->escape_str($from) . '"
-            AND ' . db_prefix() . 'pur_orders.vendor=' . $this->db->escape_str($id) . '
-            )-(
-            SELECT COALESCE(SUM(' . db_prefix() . 'pur_order_payment.amount),0)
-            FROM ' . db_prefix() . 'pur_order_payment
-            WHERE ' . db_prefix() . 'pur_order_payment.date < "' . $this->db->escape_str($from) . '"
-            AND ' . db_prefix() . 'pur_order_payment.vendor=' . $this->db->escape_str($id) . '
-            AND ' . db_prefix() . 'pur_order_payment.pur_order=0
-            )
-            )as beginning_balance')->row()->beginning_balance;
-            // var_dump($this->db->last_query());
-        if ($result['beginning_balance'] === null) {
-            $result['beginning_balance'] = 0;
-        }
-        $abc =  ($this->db->select("balance")->from('tblpur_vendor')->where('userid', $id)->get()->result());
-        // var_dump((float)$abc[0]->balance); die;
-        $result['beginning_balance'] += (float)$abc[0]->balance;
+        // Use the vendor_before_balance function to calculate the beginning balance
+        $result['beginning_balance'] = vendor_before_balance($id, $from);
         // $result['beginning_balance'] += (float)$abc[0]->balance;
 
         $dec = get_decimal_places();
@@ -459,7 +489,10 @@ class purchase extends AdminController
         $result['from']      = $from;
         $result['to']        = $to;
 
-        $customer_currency = $this->clients_model->get_customer_default_currency($customer_id);
+        // Add aging data to the statement
+        $result['aging'] = $this->get_vendor_aging($id);
+
+        $customer_currency = $this->clients_model->get_customer_default_currency($id);
         $this->load->model('currencies_model');
 
         if ($customer_currency != 0) {
@@ -477,14 +510,14 @@ class purchase extends AdminController
      * { setting }
      */
     public function setting(){
-    	if (!has_permission('purchase', '', 'edit') && !is_admin()) {
+        if (!has_permission('purchase', '', 'edit') && !is_admin()) {
             access_denied('purchase');
         }
         $data['group'] = $this->input->get('group');
 
         $data['title']                 = _l('setting');
 
-		$this->db->where('module_name','warehouse');
+        $this->db->where('module_name','warehouse');
         $module = $this->db->get(db_prefix().'modules')->row();
         $data['tab'][] = 'purchase_order_setting';
         $data['tab'][] = 'units';
@@ -501,7 +534,7 @@ class purchase extends AdminController
         $data['sub_groups'] = $this->purchase_model->get_sub_group();
         $data['item_group'] = $this->purchase_model->get_item_group();
         $data['approval_setting'] = $this->purchase_model->get_approval_setting();
-        $data['staffs'] = $this->staff_model->get(); 
+        $data['staffs'] = $this->staff_model->get();
 
         $this->load->view('manage_setting', $data);
     }
@@ -531,8 +564,8 @@ class purchase extends AdminController
      * @param      <type>  $id     The identifier
      * @return      redirect
      */
-   	public function delete_vendor($id){
-   		if (!has_permission('purchase', '', 'delete')) {
+    public function delete_vendor($id){
+        if (!has_permission('purchase', '', 'delete')) {
             access_denied('vendors');
         }
         if (!$id) {
@@ -547,15 +580,15 @@ class purchase extends AdminController
             set_alert('warning', _l('problem_deleting', _l('client_lowercase')));
         }
         redirect(admin_url('purchase/vendors'));
-   	}
+    }
 
 
-   	/**
-   	 * delete payment
-   	 * **/
-   	 public function delete_payments($id){
+    /**
+     * delete payment
+     * **/
+    public function delete_payments($id){
 
-   		if (!has_permission('purchase', '', 'delete')) {
+        if (!has_permission('purchase', '', 'delete')) {
             access_denied('purchase_payment');
         }
         if (!$id) {
@@ -570,7 +603,7 @@ class purchase extends AdminController
             set_alert('warning', _l('problem_deleting', _l('client_lowercase')));
         }
         redirect(admin_url('purchase/purchase_payment'));
-   	}
+    }
 
     /**
      * { form contact }
@@ -578,7 +611,7 @@ class purchase extends AdminController
      * @param      <type>  $customer_id  The customer identifier
      * @param      string  $contact_id   The contact identifier
      */
-   	public function form_contact($customer_id, $contact_id = '')
+    public function form_contact($customer_id, $contact_id = '')
     {
         if (!has_permission('purchase', '', 'view')) {
             if (!is_customer_admin($customer_id)) {
@@ -624,9 +657,9 @@ class purchase extends AdminController
                 if (!is_customer_admin($customer_id)) {
                     header('HTTP/1.0 400 Bad error');
                     echo json_encode([
-                            'success' => false,
-                            'message' => _l('access_denied'),
-                        ]);
+                        'success' => false,
+                        'message' => _l('access_denied'),
+                    ]);
                     die;
                 }
             }
@@ -665,12 +698,12 @@ class purchase extends AdminController
                 }
             }
             echo json_encode([
-                    'success'             => $success,
-                    'proposal_warning'    => $proposal_warning,
-                    'message'             => $message,
-                    'original_email'      => $original_email,
-                    'has_primary_contact' => (total_rows(db_prefix().'contacts', ['userid' => $customer_id, 'is_primary' => 1]) > 0 ? true : false),
-                ]);
+                'success'             => $success,
+                'proposal_warning'    => $proposal_warning,
+                'message'             => $message,
+                'original_email'      => $original_email,
+                'has_primary_contact' => (total_rows(db_prefix().'contacts', ['userid' => $customer_id, 'is_primary' => 1]) > 0 ? true : false),
+            ]);
             die;
         }
         if ($contact_id == '') {
@@ -780,7 +813,7 @@ class purchase extends AdminController
      * @return     view
      */
     public function purchase_request(){
-    	$data['title'] = _l('purchase_request');
+        $data['title'] = _l('purchase_request');
         $data['vendors'] = $this->purchase_model->get_vendor();
         $this->load->view('purchase_request/manage', $data);
     }
@@ -792,38 +825,38 @@ class purchase extends AdminController
      * @return    redirect, view
      */
     public function pur_request($id = ''){
-    	$this->load->model('departments_model');
-    	if($id == ''){
+        $this->load->model('departments_model');
+        if($id == ''){
 
-    		if($this->input->post()){
-    			$add_data = $this->input->post();
-    			$id = $this->purchase_model->add_pur_request($add_data);
-    			if($id){
-    				set_alert('success',_l('added_pur_request'));
-    			}
-    			redirect(admin_url('purchase/purchase_request'));
-    		}
+            if($this->input->post()){
+                $add_data = $this->input->post();
+                $id = $this->purchase_model->add_pur_request($add_data);
+                if($id){
+                    set_alert('success',_l('added_pur_request'));
+                }
+                redirect(admin_url('purchase/purchase_request'));
+            }
 
-    		$data['title'] = _l('add_new');
-    		$data['last_request'] = $this->purchase_model->get_last_purchase_request();
-    	}else{
-    		if($this->input->post()){
-    			$edit_data = $this->input->post();
-    			$success = $this->purchase_model->update_pur_request($edit_data,$id);
-    			if($success == true){
-    				set_alert('success',_l('updated_pur_request'));
-    			}
-    			redirect(admin_url('purchase/purchase_request'));
-    		}
+            $data['title'] = _l('add_new');
+            $data['last_request'] = $this->purchase_model->get_last_purchase_request();
+        }else{
+            if($this->input->post()){
+                $edit_data = $this->input->post();
+                $success = $this->purchase_model->update_pur_request($edit_data,$id);
+                if($success == true){
+                    set_alert('success',_l('updated_pur_request'));
+                }
+                redirect(admin_url('purchase/purchase_request'));
+            }
 
-    		$data['pur_request_detail'] = json_encode($this->purchase_model->get_pur_request_detail($id));
-    		$data['pur_request'] = $this->purchase_model->get_purchase_request($id);
-    		$data['title'] = _l('edit');
-    	}
+            $data['pur_request_detail'] = json_encode($this->purchase_model->get_pur_request_detail($id));
+            $data['pur_request'] = $this->purchase_model->get_purchase_request($id);
+            $data['title'] = _l('edit');
+        }
         $data['vendors'] = $this->purchase_model->get_vendor();
-    	$data['departments'] = $this->departments_model->get();
-    	$data['units'] = $this->purchase_model->get_units();
-    	$data['items'] = $this->purchase_model->get_items();
+        $data['departments'] = $this->departments_model->get();
+        $data['units'] = $this->purchase_model->get_units();
+        $data['items'] = $this->purchase_model->get_items();
 
         $this->load->view('purchase_request/pur_request', $data);
     }
@@ -835,19 +868,19 @@ class purchase extends AdminController
      * @return view
      */
     public function view_pur_request($id){
-    	$this->load->model('departments_model');
+        $this->load->model('departments_model');
 
         $send_mail_approve = $this->session->userdata("send_mail_approve");
         if((isset($send_mail_approve)) && $send_mail_approve != ''){
             $data['send_mail_approve'] = $send_mail_approve;
             $this->session->unset_userdata("send_mail_approve");
         }
-    	$data['pur_request_detail'] = json_encode($this->purchase_model->get_pur_request_detail($id));
-		$data['pur_request'] = $this->purchase_model->get_purchase_request($id);
-		$data['title'] = $data['pur_request']->pur_rq_name;
-		$data['departments'] = $this->departments_model->get();
-    	$data['units'] = $this->purchase_model->get_units();
-    	$data['items'] = $this->purchase_model->get_items();
+        $data['pur_request_detail'] = json_encode($this->purchase_model->get_pur_request_detail($id));
+        $data['pur_request'] = $this->purchase_model->get_purchase_request($id);
+        $data['title'] = $data['pur_request']->pur_rq_name;
+        $data['departments'] = $this->departments_model->get();
+        $data['units'] = $this->purchase_model->get_units();
+        $data['items'] = $this->purchase_model->get_items();
 
         $data['check_appr'] = $this->purchase_model->get_approve_setting('pur_request');
         $data['get_staff_sign'] = $this->purchase_model->get_staff_sign($id,'pur_request');
@@ -929,7 +962,7 @@ class purchase extends AdminController
      * { table pur request }
      */
     public function table_pur_request(){
-    	 $this->app->get_table_data(module_views_path('purchase', 'purchase_request/table_pur_request'));
+        $this->app->get_table_data(module_views_path('purchase', 'purchase_request/table_pur_request'));
     }
 
     /**
@@ -939,7 +972,7 @@ class purchase extends AdminController
      * @return     redirect
      */
     public function delete_pur_request($id){
-    	if (!$id) {
+        if (!$id) {
             redirect(admin_url('purchase/purchase_request'));
         }
         $response = $this->purchase_model->delete_pur_request($id);
@@ -961,7 +994,7 @@ class purchase extends AdminController
      * @return     json
      */
     public function change_status_pur_request($status,$id){
-    	$change = $this->purchase_model->change_status_pur_request($status,$id);
+        $change = $this->purchase_model->change_status_pur_request($status,$id);
         if($change == true){
 
             $message = _l('change_status_pur_request').' '._l('successfully');
@@ -983,11 +1016,11 @@ class purchase extends AdminController
      * @return     view
      */
     public function quotations($id = ''){
-    	if (!has_permission('purchase', '', 'view') && !has_permission('purchase', '', 'view_own')) {
+        if (!has_permission('purchase', '', 'view') && !has_permission('purchase', '', 'view_own')) {
             access_denied('quotations');
         }
 
-            // Pipeline was initiated but user click from home page and need to show table only to filter
+        // Pipeline was initiated but user click from home page and need to show table only to filter
         if ($this->input->get('status') || $this->input->get('filter') && $isPipeline) {
             $this->pipeline(0, true);
         }
@@ -1097,9 +1130,9 @@ class purchase extends AdminController
         }
 
         if (total_rows(db_prefix().'pur_estimates', [
-            'YEAR(date)' => date('Y', strtotime(to_sql_date($date))),
-            'number' => $number,
-        ]) > 0) {
+                'YEAR(date)' => date('Y', strtotime(to_sql_date($date))),
+                'number' => $number,
+            ]) > 0) {
             echo 'false';
         } else {
             echo 'true';
@@ -1454,19 +1487,19 @@ class purchase extends AdminController
                 }
 
                 if($this->input->post('waiting')==true  || $this->input->post('pur_order_name')!=''){
-                $id = $this->purchase_model->add_pur_order($pur_order_data);
-                if ($id) {
-                    $this->change_status_pur_estimate(2,$this->purchase_model->get_pur_order($id)->estimate);
-                    $this->change_status_pur_order(1,$id);
-                    set_alert('success', _l('added_successfully', _l('pur_order')));
+                    $id = $this->purchase_model->add_pur_order($pur_order_data);
+                    if ($id) {
+                        $this->change_status_pur_estimate(2,$this->purchase_model->get_pur_order($id)->estimate);
+                        $this->change_status_pur_order(1,$id);
+                        set_alert('success', _l('added_successfully', _l('pur_order')));
 
-                    redirect(admin_url('purchase/purchase_order/' . $id));
+                        redirect(admin_url('purchase/purchase_order/' . $id));
 
-                }
-                else{
-                    set_alert('warning', "Select waiting or Enter Supplier Invoice No.");
-                    die;
-                }
+                    }
+                    else{
+                        set_alert('warning', "Select waiting or Enter Supplier Invoice No.");
+                        die;
+                    }
                 }
 
             } else {
@@ -1475,23 +1508,23 @@ class purchase extends AdminController
                 }
                 if ($this->input->post('returns')==1 && $id == '' ){
                     // var_dump($pur_order_data);
-                   $idnew = $this->purchase_model->add_pur_order($pur_order_data);
-                if ($idnew) {
-                    //$this->change_status_pur_order(2,$idnew);
-                    set_alert('success', _l('added_successfully', _l('pur_order')));
-                } 
-                redirect(admin_url('purchase/purchase_order/' . $id.'?return=1'));
+                    $idnew = $this->purchase_model->add_pur_order($pur_order_data);
+                    if ($idnew) {
+                        //$this->change_status_pur_order(2,$idnew);
+                        set_alert('success', _l('added_successfully', _l('pur_order')));
+                    }
+                    redirect(admin_url('purchase/purchase_order/' . $id.'?return=1'));
                 }
                 else{
-                $success = $this->purchase_model->update_pur_order($pur_order_data, $id);
-                if ($success) {
-                    set_alert('success', _l('updated_successfully', _l('pur_order')));
-                }
-                if ($this->input->post('returns')==1){
-                    redirect(admin_url('purchase/purchase_order?return=1'));
-                }else{
-                    redirect(admin_url('purchase/purchase_order/' . $id));
-                }
+                    $success = $this->purchase_model->update_pur_order($pur_order_data, $id);
+                    if ($success) {
+                        set_alert('success', _l('updated_successfully', _l('pur_order')));
+                    }
+                    if ($this->input->post('returns')==1){
+                        redirect(admin_url('purchase/purchase_order?return=1'));
+                    }else{
+                        redirect(admin_url('purchase/purchase_order/' . $id));
+                    }
                 }
 
             }
@@ -1642,7 +1675,7 @@ class purchase extends AdminController
                 if ($success) {
                     set_alert('success', _l('updated_successfully', _l('pur_order')));
                 }
-                redirect(admin_url('purchase/contract/' . $id));                
+                redirect(admin_url('purchase/contract/' . $id));
             }
         }
 
@@ -1723,7 +1756,7 @@ class purchase extends AdminController
      * { table contracts }
      */
     public function table_contracts(){
-         $this->app->get_table_data(module_views_path('purchase', 'contracts/table_contracts'));
+        $this->app->get_table_data(module_views_path('purchase', 'contracts/table_contracts'));
     }
 
     /**
@@ -1746,7 +1779,7 @@ class purchase extends AdminController
 
         $this->db->where('id', $this->input->post('contract_id'));
         $this->db->update(db_prefix().'pur_contracts', [
-                'content' => $this->input->post('content', false),
+            'content' => $this->input->post('content', false),
         ]);
 
         $success = $this->db->affected_rows() > 0;
@@ -1823,11 +1856,11 @@ class purchase extends AdminController
         $data = $this->input->post();
         $message = 'Send request approval fail';
         $success = $this->purchase_model->send_request_approve($data);
-        if ($success === true) {                
-                $message = 'Send request approval success';
-                $data_new = [];
-                $data_new['send_mail_approve'] = $data;
-                $this->session->set_userdata($data_new);
+        if ($success === true) {
+            $message = 'Send request approval success';
+            $data_new = [];
+            $data_new['send_mail_approve'] = $data;
+            $this->session->set_userdata($data_new);
         }elseif($success === false){
             $message = _l('no_matching_process_found');
             $success = false;
@@ -1839,7 +1872,7 @@ class purchase extends AdminController
         echo json_encode([
             'success' => $success,
             'message' => $message,
-        ]); 
+        ]);
         die;
     }
 
@@ -1856,8 +1889,8 @@ class purchase extends AdminController
 
                 $success = 'success';
                 echo json_encode([
-                'success' => $success,                
-            ]); 
+                    'success' => $success,
+                ]);
             }
         }
     }
@@ -1869,7 +1902,7 @@ class purchase extends AdminController
     public function approve_request(){
         $data = $this->input->post();
         $data['staff_approve'] = get_staff_user_id();
-        $success = false; 
+        $success = false;
         $code = '';
         $signature = '';
 
@@ -1933,7 +1966,7 @@ class purchase extends AdminController
             'success' => $success,
             'message' => $message,
         ]);
-        die();      
+        die();
     }
 
     /**
@@ -1958,7 +1991,7 @@ class purchase extends AdminController
 
                 if($delete_old == true){
                     handle_request_quotation($data['pur_request_id']);
-                }   
+                }
             }
 
             $send = $this->purchase_model->send_request_quotation($data);
@@ -2071,8 +2104,8 @@ class purchase extends AdminController
      */
     public function get_notes($id)
     {
-            $data['notes'] = $this->misc_model->get_notes($id, 'purchase_order');
-            $this->load->view('admin/includes/sales_notes_template', $data);
+        $data['notes'] = $this->misc_model->get_notes($id, 'purchase_order');
+        $this->load->view('admin/includes/sales_notes_template', $data);
     }
 
     /**
@@ -2146,7 +2179,7 @@ class purchase extends AdminController
      * @return  redirect
      */
     public function add_payment($pur_order){
-         if ($this->input->post()) {
+        if ($this->input->post()) {
 
             $data = $this->input->post();
             $message = '';
@@ -2172,30 +2205,30 @@ class purchase extends AdminController
             if ($data['amount']<0){
                 $success = $this->purchase_model->add_payment($data, 0,0);
             }elseif ($data['amount']!=0){
-            foreach($this->input->post('pur_order')  as $inv){
-                $pinv=$inv;
-                $data['pur_order']=$inv;
-                if($amount>0 && purorder_left_to_pay($inv) !=0 ){
-                    if(purorder_left_to_pay($inv) <= $amount){
-                        $data['amount']=purorder_left_to_pay($inv);
-                        $amount-=$data['amount'];
-                        // var_dump($data);// die;
-                        $success = $this->purchase_model->add_payment($data, $inv,1);
-                        // var_dump($data);die;
-                    }else{
-                        $data['amount']=$amount;
-                        $amount-=$data['amount'];
-                        // var_dump($data);// die;
-                        $success = $this->purchase_model->add_payment($data, $inv,1);
-                        // var_dump($this->db->last_query());die;
+                foreach($this->input->post('pur_order')  as $inv){
+                    $pinv=$inv;
+                    $data['pur_order']=$inv;
+                    if($amount>0 && purorder_left_to_pay($inv) !=0 ){
+                        if(purorder_left_to_pay($inv) <= $amount){
+                            $data['amount']=purorder_left_to_pay($inv);
+                            $amount-=$data['amount'];
+                            // var_dump($data);// die;
+                            $success = $this->purchase_model->add_payment($data, $inv,1);
+                            // var_dump($data);die;
+                        }else{
+                            $data['amount']=$amount;
+                            $amount-=$data['amount'];
+                            // var_dump($data);// die;
+                            $success = $this->purchase_model->add_payment($data, $inv,1);
+                            // var_dump($this->db->last_query());die;
+                        }
                     }
                 }
-            }
-            if($amount>0){
-                $data['pur_order']=$pinv;
-                $data['amount']=$amount;
-                $success = $this->purchase_model->add_payment($data, $pinv,1);
-            }
+                if($amount>0){
+                    $data['pur_order']=$pinv;
+                    $data['amount']=$amount;
+                    $success = $this->purchase_model->add_payment($data, $pinv,1);
+                }
             }
             // var_dump($this->db->last_query());die;
             if ($success) {
@@ -2220,7 +2253,7 @@ class purchase extends AdminController
     {
         $vid = $this->input->post('vid');
         $result=$this->purchase_model->get_pur_order_unpaid($vid);
-    echo json_encode($result) ;
+        echo json_encode($result) ;
     }
 
     /**
@@ -2296,7 +2329,7 @@ class purchase extends AdminController
 
     /**
      * { Purchase reports }
-     * 
+     *
      * @return view
      */
     public function reports(){
@@ -2310,7 +2343,7 @@ class purchase extends AdminController
 
     /**
      *  import goods report
-     *  
+     *
      *  @return json
      */
     public function import_goods_report()
@@ -2319,12 +2352,12 @@ class purchase extends AdminController
             $this->load->model('currencies_model');
 
             $select = [
-                'tblitems.commodity_code as item_code', 
+                'tblitems.commodity_code as item_code',
                 'tblitems.description as item_name',
                 '(select pur_order_name from ' . db_prefix() . 'pur_orders where ' . db_prefix() . 'pur_orders.id = pur_order) as po_name',
                 db_prefix().'pur_order_detail.unit_price as total_money',
                 '(select tblpur_vendor.company from ' . db_prefix() . 'pur_vendor where ' . db_prefix() . 'pur_vendor.userid = '. db_prefix().'pur_orders.vendor) as vendor',
-                db_prefix().'pur_orders.order_date as date', 
+                db_prefix().'pur_orders.order_date as date',
             ];
             $where =[];
             $custom_date_select = $this->get_where_report_period(db_prefix() . 'pur_orders.order_date');
@@ -2423,14 +2456,14 @@ class purchase extends AdminController
                 $custom_date_select = 'AND (' . $field . ' BETWEEN "' . date('Y-m-01') . '" AND "' . date('Y-m-t') . '")';
             } elseif ($months_report == 'this_year') {
                 $custom_date_select = 'AND (' . $field . ' BETWEEN "' .
-                date('Y-m-d', strtotime(date('Y-01-01'))) .
-                '" AND "' .
-                date('Y-m-d', strtotime(date('Y-12-31'))) . '")';
+                    date('Y-m-d', strtotime(date('Y-01-01'))) .
+                    '" AND "' .
+                    date('Y-m-d', strtotime(date('Y-12-31'))) . '")';
             } elseif ($months_report == 'last_year') {
                 $custom_date_select = 'AND (' . $field . ' BETWEEN "' .
-                date('Y-m-d', strtotime(date(date('Y', strtotime('last year')) . '-01-01'))) .
-                '" AND "' .
-                date('Y-m-d', strtotime(date(date('Y', strtotime('last year')) . '-12-31'))) . '")';
+                    date('Y-m-d', strtotime(date(date('Y', strtotime('last year')) . '-01-01'))) .
+                    '" AND "' .
+                    date('Y-m-d', strtotime(date(date('Y', strtotime('last year')) . '-12-31'))) . '")';
             } elseif ($months_report == 'custom') {
                 $from_date = to_sql_date($this->input->post('report_from'));
                 $to_date   = to_sql_date($this->input->post('report_to'));
@@ -2447,7 +2480,7 @@ class purchase extends AdminController
 
     /**
      * get data Purchase statistics by number of purchase orders
-     * 
+     *
      * @return     json
      */
     public function number_of_purchase_orders_analysis(){
@@ -2458,7 +2491,7 @@ class purchase extends AdminController
 
     /**
      * get data Purchase statistics by cost
-     * 
+     *
      * @return     json
      */
     public function cost_of_purchase_orders_analysis(){
@@ -2515,9 +2548,9 @@ class purchase extends AdminController
         redirect(admin_url('purchase/vendor/' . $customer_id) . '?tab=vendor_admins');
     }
 
-/**
+    /**
      * table commodity list
-     * 
+     *
      * @return array
      */
     public function table_item_list()
@@ -2527,7 +2560,7 @@ class purchase extends AdminController
 
     /**
      * item list
-     * @param  integer $id 
+     * @param  integer $id
      * @return load view
      */
     public function items($id = ''){
@@ -2549,7 +2582,7 @@ class purchase extends AdminController
 
     /**
      * get item data ajax
-     * @param  integer $id 
+     * @param  integer $id
      * @return view
      */
     public function get_item_data_ajax($id){
@@ -2562,7 +2595,7 @@ class purchase extends AdminController
 
     /**
      * add item list
-     * @param  integer $id 
+     * @param  integer $id
      * @return redirect
      */
     public function add_item_list($id = '')
@@ -2600,7 +2633,7 @@ class purchase extends AdminController
 
     /**
      * delete item
-     * @param  integer $id 
+     * @param  integer $id
      * @return redirect
      */
     public function delete_item($id){
@@ -2701,7 +2734,7 @@ class purchase extends AdminController
     }
 
     /**
-     * get commodity file url 
+     * get commodity file url
      * @param  integer $commodity_id
      * @return json
      */
@@ -2715,32 +2748,32 @@ class purchase extends AdminController
             foreach ($arr_commodity_file as $key => $value) {
                 $images_old_value .='<div class="dz-preview dz-image-preview image_old'.$value["id"].'">';
 
-                    $images_old_value .='<div class="dz-image">';
-                    if(file_exists(PURCHASE_MODULE_ITEM_UPLOAD_FOLDER .$value["rel_id"].'/'.$value["file_name"])){
-                        $images_old_value .='<img class="image-w-h" data-dz-thumbnail alt="'.$value["file_name"].'" src="'.site_url('modules/purchase/uploads/item_img/'.$value["rel_id"].'/'.$value["file_name"]).'">';
-                    }else{
-                        $images_old_value .='<img class="image-w-h" data-dz-thumbnail alt="'.$value["file_name"].'" src="'.site_url('modules/warehouse/uploads/item_img/'.$value["rel_id"].'/'.$value["file_name"]).'">';
-                    }
-                    $images_old_value .='</div>';
+                $images_old_value .='<div class="dz-image">';
+                if(file_exists(PURCHASE_MODULE_ITEM_UPLOAD_FOLDER .$value["rel_id"].'/'.$value["file_name"])){
+                    $images_old_value .='<img class="image-w-h" data-dz-thumbnail alt="'.$value["file_name"].'" src="'.site_url('modules/purchase/uploads/item_img/'.$value["rel_id"].'/'.$value["file_name"]).'">';
+                }else{
+                    $images_old_value .='<img class="image-w-h" data-dz-thumbnail alt="'.$value["file_name"].'" src="'.site_url('modules/warehouse/uploads/item_img/'.$value["rel_id"].'/'.$value["file_name"]).'">';
+                }
+                $images_old_value .='</div>';
 
-                    $images_old_value .='<div class="dz-error-mark">';
-                        $images_old_value .='<a class="dz-remove" data-dz-remove>Remove file';
-                        $images_old_value .='</a>';
-                    $images_old_value .='</div>';
+                $images_old_value .='<div class="dz-error-mark">';
+                $images_old_value .='<a class="dz-remove" data-dz-remove>Remove file';
+                $images_old_value .='</a>';
+                $images_old_value .='</div>';
 
-                    $images_old_value .='<div class="remove_file">';
-                        $images_old_value .= '<a href="#" class="text-danger" onclick="delete_contract_attachment(this,'.$value["id"].'); return false;"><i class="fa fa fa-times"></i></a>';
-                    $images_old_value .='</div>';
+                $images_old_value .='<div class="remove_file">';
+                $images_old_value .= '<a href="#" class="text-danger" onclick="delete_contract_attachment(this,'.$value["id"].'); return false;"><i class="fa fa fa-times"></i></a>';
+                $images_old_value .='</div>';
 
                 $images_old_value .='</div>';
             }
         }
 
 
-            echo json_encode([
-                'arr_images' => $images_old_value,
-            ]);
-            die();
+        echo json_encode([
+            'arr_images' => $images_old_value,
+        ]);
+        die();
 
     }
 
@@ -2756,71 +2789,71 @@ class purchase extends AdminController
         }
 
         $file = $this->misc_model->get_file($attachment_id);
-            echo json_encode([
-                'success' => $this->purchase_model->delete_commodity_file($attachment_id),
-            ]);
+        echo json_encode([
+            'success' => $this->purchase_model->delete_commodity_file($attachment_id),
+        ]);
     }
 
     /**
-     * unit type 
-     * @param  integer $id 
-     * @return redirect    
+     * unit type
+     * @param  integer $id
+     * @return redirect
      */
     public function unit_type($id = '')
-        {
-            if ($this->input->post()) {
-                $message          = '';
-                $data             = $this->input->post();
+    {
+        if ($this->input->post()) {
+            $message          = '';
+            $data             = $this->input->post();
 
-                if (!$this->input->post('id')) {
-                    $mess = $this->purchase_model->add_unit_type($data);
-                    if ($mess) {
-                        set_alert('success',_l('added_successfully').' '. _l('unit_type'));
+            if (!$this->input->post('id')) {
+                $mess = $this->purchase_model->add_unit_type($data);
+                if ($mess) {
+                    set_alert('success',_l('added_successfully').' '. _l('unit_type'));
 
-                    }else{
-                        set_alert('warning',_l('Add_unit_type_false'));
-                    }
-                    redirect(admin_url('purchase/setting?group=units'));
-
-                } else {
-                    $id = $data['id'];
-                    unset($data['id']);
-                    $success = $this->purchase_model->add_unit_type($data, $id);
-                    if ($success) {
-                        set_alert('success',_l('updated_successfully').' '. _l('unit_type'));
-                    }else{
-                        set_alert('warning',_l('updated_unit_type_false'));
-                    }
-
-                    redirect(admin_url('purchase/setting?group=units'));
+                }else{
+                    set_alert('warning',_l('Add_unit_type_false'));
                 }
-            }
-        }
+                redirect(admin_url('purchase/setting?group=units'));
 
+            } else {
+                $id = $data['id'];
+                unset($data['id']);
+                $success = $this->purchase_model->add_unit_type($data, $id);
+                if ($success) {
+                    set_alert('success',_l('updated_successfully').' '. _l('unit_type'));
+                }else{
+                    set_alert('warning',_l('updated_unit_type_false'));
+                }
 
-        /**
-         * delete unit type 
-         * @param  integer $id
-         * @return redirect
-         */
-        public function delete_unit_type($id){
-            if (!$id) {
                 redirect(admin_url('purchase/setting?group=units'));
             }
-            $response = $this->purchase_model->delete_unit_type($id);
-            if (is_array($response) && isset($response['referenced'])) {
-                set_alert('warning', _l('is_referenced', _l('unit_type')));
-            } elseif ($response == true) {
-                set_alert('success', _l('deleted', _l('unit_type')));
-            } else {
-                set_alert('warning', _l('problem_deleting', _l('unit_type')));
-            }
+        }
+    }
+
+
+    /**
+     * delete unit type
+     * @param  integer $id
+     * @return redirect
+     */
+    public function delete_unit_type($id){
+        if (!$id) {
             redirect(admin_url('purchase/setting?group=units'));
         }
+        $response = $this->purchase_model->delete_unit_type($id);
+        if (is_array($response) && isset($response['referenced'])) {
+            set_alert('warning', _l('is_referenced', _l('unit_type')));
+        } elseif ($response == true) {
+            set_alert('success', _l('deleted', _l('unit_type')));
+        } else {
+            set_alert('warning', _l('problem_deleting', _l('unit_type')));
+        }
+        redirect(admin_url('purchase/setting?group=units'));
+    }
 
     /**
      * delete commodity
-     * @param  integer $id 
+     * @param  integer $id
      * @return redirect
      */
     public function delete_commodity($id){
@@ -2966,7 +2999,7 @@ class purchase extends AdminController
 
     /**
      *  vendor item table
-     *  
+     *
      *  @return json
      */
     public function vendor_items_table()
@@ -2976,8 +3009,8 @@ class purchase extends AdminController
             $select = [
                 db_prefix() . 'pur_vendor_items.id as vendor_items_id',
                 db_prefix() . 'pur_vendor_items.items as items',
-                db_prefix() . 'pur_vendor.company as company', 
-                db_prefix() . 'pur_vendor_items.add_from as pur_vendor_items_addedfrom', 
+                db_prefix() . 'pur_vendor.company as company',
+                db_prefix() . 'pur_vendor_items.add_from as pur_vendor_items_addedfrom',
 
             ];
             $where = [];
@@ -3013,8 +3046,8 @@ class purchase extends AdminController
             $sIndexColumn = 'id';
             $sTable       = db_prefix() . 'pur_vendor_items';
             $join         = ['LEFT JOIN ' . db_prefix() . 'pur_vendor ON ' . db_prefix() . 'pur_vendor.userid = ' . db_prefix() . 'pur_vendor_items.vendor',
-                            'LEFT JOIN ' . db_prefix() . 'items ON ' . db_prefix() . 'items.id = ' . db_prefix() . 'pur_vendor_items.items'
-                        ];
+                'LEFT JOIN ' . db_prefix() . 'items ON ' . db_prefix() . 'items.id = ' . db_prefix() . 'pur_vendor_items.items'
+            ];
 
             $result = data_tables_init($aColumns, $sIndexColumn, $sTable, $join, $where,[db_prefix() . 'pur_vendor.userid as userid','datecreate','description','commodity_code']);
 
@@ -3106,7 +3139,7 @@ class purchase extends AdminController
             echo json_encode([
                 'html' => $html,
             ]);
-        }   
+        }
 
     }
 
@@ -3163,21 +3196,21 @@ class purchase extends AdminController
                 if (is_array($ids)) {
                     foreach ($ids as $id) {
 
-                            switch ($rel_type) {
-                                case 'commodity_list':
-                                    if ($this->purchase_model->delete_commodity($id)) {
-                                        $total_deleted++;
-                                        break;
-                                    }else{
-                                        break;
-                                    }
-
-                                default:
-
+                        switch ($rel_type) {
+                            case 'commodity_list':
+                                if ($this->purchase_model->delete_commodity($id)) {
+                                    $total_deleted++;
                                     break;
-                            }
+                                }else{
+                                    break;
+                                }
+
+                            default:
+
+                                break;
                         }
                     }
+                }
                 /*return result*/
                 switch ($rel_type) {
                     case 'commodity_list':
@@ -3221,13 +3254,13 @@ class purchase extends AdminController
         $html = '';
         $staffs = $this->staff_model->get();
         $approver = [
-                0 => ['id' => 'direct_manager', 'name' => _l('direct_manager')],
-                1 => ['id' => 'department_manager', 'name' => _l('department_manager')],
-                2 => ['id' => 'staff', 'name' => _l('staff')]];
-        $action = [ 
-                    1 => ['id' => 'approve', 'name' => _l('approve')],
-                    0 => ['id' => 'sign', 'name' => _l('sign')],
-                ];
+            0 => ['id' => 'direct_manager', 'name' => _l('direct_manager')],
+            1 => ['id' => 'department_manager', 'name' => _l('department_manager')],
+            2 => ['id' => 'staff', 'name' => _l('staff')]];
+        $action = [
+            1 => ['id' => 'approve', 'name' => _l('approve')],
+            0 => ['id' => 'sign', 'name' => _l('sign')],
+        ];
         if(is_numeric($id)){
             $approval_setting = $this->purchase_model->get_approval_setting($id);
 
@@ -3238,7 +3271,7 @@ class purchase extends AdminController
                     $html .= '<div id="item_approve">
                                     <div class="col-md-11">
                                     <div class="col-md-1 hide"> '.
-                                    render_select('approver['.$key.']',$approver,array('id','name'),'task_single_related', 'staff').'
+                        render_select('approver['.$key.']',$approver,array('id','name'),'task_single_related', 'staff').'
                                     </div>
                                     <div class="col-md-8">
                                     '. render_select('staff['.$key.']',$staffs,array('staffid','full_name'),'staff', $value->staff).'
@@ -3254,11 +3287,11 @@ class purchase extends AdminController
                                   </div>
                                 </div>';
                 }else{
-                     $html .= '<div id="item_approve">
+                    $html .= '<div id="item_approve">
                                     <div class="col-md-11">
                                     <div class="col-md-1 hide">
                                         '.
-                                    render_select('approver['.$key.']',$approver,array('id','name'),'task_single_related', 'staff').' 
+                        render_select('approver['.$key.']',$approver,array('id','name'),'task_single_related', 'staff').' 
                                     </div>
                                     <div class="col-md-8">
                                         '. render_select('staff['.$key.']',$staffs,array('staffid','full_name'),'staff', $value->staff).' 
@@ -3279,7 +3312,7 @@ class purchase extends AdminController
             $html .= '<div id="item_approve">
                         <div class="col-md-11">
                         <div class="col-md-1 hide"> '.
-                        render_select('approver[0]',$approver,array('id','name'),'task_single_related', 'staff').'
+                render_select('approver[0]',$approver,array('id','name'),'task_single_related', 'staff').'
                         </div>
                         <div class="col-md-8">
                         '. render_select('staff[0]',$staffs,array('staffid','full_name'),'staff').'
@@ -3297,8 +3330,8 @@ class purchase extends AdminController
         }
 
         echo json_encode([
-                    $html
-                ]);
+            $html
+        ]);
     }
 
     /**
@@ -3413,9 +3446,9 @@ class purchase extends AdminController
         redirect(admin_url('purchase/setting?group=sub_group'));
     }
 
-     /**
+    /**
      * get subgroup fill data
-     * @return html 
+     * @return html
      */
     public function get_subgroup_fill_data()
     {
@@ -3424,7 +3457,7 @@ class purchase extends AdminController
         $subgroup = $this->purchase_model->list_subgroup_by_group($data['group_id']);
 
         echo json_encode([
-        'subgroup' => $subgroup
+            'subgroup' => $subgroup
         ]);
 
     }
@@ -3545,7 +3578,7 @@ class purchase extends AdminController
 
     /**
      *  po voucher report
-     *  
+     *
      *  @return json
      */
     public function po_voucher_report()
@@ -3640,7 +3673,7 @@ class purchase extends AdminController
 
     /**
      *  po voucher report
-     *  
+     *
      *  @return json
      */
     public function po_report()

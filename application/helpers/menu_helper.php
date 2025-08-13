@@ -345,6 +345,15 @@ function app_init_admin_sidebar_menu_items()
             'badge'    => [],
         ]);
 
+        // Cashbook Advance Report
+        $CI->app_menu->add_sidebar_children_item('reports', [
+            'slug'     => 'cashbook-advance-reports',
+            'name'     => _l('cashbook_advance'),
+            'href'     => admin_url('reports/cashbook2'),
+            'position' => 41,
+            'badge'    => [],
+        ]);
+
         // AVG Purchase Aging Report
         $CI->app_menu->add_sidebar_children_item('reports', [
             'slug'     => 'avg-purchase-aging-reports',

@@ -76,6 +76,38 @@ $pdf->ln(9);
 $pdf->writeHTMLCell($dimensions['wk'] - ($dimensions['rm'] + $dimensions['lm']), '', '', $pdf->getY(), $summary_info, 0, 1, false, true, 'C', false);
 $pdf->ln(9);
 
+// Add aging summary if available
+if (isset($statement['aging'])) {
+    $aging_html = '
+    <h4 style="font-weight: bold; margin-bottom: 5px;">Aging Summary</h4>
+    <p style="color: #777; margin-top: 0;">Outstanding invoices by age</p>
+    <table width="100%" cellspacing="0" cellpadding="5" border="1" style="Font-size:11px">
+        <thead>
+            <tr bgcolor="#f5f5f5">
+                <th align="center" width="16%">Current</th>
+                <th align="center" width="16%">1-30 Days</th>
+                <th align="center" width="16%">31-60 Days</th>
+                <th align="center" width="16%">61-90 Days</th>
+                <th align="center" width="16%">Over 90 Days</th>
+                <th align="center" width="20%">Total</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td align="center">' . app_format_money($statement['aging']['current'], $statement['currency']) . '</td>
+                <td align="center">' . app_format_money($statement['aging']['1_30'], $statement['currency']) . '</td>
+                <td align="center">' . app_format_money($statement['aging']['31_60'], $statement['currency']) . '</td>
+                <td align="center">' . app_format_money($statement['aging']['61_90'], $statement['currency']) . '</td>
+                <td align="center">' . app_format_money($statement['aging']['over_90'], $statement['currency']) . '</td>
+                <td align="center"><strong>' . app_format_money($statement['aging']['total'], $statement['currency']) . '</strong></td>
+            </tr>
+        </tbody>
+    </table>';
+
+    $pdf->writeHTML($aging_html, true, false, false, false, '');
+    $pdf->ln(5);
+}
+
 $tmpBeginningBalance = $statement['beginning_balance'];
 
 $tblhtml = '<table width="100%" cellspacing="0" cellpadding="8" border="0" style="Font-size:12px">
@@ -104,7 +136,7 @@ foreach ($statement['result'] as $data) {
   <td width="27%">';
     if (isset($data['invoice_id'])) {
         if(0 ){
-            
+
             $tblhtml .= 'Expense';
         }
         else{
