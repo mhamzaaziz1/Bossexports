@@ -297,47 +297,8 @@ class Statement_model extends App_Model
 
 
 
-        // Beginning balance is all invoices amount before the FROM date - payments received before FROM date
-        $result['beginning_balance'] = $this->db->query('
-            SELECT (
-            COALESCE(SUM(' . db_prefix() . 'invoices.total),0) - (
-            (
-            SELECT COALESCE(SUM(' . db_prefix() . 'invoicepaymentrecords.amount),0)
-            FROM ' . db_prefix() . 'invoicepaymentrecords
-            JOIN ' . db_prefix() . 'invoices ON ' . db_prefix() . 'invoices.id = ' . db_prefix() . 'invoicepaymentrecords.invoiceid
-            WHERE ' . db_prefix() . 'invoicepaymentrecords.date < "' . $this->db->escape_str($from) . '"
-            AND ' . db_prefix() . 'invoices.clientid=' . $this->db->escape_str($customer_id) . '
-            ) + (
-                SELECT COALESCE(SUM(' . db_prefix() . 'creditnotes.total),0)
-                FROM ' . db_prefix() . 'creditnotes
-                WHERE ' . db_prefix() . 'creditnotes.date < "' . $this->db->escape_str($from) . '"
-                AND ' . db_prefix() . 'creditnotes.clientid=' . $this->db->escape_str($customer_id) . '
-            )+(
-            SELECT COALESCE(SUM(' . db_prefix() . 'invoicepaymentrecords.amount),0)
-            FROM ' . db_prefix() . 'invoicepaymentrecords
-            WHERE ' . db_prefix() . 'invoicepaymentrecords.date < "' . $this->db->escape_str($from) . '"
-            AND ' . db_prefix() . 'invoicepaymentrecords.invoiceid = 0
-            AND ' . db_prefix() . 'invoicepaymentrecords.client_id=' . $this->db->escape_str($customer_id) . '
-            )-(
-            SELECT COALESCE(SUM(' . db_prefix() . 'expenses.amount),0)
-            FROM ' . db_prefix() . 'expenses
-            WHERE ' . db_prefix() . 'expenses.clientid = ' . $this->db->escape_str($customer_id) . ' AND tblexpenses.billable !=1
-            AND ' . db_prefix() . 'expenses.date < "' . $this->db->escape_str($from) . '"
-            )
-        )
-            )
-            as beginning_balance FROM ' . db_prefix() . 'invoices
-            WHERE date < "' . $this->db->escape_str($from) . '"
-            AND clientid = ' . $this->db->escape_str($customer_id) . '
-            AND status != ' . Invoices_model::STATUS_DRAFT . '
-            AND status != ' . Invoices_model::STATUS_CANCELLED)
-              ->row()->beginning_balance;
-
-        if ($result['beginning_balance'] === null) {
-            $result['beginning_balance'] = 0;
-        }
-        $abc =  ($this->db->select("balance")->from('tblclients')->where('userid', $customer_id)->get()->result());
-        $result['beginning_balance'] += (float)$abc[0]->balance;
+        // Get beginning balance using the helper function
+        $result['beginning_balance'] = before_balance($customer_id, $from);
 
         $dec = get_decimal_places();
         $result['invoiced_amount']=$result['invoiced_amount']+ $sumexpense;

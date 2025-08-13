@@ -2512,9 +2512,22 @@ class Reports extends AdminController
 
             // Group data by customer
             $grouped_data = [];
+            $processed_invoices = []; // Track processed invoice IDs to avoid duplicates
             foreach ($rResult as $aRow) {
                 $customer_id = $aRow['clientid'];
+                $invoice_id = $aRow['id'];
                 $customer_name = isset($aRow['company']) ? $aRow['company'] : 'Unknown';
+
+                // Skip if this invoice ID has already been processed for this customer
+                if (isset($processed_invoices[$customer_id]) && in_array($invoice_id, $processed_invoices[$customer_id])) {
+                    continue;
+                }
+
+                // Track this invoice ID as processed for this customer
+                if (!isset($processed_invoices[$customer_id])) {
+                    $processed_invoices[$customer_id] = [];
+                }
+                $processed_invoices[$customer_id][] = $invoice_id;
 
                 if (!isset($grouped_data[$customer_id])) {
                     $grouped_data[$customer_id] = [
@@ -2559,97 +2572,107 @@ class Reports extends AdminController
             foreach ($grouped_data as $customer_id => &$customer_data) {
                 $running_balance = 0;
 
-                // Calculate running balance for each transaction
-                foreach ($customer_data['transactions'] as &$transaction) {
-                    // Update running balance: add invoice amount, subtract payments
-                    $invoice_amount = isset($transaction['invoice_amount']) ? $transaction['invoice_amount'] : 0;
-                    $total_amount_paid = isset($transaction['total_amount_paid']) ? $transaction['total_amount_paid'] : 0;
-
-                    $running_balance += $invoice_amount - $total_amount_paid;
-                    $transaction['running_balance'] = $running_balance;
-                }
-
                 // Set final running balance for customer
                 $customer_data['subtotals']['running_balance'] = $running_balance;
 
                 // Format the data for DataTables
+                $previous_balance_cf = 0;
+                $first_transaction = true;
+                $transaction_id='';
+
                 foreach ($customer_data['transactions'] as $transaction) {
-                    $row = [];
+                    $invoice_date = isset($transaction['date']) ? $transaction['date'] : date('Y-m-d');
 
-                    // Invoice Date
-                    $row[] = _d(isset($transaction['date']) ? $transaction['date'] : '');
+                    // Calculate tomorrow's date
+                    $tomorrow_date = date('Y-m-d', strtotime($invoice_date . ' +1 day'));
 
-                    // Balance B/F (empty as per requirement)
-                    $row[] = '';
+                    // Calculate running balance using before_balance with tomorrow's date
+                    $running_balance = before_balance($customer_id, $tomorrow_date);
+                    $transaction['running_balance'] = $running_balance;
 
-                    // S/O Number & Amount
-                    $sales_order_number = isset($transaction['sales_order_number']) ? $transaction['sales_order_number'] : '';
-                    $sales_order_amount = isset($transaction['sales_order_amount']) ? $transaction['sales_order_amount'] : 0;
-                    if (!empty($sales_order_number)) {
-                        // Find the estimate (sales order) ID for the link
-                        $this->db->select('id');
-                        $this->db->from(db_prefix() . 'estimates');
-                        $this->db->where('invoiceid', $transaction['id']);
-                        $sales_order = $this->db->get()->row();
 
-                        if ($sales_order) {
-                            $row[] = '<a href="' . admin_url('estimates/list_estimates/' . $sales_order->id) . '" target="_blank">' . 
-                                    $sales_order_number . ' (' . app_format_money($sales_order_amount, $currency->name) . ')</a>';
+                    if($$transaction_id!=$transaction['id']){
+                        $row = [];
+
+                        // Invoice Date
+                        $row[] = _d(isset($transaction['date']) ? $transaction['date'] : '');
+
+                        // Customer Name
+                        $row[] = $customer_data['name'];
+
+                        // Balance B/F - for first transaction use before_balance(), for subsequent ones use previous balance_cf
+                        $customer_id = $transaction['clientid'];
+                        $invoice_date = $transaction['date'];
+
+                        if ($first_transaction) {
+                            $balance_bf = before_balance($customer_id, $invoice_date);
+                            $first_transaction = false;
                         } else {
-                            $row[] = $sales_order_number . ' (' . app_format_money($sales_order_amount, $currency->name) . ')';
+                            $balance_bf = $previous_balance_cf;
                         }
-                    } else {
-                        $row[] = '';
-                    }
 
-                    // Invoice Number & Amount
-                    $invoice_amount = isset($transaction['invoice_amount']) ? $transaction['invoice_amount'] : 0;
-                    $row[] = '<a href="' . admin_url('invoices/list_invoices/' . $transaction['id']) . '" target="_blank">' . 
+                        $row[] = app_format_money($balance_bf, $currency->name);
+
+                        // S/O Number & Amount
+                        $sales_order_number = isset($transaction['sales_order_number']) ? $transaction['sales_order_number'] : '';
+                        $sales_order_amount = isset($transaction['sales_order_amount']) ? $transaction['sales_order_amount'] : 0;
+                        if (!empty($sales_order_number)) {
+                            // Find the estimate (sales order) ID for the link
+                            $this->db->select('id');
+                            $this->db->from(db_prefix() . 'estimates');
+                            $this->db->where('invoiceid', $transaction['id']);
+                            $sales_order = $this->db->get()->row();
+
+                            if ($sales_order) {
+                                $row[] = '<a href="' . admin_url('estimates/list_estimates/' . $sales_order->id) . '" target="_blank">' .
+                                    $sales_order_number . ' (' . app_format_money($sales_order_amount, $currency->name) . ')</a>';
+                            } else {
+                                $row[] = $sales_order_number . ' (' . app_format_money($sales_order_amount, $currency->name) . ')';
+                            }
+                        } else {
+                            $row[] = '';
+                        }
+
+                        // Invoice Number & Amount
+                        $invoice_amount = isset($transaction['invoice_amount']) ? $transaction['invoice_amount'] : 0;
+                        $row[] = '<a href="' . admin_url('invoices/list_invoices/' . $transaction['id']) . '" target="_blank">' .
                             format_invoice_number($transaction['id']) . ' (' . app_format_money($invoice_amount, $currency->name) . ')</a>';
 
-                    // Payment & Payment Date
-                    $total_amount_paid = isset($transaction['total_amount_paid']) ? $transaction['total_amount_paid'] : 0;
-                    $payment_dates = isset($transaction['payment_dates']) ? $transaction['payment_dates'] : '';
+                        // Payment & Payment Date
+                        $total_amount_paid = isset($transaction['total_amount_paid']) ? $transaction['total_amount_paid'] : 0;
+                        $payment_dates = isset($transaction['payment_dates']) ? $transaction['payment_dates'] : '';
 
-                    // Highlight missing payment dates
-                    $payment_cell = app_format_money($total_amount_paid, $currency->name);
-                    if ($total_amount_paid > 0 && empty($payment_dates)) {
-                        $payment_cell = '<span class="text-danger">' . $payment_cell . ' (Missing date)</span>';
-                    } else {
-                        $payment_cell .= ' (' . $payment_dates . ')';
+                        // Highlight missing payment dates
+                        $payment_cell = app_format_money($total_amount_paid, $currency->name);
+                        if ($total_amount_paid > 0 && empty($payment_dates)) {
+                            $payment_cell = '<span class="text-danger">' . $payment_cell . ' (Missing date)</span>';
+                        } else {
+                            $payment_cell .= ' (' . $payment_dates . ')';
+                        }
+                        $row[] = $payment_cell;
+
+                        // Balance C/F (balance_bf + invoice_amount)
+                        $balance_cf = $balance_bf + $invoice_amount;
+                        $row[] = app_format_money($balance_cf, $currency->name);
+
+                        // Store balance_cf for the next transaction
+                        $previous_balance_cf = $balance_cf;
+
+                        // Running Balance
+                        $running_balance = isset($transaction['running_balance']) ? $transaction['running_balance'] : 0;
+                        $row[] = app_format_money($running_balance, $currency->name);
+
+                        // Director's Note
+                        $row[] = isset($transaction['director_note']) ? $transaction['director_note'] : '';
+
+                        $output['aaData'][] = $row;
                     }
-                    $row[] = $payment_cell;
-
-                    // Balance C/F (empty as per requirement)
-                    $row[] = '';
-
-                    // Running Balance
-                    $running_balance = isset($transaction['running_balance']) ? $transaction['running_balance'] : 0;
-                    $row[] = app_format_money($running_balance, $currency->name);
-
-                    // Director's Note
-                    $row[] = isset($transaction['director_note']) ? $transaction['director_note'] : '';
-
-                    // Customer Name (hidden column for grouping)
-                    $row[] = $customer_data['name'];
-
-                    $output['aaData'][] = $row;
                 }
 
-                // Add subtotal row for this customer
-                $subtotal_row = [
-                    '<strong>' . _l('subtotal') . '</strong>',  // Date column
-                    '',  // Balance B/F
-                    '<strong>' . app_format_money($customer_data['subtotals']['sales_order_amount'], $currency->name) . '</strong>',  // S/O Amount
-                    '<strong>' . app_format_money($customer_data['subtotals']['invoice_amount'], $currency->name) . '</strong>',  // Invoice Amount
-                    '<strong>' . app_format_money($customer_data['subtotals']['total_amount_paid'], $currency->name) . '</strong>',  // Payment
-                    '',  // Balance C/F
-                    '<strong>' . app_format_money($customer_data['subtotals']['running_balance'], $currency->name) . '</strong>',  // Running Balance
-                    '',  // Director's Note
-                    $customer_data['name']  // Customer Name (hidden column for grouping)
-                ];
 
-                $output['aaData'][] = $subtotal_row;
+
+                // Subtotal rows are now handled by DataTables rowGroup functionality
+                // No need to add subtotal rows here
             }
 
             // Format footer data
@@ -2658,6 +2681,7 @@ class Reports extends AdminController
             }
 
             $output['sums'] = $footer_data;
+            // var_dump($output);die;
             echo json_encode($output);
             die();
         } catch (Exception $e) {

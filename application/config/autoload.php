@@ -153,6 +153,7 @@ $autoload['helper'] = [
         'database',
         'upload',
         'sales',
+        'statement',
         'themes',
         'pre_query_data_formatters',
         'widgets',
