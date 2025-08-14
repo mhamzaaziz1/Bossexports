@@ -317,6 +317,13 @@ function app_init_customer_profile_tabs()
         'position' => 95,
     ]);
 
+    $CI->app_tabs->add_customer_profile_tab('advanced_analytics', [
+        'name'     => _l('advanced_analytics'),
+        'icon'     => 'fa fa-bar-chart',
+        'view'     => 'admin/clients/groups/advanced_analytics',
+        'position' => 97,
+    ]);
+
     $CI->app_tabs->add_customer_profile_tab('map', [
         'name'     => _l('customer_map'),
         'icon'     => 'fa fa-map-marker',

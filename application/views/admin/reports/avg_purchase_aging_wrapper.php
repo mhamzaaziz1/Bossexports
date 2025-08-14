@@ -14,13 +14,24 @@
                                     <div class="col-md-12">
                                         <?php echo form_open(admin_url('reports/avg_purchase_aging'), ['id' => 'avg-purchase-aging-form', 'method' => 'post']); ?>
                                         <div class="row">
-                                            <div class="col-md-4">
+                                            <div class="col-md-3">
                                                 <div class="form-group">
                                                     <label for="transaction_type"><?php echo _l('transaction_type'); ?></label>
                                                     <select name="transaction_type" id="transaction_type" class="selectpicker" data-width="100%">
                                                         <option value="both" <?php if (isset($selected_transaction_type) && $selected_transaction_type == 'both') { echo 'selected'; } ?>><?php echo _l('both_sales_and_purchases'); ?></option>
                                                         <option value="sales" <?php if (isset($selected_transaction_type) && $selected_transaction_type == 'sales') { echo 'selected'; } ?>><?php echo _l('sales'); ?></option>
                                                         <option value="purchases" <?php if (isset($selected_transaction_type) && $selected_transaction_type == 'purchases') { echo 'selected'; } ?>><?php echo _l('purchases'); ?></option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div class="form-group">
+                                                    <label for="aging_period"><?php echo _l('aging_period'); ?></label>
+                                                    <select name="aging_period" id="aging_period" class="selectpicker" data-width="100%">
+                                                        <option value="standard" <?php if (isset($selected_aging_period) && $selected_aging_period == 'standard') { echo 'selected'; } ?>><?php echo _l('aging_period_standard'); ?></option>
+                                                        <option value="extended" <?php if (isset($selected_aging_period) && $selected_aging_period == 'extended') { echo 'selected'; } ?>><?php echo _l('aging_period_extended'); ?></option>
+                                                        <option value="monthly" <?php if (isset($selected_aging_period) && $selected_aging_period == 'monthly') { echo 'selected'; } ?>><?php echo _l('aging_period_monthly'); ?></option>
+                                                        <option value="quarterly" <?php if (isset($selected_aging_period) && $selected_aging_period == 'quarterly') { echo 'selected'; } ?>><?php echo _l('aging_period_quarterly'); ?></option>
                                                     </select>
                                                 </div>
                                             </div>
@@ -92,7 +103,7 @@
 $(function() {
     // Initialize datepicker
     init_datepicker();
-    
+
     // Show/hide date range based on report_months selection
     $('#report_months').on('change', function() {
         if ($(this).val() == 'custom') {
@@ -101,12 +112,12 @@ $(function() {
             $('#date-range').addClass('hide');
         }
     });
-    
+
     // Handle form submission via AJAX
     $('#avg-purchase-aging-form').on('submit', function(e) {
         e.preventDefault();
         var data = $(this).serialize();
-        
+
         $.post(admin_url + 'reports/avg_purchase_aging', data, function(response) {
             $('#report-results').html(response);
             $('html, body').animate({

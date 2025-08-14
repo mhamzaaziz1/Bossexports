@@ -18,6 +18,7 @@ class Statement_model extends App_Model
      */
     /**
      * Calculate aging buckets for customer invoices
+     * The aging calculation is done as a sum of all values in each time period
      * @param  mixed $customer_id customer id
      * @return array
      */
@@ -40,9 +41,8 @@ class Statement_model extends App_Model
         // Get decimal places for formatting
         $dec = get_decimal_places();
 
-        // Calculate current balance (as of tomorrow)
+        // Calculate balances at different points in time
         $total_balance = (float)before_balance($customer_id, $tomorrow);
-        $aging['current'] = $total_balance;
 
         // Calculate balance for 30 days ago
         $date_30 = date('Y-m-d', strtotime('-30 days'));
@@ -56,21 +56,25 @@ class Statement_model extends App_Model
         $date_90 = date('Y-m-d', strtotime('-90 days'));
         $balance_90 = (float)before_balance($customer_id, $date_90);
 
-        // Calculate aging buckets based on the differences between balances
-            // Use bcmath for precise decimal arithmetic if available
-            $aging['over_90'] = (float)before_balance($customer_id, date('Y-m-d', strtotime('-91 days')));
-            $aging['61_90'] = (float)bcsub($balance_60, $balance_90, $dec);
-            $aging['31_60'] = (float)bcsub($balance_30, $balance_60, $dec);
-            $aging['1_30'] = (float)bcsub($total_balance, $balance_30, $dec);
+        // Calculate balance for over 90 days ago
+        $balance_over_90 = (float)before_balance($customer_id, date('Y-m-d', strtotime('-91 days')));
+
+        // Calculate aging buckets as sum of all values
+        $aging['over_90'] = $balance_over_90;
+        $aging['61_90'] = $balance_90;
+        $aging['31_60'] = $balance_60;
+        $aging['1_30'] = $balance_30;
+        $aging['current'] = $total_balance;
 
         // Ensure no negative values in buckets (can happen due to payments)
         $aging['over_90'] = max(0, $aging['over_90']);
         $aging['61_90'] = max(0, $aging['61_90']);
         $aging['31_60'] = max(0, $aging['31_60']);
         $aging['1_30'] = max(0, $aging['1_30']);
+        $aging['current'] = max(0, $aging['current']);
 
-        // Recalculate total to ensure it matches the sum of buckets
-        $aging['total'] = $total_balance;
+        // Calculate total as sum of all buckets
+        $aging['total'] = $aging['current'] + $aging['1_30'] + $aging['31_60'] + $aging['61_90'] + $aging['over_90'];
 
         return $aging;
     }

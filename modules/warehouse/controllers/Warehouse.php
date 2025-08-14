@@ -11,13 +11,13 @@ class warehouse extends AdminController {
 		$this->load->model('warehouse_model');
 		require_once module_dir_path(WAREHOUSE_MODULE_NAME) . '/third_party/excel/PHPExcel.php';
 	}
-	
+
 	//update active status
 	public function isactive() {
 	$this->db->where('id', $this->input->get('id'));
     $this->db->update("tblitems", array('isactive' => $this->input->get('status')));
     redirect(admin_url('warehouse/commodity_list'));
-	    
+
 	}
 
 	/**
@@ -957,7 +957,7 @@ class warehouse extends AdminController {
 	public function table_warehouse_history() {
 		$this->app->get_table_data(module_views_path('warehouse', 'table_warehouse_history'));
 	}
-	
+
 	/**
 	 * table warehouse PO
 	 *
@@ -966,9 +966,9 @@ class warehouse extends AdminController {
 	public function table_warehouse_PO() {
 		$this->app->get_table_data(module_views_path('warehouse', 'table_warehouse_PO'));
 	}
-	
-	
-	
+
+
+
 	/**
 	 * table warehouse PO
 	 *
@@ -1464,7 +1464,7 @@ class warehouse extends AdminController {
 			$data['pr_orders'] = [];
 			$data['pr_orders_status'] = false;
 		}
-		
+
 		$data['customer_code'] = $this->clients_model->get();
 		$data['invoices'] = $this->warehouse_model->get_invoices();
 		$data['goods_code'] = $this->warehouse_model->create_goods_delivery_code();
@@ -1647,11 +1647,11 @@ class warehouse extends AdminController {
 		]);
 		die();
 	}
-	
-	
-	
+
+
+
 	//csv download
-	
+
 // public function stock_summary_report_csv() {
 // // Student JSON data
 // $jsondata = $this->warehouse_model->get_stock_summary_report_view($data);
@@ -1669,7 +1669,7 @@ class warehouse extends AdminController {
 // // Traverse through the associative
 // // array using for each loop
 // foreach($jsonans as $i){
-	
+
 // 	// Write the data to the CSV file
 // 	fputcsv($file_pointer, $i);
 // }
@@ -1837,13 +1837,13 @@ class warehouse extends AdminController {
 
 		$arr_available_quantity=[];
 
-		
+
 		if ($data['hot_delivery'] != 'null') {
 			foreach ($data['hot_delivery'] as $delivery_value) {
 				if ( $delivery_value[0] != '' ) {
 					if($delivery_value[1] != '' || $data['warehouse_id'] != ''){
 						//check without checking warehouse
-						
+
 						if($data['warehouse_id'] != ''){
 							$delivery_value[1] = $data['warehouse_id'];
 						}
@@ -1879,7 +1879,7 @@ class warehouse extends AdminController {
 				}
 
 			}
-			
+
 			if ($flag == 1) {
 				$message = false;
 
@@ -1977,7 +1977,7 @@ class warehouse extends AdminController {
 				$data['long_descriptions'] = $this->input->post('long_descriptions', false);
 				$data['tags'] = $data['formdata'][7]['value'];
 				$data['isactive'] = $data["formdata"][22]['value'];
-                
+
                 $this->db->select('count(*) as numbers');
 			    $this->db->from('tblitems');
 			    $items=$this->db->where('commodity_code',$data['commodity_code'])->get()->result_array();
@@ -1986,8 +1986,8 @@ class warehouse extends AdminController {
     			set_alert('warning', _l('problem_deleting', _l('commodity_list')));
             	redirect(admin_url('warehouse/commodity_list'));
 			    }
-    		    
-    		    
+
+
 				$ids = $this->warehouse_model->add_commodity_one_item($data);
 				if ($ids) {
 
@@ -2009,7 +2009,7 @@ class warehouse extends AdminController {
 				die;
 
 			} else {
-				
+
 				$data['tags'] = $data['formdata'][8]['value'];
 
 				$data['long_descriptions'] = $this->input->post('long_descriptions', false);
@@ -2339,7 +2339,7 @@ class warehouse extends AdminController {
 						$total_rows_actualy = 0;
 
 						$flag_insert_id = 0;
-						
+
 						//get data for compare
 
 						foreach ($rowIterator as $row) {
@@ -2510,7 +2510,7 @@ class warehouse extends AdminController {
 										/*case input name*/
 										$string_error .= _l('guarantee_month') . _l('_check_invalid');
 										$flag2 = 1;
-										
+
 									}
 
 								}
@@ -2711,9 +2711,9 @@ class warehouse extends AdminController {
 
 								}
 
-								
 
-								
+
+
 
 								if (($flag == 0) && ($flag2 == 0)) {
 
@@ -2829,12 +2829,12 @@ class warehouse extends AdminController {
 
 
 						}
-						
+
 						$import_result = true;
 						@delete_dir($tmpDir);
 
 					}
-					
+
 				} else {
 					set_alert('warning', _l('import_upload_failed'));
 				}
@@ -3207,9 +3207,15 @@ class warehouse extends AdminController {
 			blank_page('commodity item Not Found', 'danger');
 		}
 
+		// Use the same variable name as in commodity_detail.php
 		$data['commodity_item'] = $commodity_item;
+		$data['commodites'] = $commodity_item; // This is the variable name used in commodity_detail.php
 		$data['commodity_file'] = $this->warehouse_model->get_warehourse_attachments($commodity_id);
 
+		// Load reports model for sales and purchases data
+		$this->load->model('reports_model');
+
+		// Pass the variables to the view
 		$this->load->view('view_commodity_detail', $data);
 
 	}
@@ -3491,7 +3497,7 @@ class warehouse extends AdminController {
     		die;
     	}
     }
-    
+
 	/**
      * warehouse integer part
      * @return boolean 
@@ -3626,7 +3632,7 @@ class warehouse extends AdminController {
 
     		}
     		break;
-    		
+
     	}
 
     	//round sale_price
@@ -3653,7 +3659,7 @@ class warehouse extends AdminController {
 
     	$this->app->get_table_data(module_views_path('warehouse', 'table_inventory_inside'));
     }
-    
+
      /**
      * { purchase order setting }
      * @return  json
@@ -4209,7 +4215,7 @@ class warehouse extends AdminController {
 						$total_rows = 0;
 
 						$total_rows_actualy = 0;
-						
+
 						//get data for compare
 
 						foreach ($rowIterator as $row) {
@@ -4250,7 +4256,7 @@ class warehouse extends AdminController {
 									$string_error .= _l('inventory_number') . _l('not_yet_entered');
 									$flag = 1;
 								}
-								
+
 
 								//check commodity_code exist  (input: code or name item)
 								if (is_null($value_cell_commodity_code) != true && $value_cell_commodity_code != '0' ) {
@@ -4311,7 +4317,7 @@ class warehouse extends AdminController {
 								} 
 
 
-								
+
 
 								if (($flag == 1) || ($flag2 == 1)) {
 									$dataError->getActiveSheet()->setCellValue('A' . $numRow, $sheet->getCell('A' . $rowIndex)->getValue());
@@ -4381,12 +4387,12 @@ class warehouse extends AdminController {
 
 
 						}
-						
+
 						$import_result = true;
 						@delete_dir($tmpDir);
 
 					}
-					
+
 				} else {
 					set_alert('warning', _l('import_opening_stock_failed'));
 				}
@@ -4612,7 +4618,7 @@ class warehouse extends AdminController {
 				unset($data['id']);
 
 				$mess = $this->warehouse_model->update_internal_delivery($data,$id);
-				
+
 				if ($mess) {
 					set_alert('success', _l('updated_successfully'));
 
@@ -4674,7 +4680,7 @@ class warehouse extends AdminController {
 				$message = _l('Product_does_not_exist_in_stock');
 			}
 
-			
+
 			echo json_encode([
 				'message' => $message,
 				'value' => $quantity,
@@ -4705,7 +4711,7 @@ class warehouse extends AdminController {
 				$message = _l('Product_does_not_exist_in_stock');
 			}
 
-			
+
 			echo json_encode([
 				'message' => $message,
 				'value' => $quantity,
@@ -4830,7 +4836,7 @@ class warehouse extends AdminController {
 				}
 
 			}
-			
+
 			if ($flag == 1) {
 				$message = false;
 
@@ -5809,7 +5815,7 @@ class warehouse extends AdminController {
 		$data = $this->input->post();
 
 		$stock_export = $this->warehouse_model->get_print_barcode_pdf_html($data);
-		
+
 		try {
 			$pdf = $this->warehouse_model->print_barcode_pdf($stock_export);
 
@@ -5847,7 +5853,7 @@ class warehouse extends AdminController {
 			]);
 		}
 	}
-	
+
 	/**
 	 * reset data
 	 * @return [type] 
@@ -5914,7 +5920,7 @@ class warehouse extends AdminController {
 			    	delete_dir(WAREHOUSE_LOST_ADJUSTMENT_MODULE_UPLOAD_FOLDER.$filename);
 			    }
 			}
-			
+
 			//delete sub folder INTERNAL
 			foreach(glob(WAREHOUSE_INTERNAL_DELIVERY_MODULE_UPLOAD_FOLDER . '*') as $file) { 
 				$file_arr = explode("/",$file);
@@ -5924,7 +5930,7 @@ class warehouse extends AdminController {
 			    	delete_dir(WAREHOUSE_INTERNAL_DELIVERY_MODULE_UPLOAD_FOLDER.$filename);
 			    }
 			}
-			
+
 			//delete sub folder send delivery note
 			foreach(glob('modules/warehouse/uploads/send_delivery_note/' . '*') as $file) { 
 				$file_arr = explode("/",$file);
@@ -5934,8 +5940,8 @@ class warehouse extends AdminController {
 			    	delete_dir('modules/warehouse/uploads/send_delivery_note/'.$filename);
 			    }
 			}
-			 
-			
+
+
 
 			//delete create task rel_type: "stock_import", "stock_export".
 			$this->db->where('rel_type', 'stock_import');
@@ -5943,7 +5949,7 @@ class warehouse extends AdminController {
 			$this->db->delete(db_prefix() . 'tasks');
 
 			set_alert('success',_l('reset_data_successful'));
-			
+
 			redirect(admin_url('warehouse/setting?group=reset_data'));
 
 	}
@@ -5981,6 +5987,169 @@ class warehouse extends AdminController {
     		'item_html' => $item_html['item_options'],
 
     	]);
+    }
+
+    /**
+     * Get monthly sales or purchase data for a commodity
+     * Used for charts in commodity detail view
+     * @return json
+     */
+    public function get_commodity_monthly_data()
+    {
+        // Check if user has permission
+        if (!has_permission('warehouse', '', 'view')) {
+            echo json_encode([
+                'success' => false,
+                'message' => _l('access_denied')
+            ]);
+            die;
+        }
+
+        $commodity_id = $this->input->post('commodity_id');
+        $transaction_type = $this->input->post('transaction_type');
+        $year = $this->input->post('year');
+
+        if (!$commodity_id || !$transaction_type || !$year) {
+            echo json_encode([
+                'success' => false,
+                'message' => _l('invalid_request')
+            ]);
+            die;
+        }
+
+        // Get item details
+        $item = $this->db->get_where(db_prefix() . 'items', ['id' => $commodity_id])->row();
+        if (!$item) {
+            echo json_encode([
+                'success' => false,
+                'message' => _l('item_not_found')
+            ]);
+            die;
+        }
+
+        // Initialize monthly data array
+        $monthly_amounts = array_fill(0, 12, 0);
+        $monthly_quantities = array_fill(0, 12, 0);
+        $monthly_counts = array_fill(0, 12, 0);
+
+        if ($transaction_type == 'sales') {
+            // Get sales data from invoices
+            for ($month = 1; $month <= 12; $month++) {
+                $start_date = $year . '-' . sprintf('%02d', $month) . '-01';
+                $end_date = date('Y-m-t', strtotime($start_date));
+
+                $this->db->select('SUM(it.qty) as total_quantity, SUM(it.qty * it.rate) as total_amount, COUNT(it.id) as count');
+                $this->db->from(db_prefix() . 'itemable as it');
+                $this->db->join(db_prefix() . 'invoices as i', 'i.id = it.rel_id');
+                $this->db->where('it.rel_type', 'invoice');
+                $this->db->where('i.status !=', 5); // Exclude cancelled invoices
+                $this->db->where('it.description', $item->description); // Filter by item description
+                $this->db->where('i.date >=', $start_date);
+                $this->db->where('i.date <=', $end_date);
+
+                $result = $this->db->get()->row();
+
+                if ($result) {
+                    $monthly_amounts[$month - 1] = floatval($result->total_amount);
+                    $monthly_quantities[$month - 1] = floatval($result->total_quantity);
+                    $monthly_counts[$month - 1] = intval($result->count);
+                }
+            }
+        } elseif ($transaction_type == 'purchases') {
+            // Check if purchase module is installed
+            $purchase_model_loaded = false;
+            try {
+                $this->load->model('purchase/purchase_model');
+                $purchase_model_loaded = true;
+            } catch (Exception $e) {
+                log_activity('Failed to load purchase model in get_commodity_monthly_data: ' . $e->getMessage());
+            }
+
+            if ($purchase_model_loaded) {
+                // Get purchase data from purchase orders
+                for ($month = 1; $month <= 12; $month++) {
+                    $start_date = $year . '-' . sprintf('%02d', $month) . '-01';
+                    $end_date = date('Y-m-t', strtotime($start_date));
+
+                    $this->db->select('SUM(it.qty) as total_quantity, SUM(it.qty * it.rate) as total_amount, COUNT(it.id) as count');
+                    $this->db->from(db_prefix() . 'itemable as it');
+                    $this->db->join(db_prefix() . 'pur_orders as po', 'po.id = it.rel_id');
+                    $this->db->where('it.rel_type', 'pur_order');
+                    $this->db->where('po.approve_status', 2); // Only approved purchase orders
+                    $this->db->where('it.description', $item->description); // Filter by item description
+                    $this->db->where('po.order_date >=', $start_date);
+                    $this->db->where('po.order_date <=', $end_date);
+
+                    $result = $this->db->get()->row();
+
+                    if ($result) {
+                        $monthly_amounts[$month - 1] = floatval($result->total_amount);
+                        $monthly_quantities[$month - 1] = floatval($result->total_quantity);
+                        $monthly_counts[$month - 1] = intval($result->count);
+                    }
+                }
+            }
+        }
+
+        // Calculate average amounts (if there were transactions)
+        $avg_amounts = [];
+        for ($i = 0; $i < 12; $i++) {
+            $avg_amounts[$i] = $monthly_counts[$i] > 0 ? $monthly_amounts[$i] / $monthly_counts[$i] : 0;
+        }
+
+        // Calculate trend line using linear regression
+        $trend = $this->calculate_trend_line($avg_amounts);
+
+        echo json_encode([
+            'success' => true,
+            'amounts' => $avg_amounts,
+            'quantities' => $monthly_quantities,
+            'trend' => $trend
+        ]);
+    }
+
+    /**
+     * Calculate trend line using linear regression
+     * @param array $data Array of data points
+     * @return array Trend line data points
+     */
+    private function calculate_trend_line($data)
+    {
+        $n = count($data);
+
+        // If we have less than 2 data points, we can't calculate a trend
+        if ($n < 2) {
+            return array_fill(0, $n, 0);
+        }
+
+        $sum_x = 0;
+        $sum_y = 0;
+        $sum_xy = 0;
+        $sum_xx = 0;
+
+        // Calculate sums for linear regression formula
+        for ($i = 0; $i < $n; $i++) {
+            $x = $i + 1; // x is the month index (1-12)
+            $y = floatval($data[$i]);
+
+            $sum_x += $x;
+            $sum_y += $y;
+            $sum_xy += ($x * $y);
+            $sum_xx += ($x * $x);
+        }
+
+        // Calculate slope and y-intercept
+        $slope = ($n * $sum_xy - $sum_x * $sum_y) / ($n * $sum_xx - $sum_x * $sum_x);
+        $y_intercept = ($sum_y - $slope * $sum_x) / $n;
+
+        // Generate trend line data points
+        $trend = [];
+        for ($i = 0; $i < $n; $i++) {
+            $x = $i + 1;
+            $trend[$i] = $y_intercept + $slope * $x;
+        }
+
+        return $trend;
     }
 
 }

@@ -817,11 +817,78 @@ class Reports_model extends App_Model
      * Shows the average age of items from the time they were purchased
      * @param  string  $transaction_type sales, purchases, or both
      * @param  string  $date_filter     SQL date filter string
+     * @param  string  $aging_period    standard, extended, monthly, or quarterly
      * @return array
      */
-    public function get_avg_purchase_aging($transaction_type = 'both', $date_filter = '')
+    public function get_avg_purchase_aging($transaction_type = 'both', $date_filter = '', $aging_period = 'extended')
     {
         $result = [];
+        $all_items = [];
+
+        // Define aging buckets based on selected period
+        $aging_buckets = [];
+        switch ($aging_period) {
+            case 'standard':
+                $aging_buckets = [
+                    '0_30' => 0,
+                    '31_60' => 0,
+                    '61_90' => 0,
+                    'over_90' => 0
+                ];
+                break;
+            case 'monthly':
+                $aging_buckets = [
+                    '0_30' => 0,
+                    '31_60' => 0,
+                    '61_90' => 0,
+                    '91_120' => 0,
+                    '121_150' => 0,
+                    '151_180' => 0,
+                    'over_180' => 0
+                ];
+                break;
+            case 'quarterly':
+                $aging_buckets = [
+                    '0_90' => 0,
+                    '91_180' => 0,
+                    '181_270' => 0,
+                    '271_360' => 0,
+                    'over_360' => 0
+                ];
+                break;
+            case 'extended':
+            default:
+                $aging_buckets = [
+                    '0_30' => 0,
+                    '31_60' => 0,
+                    '61_90' => 0,
+                    '91_180' => 0,
+                    '181_365' => 0,
+                    'over_365' => 0
+                ];
+                break;
+        }
+
+        // Get all items first to ensure we include items with no transactions
+        $this->db->select('id, description, long_description, rate');
+        $this->db->from(db_prefix() . 'items');
+        $items_data = $this->db->get()->result_array();
+
+        foreach ($items_data as $item) {
+            $all_items[$item['description']] = [
+                'item_id' => $item['id'],
+                'description' => $item['description'],
+                'long_description' => $item['long_description'],
+                'rate' => $item['rate'],
+                'avg_age' => 0,
+                'total_purchases' => 0,
+                'total_quantity' => 0,
+                'total_value' => 0,
+                'type' => 'no_data',
+                'aging_buckets' => $aging_buckets,
+                'trend_data' => []
+            ];
+        }
 
         // Get purchase data from purchase orders if transaction_type is 'purchases' or 'both'
         if ($transaction_type == 'purchases' || $transaction_type == 'both') {
@@ -835,7 +902,8 @@ class Reports_model extends App_Model
             }
 
             if ($purchase_model_loaded) {
-                $this->db->select('it.description, AVG(DATEDIFF(CURDATE(), po.order_date)) as avg_age, COUNT(it.id) as total_purchases, SUM(it.qty) as total_quantity');
+                // Get detailed purchase data for aging buckets
+                $this->db->select('it.description, po.order_date, DATEDIFF(CURDATE(), po.order_date) as age_days, it.qty, it.rate');
                 $this->db->from(db_prefix() . 'itemable as it');
                 $this->db->join(db_prefix() . 'pur_orders as po', 'po.id = it.rel_id');
                 $this->db->where('it.rel_type', 'pur_order');
@@ -843,21 +911,127 @@ class Reports_model extends App_Model
 
                 // Apply date filter if provided
                 if (!empty($date_filter)) {
+                    // Replace 'order_date' with 'po.order_date' if it's not already prefixed
+                    $date_filter = preg_replace('/\border_date\b(?!\.)/i', 'po.order_date', $date_filter);
                     $this->db->where($date_filter, null, false);
                 }
 
-                $this->db->group_by('it.description');
-                $this->db->order_by('avg_age', 'DESC');
+                $detailed_purchase_data = $this->db->get()->result_array();
 
-                $purchase_data = $this->db->get()->result_array();
+                // Process detailed purchase data
+                $purchase_items = [];
+                foreach ($detailed_purchase_data as $row) {
+                    if (!isset($purchase_items[$row['description']])) {
+                        $purchase_items[$row['description']] = [
+                            'description' => $row['description'],
+                            'ages' => [],
+                            'quantities' => [],
+                            'rates' => [],
+                            'dates' => [],
+                            'total_purchases' => 0,
+                            'total_quantity' => 0,
+                            'total_value' => 0,
+                            'aging_buckets' => $aging_buckets
+                        ];
+                    }
 
-                // Add type and format data
-                foreach ($purchase_data as &$row) {
-                    $row['type'] = 'purchase';
-                    // Get item details
-                    $item = $this->db->get_where(db_prefix() . 'items', ['description' => $row['description']])->row();
-                    $row['item_id'] = $item ? $item->id : 0;
-                    $row['avg_age'] = round($row['avg_age'], 2); // Round to 2 decimal places
+                    $purchase_items[$row['description']]['ages'][] = $row['age_days'];
+                    $purchase_items[$row['description']]['quantities'][] = $row['qty'];
+                    $purchase_items[$row['description']]['rates'][] = $row['rate'];
+                    $purchase_items[$row['description']]['dates'][] = $row['order_date'];
+                    $purchase_items[$row['description']]['total_purchases']++;
+                    $purchase_items[$row['description']]['total_quantity'] += $row['qty'];
+                    $purchase_items[$row['description']]['total_value'] += ($row['qty'] * $row['rate']);
+
+                    // Categorize into aging buckets
+                    $age_days = $row['age_days'];
+                    $categorized = false;
+
+                    // Loop through the buckets and find the right one
+                    foreach ($aging_buckets as $bucket => $value) {
+                        if ($bucket === 'over_90' && $age_days > 90) {
+                            $purchase_items[$row['description']]['aging_buckets'][$bucket] += $row['qty'];
+                            $categorized = true;
+                            break;
+                        } elseif ($bucket === 'over_180' && $age_days > 180) {
+                            $purchase_items[$row['description']]['aging_buckets'][$bucket] += $row['qty'];
+                            $categorized = true;
+                            break;
+                        } elseif ($bucket === 'over_360' && $age_days > 360) {
+                            $purchase_items[$row['description']]['aging_buckets'][$bucket] += $row['qty'];
+                            $categorized = true;
+                            break;
+                        } elseif ($bucket === 'over_365' && $age_days > 365) {
+                            $purchase_items[$row['description']]['aging_buckets'][$bucket] += $row['qty'];
+                            $categorized = true;
+                            break;
+                        } else {
+                            // Parse the bucket range
+                            $range = explode('_', $bucket);
+                            if (count($range) == 2 && is_numeric($range[0]) && is_numeric($range[1])) {
+                                $min = intval($range[0]);
+                                $max = intval($range[1]);
+                                if ($age_days >= $min && $age_days <= $max) {
+                                    $purchase_items[$row['description']]['aging_buckets'][$bucket] += $row['qty'];
+                                    $categorized = true;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+
+                    // If not categorized, add to the first bucket as a fallback
+                    if (!$categorized) {
+                        $first_bucket = array_key_first($aging_buckets);
+                        $purchase_items[$row['description']]['aging_buckets'][$first_bucket] += $row['qty'];
+                    }
+                }
+
+                // Calculate averages and prepare final purchase data
+                $purchase_data = [];
+                foreach ($purchase_items as $description => $item) {
+                    if (count($item['ages']) > 0) {
+                        $avg_age = array_sum($item['ages']) / count($item['ages']);
+
+                        // Calculate trend data (monthly averages for the last 12 months)
+                        $trend_data = [];
+                        $now = new DateTime();
+                        for ($i = 0; $i < 12; $i++) {
+                            $month_start = clone $now;
+                            $month_start->modify("-$i month")->modify('first day of this month');
+                            $month_end = clone $month_start;
+                            $month_end->modify('last day of this month');
+
+                            $month_ages = [];
+                            foreach ($item['dates'] as $index => $date) {
+                                $purchase_date = new DateTime($date);
+                                if ($purchase_date >= $month_start && $purchase_date <= $month_end) {
+                                    $month_ages[] = $item['ages'][$index];
+                                }
+                            }
+
+                            $month_avg = count($month_ages) > 0 ? array_sum($month_ages) / count($month_ages) : 0;
+                            $trend_data[$month_start->format('Y-m')] = round($month_avg, 2);
+                        }
+
+                        $purchase_data[] = [
+                            'description' => $description,
+                            'avg_age' => round($avg_age, 2),
+                            'total_purchases' => $item['total_purchases'],
+                            'total_quantity' => $item['total_quantity'],
+                            'total_value' => round($item['total_value'], 2),
+                            'type' => 'purchase',
+                            'aging_buckets' => $item['aging_buckets'],
+                            'trend_data' => $trend_data
+                        ];
+                    }
+                }
+
+                // Update all_items with purchase data
+                foreach ($purchase_data as $item) {
+                    if (isset($all_items[$item['description']])) {
+                        $all_items[$item['description']] = array_merge($all_items[$item['description']], $item);
+                    }
                 }
 
                 $result = $purchase_data;
@@ -866,7 +1040,8 @@ class Reports_model extends App_Model
 
         // Get sales data from invoices if transaction_type is 'sales' or 'both'
         if ($transaction_type == 'sales' || $transaction_type == 'both') {
-            $this->db->select('it.description, AVG(DATEDIFF(CURDATE(), i.date)) as avg_age, COUNT(it.id) as total_purchases, SUM(it.qty) as total_quantity');
+            // Get detailed sales data for aging buckets
+            $this->db->select('it.description, i.date, DATEDIFF(CURDATE(), i.date) as age_days, it.qty, it.rate');
             $this->db->from(db_prefix() . 'itemable as it');
             $this->db->join(db_prefix() . 'invoices as i', 'i.id = it.rel_id');
             $this->db->where('it.rel_type', 'invoice');
@@ -874,21 +1049,129 @@ class Reports_model extends App_Model
 
             // Apply date filter if provided
             if (!empty($date_filter)) {
+                // Replace 'date' with 'i.date' if it's not already prefixed
+                $date_filter = preg_replace('/\bdate\b(?!\.)/i', 'i.date', $date_filter);
                 $this->db->where($date_filter, null, false);
             }
 
-            $this->db->group_by('it.description');
-            $this->db->order_by('avg_age', 'DESC');
+            $detailed_sales_data = $this->db->get()->result_array();
 
-            $sales_data = $this->db->get()->result_array();
+            // Process detailed sales data
+            $sales_items = [];
+            foreach ($detailed_sales_data as $row) {
+                if (!isset($sales_items[$row['description']])) {
+                    $sales_items[$row['description']] = [
+                        'description' => $row['description'],
+                        'ages' => [],
+                        'quantities' => [],
+                        'rates' => [],
+                        'dates' => [],
+                        'total_purchases' => 0,
+                        'total_quantity' => 0,
+                        'total_value' => 0,
+                        'aging_buckets' => $aging_buckets
+                    ];
+                }
 
-            // Add type and format data
-            foreach ($sales_data as &$row) {
-                $row['type'] = 'sale';
-                // Get item details
-                $item = $this->db->get_where(db_prefix() . 'items', ['description' => $row['description']])->row();
-                $row['item_id'] = $item ? $item->id : 0;
-                $row['avg_age'] = round($row['avg_age'], 2); // Round to 2 decimal places
+                $sales_items[$row['description']]['ages'][] = $row['age_days'];
+                $sales_items[$row['description']]['quantities'][] = $row['qty'];
+                $sales_items[$row['description']]['rates'][] = $row['rate'];
+                $sales_items[$row['description']]['dates'][] = $row['date'];
+                $sales_items[$row['description']]['total_purchases']++;
+                $sales_items[$row['description']]['total_quantity'] += $row['qty'];
+                $sales_items[$row['description']]['total_value'] += ($row['qty'] * $row['rate']);
+
+                // Categorize into aging buckets
+                $age_days = $row['age_days'];
+                $categorized = false;
+
+                // Loop through the buckets and find the right one
+                foreach ($aging_buckets as $bucket => $value) {
+                    if ($bucket === 'over_90' && $age_days > 90) {
+                        $sales_items[$row['description']]['aging_buckets'][$bucket] += $row['qty'];
+                        $categorized = true;
+                        break;
+                    } elseif ($bucket === 'over_180' && $age_days > 180) {
+                        $sales_items[$row['description']]['aging_buckets'][$bucket] += $row['qty'];
+                        $categorized = true;
+                        break;
+                    } elseif ($bucket === 'over_360' && $age_days > 360) {
+                        $sales_items[$row['description']]['aging_buckets'][$bucket] += $row['qty'];
+                        $categorized = true;
+                        break;
+                    } elseif ($bucket === 'over_365' && $age_days > 365) {
+                        $sales_items[$row['description']]['aging_buckets'][$bucket] += $row['qty'];
+                        $categorized = true;
+                        break;
+                    } else {
+                        // Parse the bucket range
+                        $range = explode('_', $bucket);
+                        if (count($range) == 2 && is_numeric($range[0]) && is_numeric($range[1])) {
+                            $min = intval($range[0]);
+                            $max = intval($range[1]);
+                            if ($age_days >= $min && $age_days <= $max) {
+                                $sales_items[$row['description']]['aging_buckets'][$bucket] += $row['qty'];
+                                $categorized = true;
+                                break;
+                            }
+                        }
+                    }
+                }
+
+                // If not categorized, add to the first bucket as a fallback
+                if (!$categorized) {
+                    $first_bucket = array_key_first($aging_buckets);
+                    $sales_items[$row['description']]['aging_buckets'][$first_bucket] += $row['qty'];
+                }
+            }
+
+            // Calculate averages and prepare final sales data
+            $sales_data = [];
+            foreach ($sales_items as $description => $item) {
+                if (count($item['ages']) > 0) {
+                    $avg_age = array_sum($item['ages']) / count($item['ages']);
+
+                    // Calculate trend data (monthly averages for the last 12 months)
+                    $trend_data = [];
+                    $now = new DateTime();
+                    for ($i = 0; $i < 12; $i++) {
+                        $month_start = clone $now;
+                        $month_start->modify("-$i month")->modify('first day of this month');
+                        $month_end = clone $month_start;
+                        $month_end->modify('last day of this month');
+
+                        $month_ages = [];
+                        foreach ($item['dates'] as $index => $date) {
+                            $sale_date = new DateTime($date);
+                            if ($sale_date >= $month_start && $sale_date <= $month_end) {
+                                $month_ages[] = $item['ages'][$index];
+                            }
+                        }
+
+                        $month_avg = count($month_ages) > 0 ? array_sum($month_ages) / count($month_ages) : 0;
+                        $trend_data[$month_start->format('Y-m')] = round($month_avg, 2);
+                    }
+
+                    $sales_data[] = [
+                        'description' => $description,
+                        'avg_age' => round($avg_age, 2),
+                        'total_purchases' => $item['total_purchases'],
+                        'total_quantity' => $item['total_quantity'],
+                        'total_value' => round($item['total_value'], 2),
+                        'type' => 'sale',
+                        'aging_buckets' => $item['aging_buckets'],
+                        'trend_data' => $trend_data
+                    ];
+                }
+            }
+
+            // Update all_items with sales data
+            foreach ($sales_data as $item) {
+                if (isset($all_items[$item['description']])) {
+                    if ($all_items[$item['description']]['type'] == 'no_data') {
+                        $all_items[$item['description']] = array_merge($all_items[$item['description']], $item);
+                    }
+                }
             }
 
             // Combine data if transaction_type is 'both'
@@ -899,17 +1182,41 @@ class Reports_model extends App_Model
                     if (!isset($combined[$row['description']])) {
                         $combined[$row['description']] = [
                             'description' => $row['description'],
-                            'item_id' => $row['item_id'],
                             'avg_age' => $row['avg_age'],
                             'total_purchases' => $row['total_purchases'],
                             'total_quantity' => $row['total_quantity'],
-                            'type' => 'combined'
+                            'total_value' => $row['total_value'],
+                            'type' => 'combined',
+                            'aging_buckets' => $row['aging_buckets'],
+                            'trend_data' => $row['trend_data']
                         ];
                     } else {
-                        // Update existing item with combined data
-                        $combined[$row['description']]['avg_age'] = ($combined[$row['description']]['avg_age'] + $row['avg_age']) / 2;
+                        // Update existing item with combined data - weighted average for age
+                        $total_qty = $combined[$row['description']]['total_quantity'] + $row['total_quantity'];
+                        if ($total_qty > 0) {
+                            $combined[$row['description']]['avg_age'] = 
+                                (($combined[$row['description']]['avg_age'] * $combined[$row['description']]['total_quantity']) + 
+                                ($row['avg_age'] * $row['total_quantity'])) / $total_qty;
+                        }
+
                         $combined[$row['description']]['total_purchases'] += $row['total_purchases'];
                         $combined[$row['description']]['total_quantity'] += $row['total_quantity'];
+                        $combined[$row['description']]['total_value'] += $row['total_value'];
+
+                        // Combine aging buckets
+                        foreach ($row['aging_buckets'] as $bucket => $value) {
+                            $combined[$row['description']]['aging_buckets'][$bucket] += $value;
+                        }
+
+                        // Combine trend data (average the values)
+                        foreach ($row['trend_data'] as $month => $value) {
+                            if (isset($combined[$row['description']]['trend_data'][$month])) {
+                                $combined[$row['description']]['trend_data'][$month] = 
+                                    ($combined[$row['description']]['trend_data'][$month] + $value) / 2;
+                            } else {
+                                $combined[$row['description']]['trend_data'][$month] = $value;
+                            }
+                        }
                     }
                 }
                 $result = array_values($combined);
@@ -917,6 +1224,41 @@ class Reports_model extends App_Model
                 $result = $sales_data;
             }
         }
+
+        // Calculate risk levels and add additional analytics
+        foreach ($result as &$item) {
+            // Calculate risk level based on average age
+            if ($item['avg_age'] <= 30) {
+                $item['risk_level'] = 'low';
+            } elseif ($item['avg_age'] <= 90) {
+                $item['risk_level'] = 'medium';
+            } else {
+                $item['risk_level'] = 'high';
+            }
+
+            // Calculate percentage in each aging bucket
+            $item['aging_percentages'] = [];
+            foreach ($item['aging_buckets'] as $bucket => $value) {
+                $item['aging_percentages'][$bucket] = $item['total_quantity'] > 0 ? 
+                    round(($value / $item['total_quantity']) * 100, 2) : 0;
+            }
+
+            // Calculate average value per unit
+            $item['avg_value_per_unit'] = $item['total_quantity'] > 0 ? 
+                round($item['total_value'] / $item['total_quantity'], 2) : 0;
+
+            // Calculate inventory turnover ratio (if both sales and purchases data available)
+            if ($item['type'] == 'combined') {
+                // This is a simplified calculation - in a real system, you'd need more data
+                $item['inventory_turnover'] = $item['avg_age'] > 0 ? 
+                    round(365 / $item['avg_age'], 2) : 0;
+            }
+        }
+
+        // Sort by average age (descending)
+        usort($result, function($a, $b) {
+            return $b['avg_age'] <=> $a['avg_age'];
+        });
 
         return $result;
     }

@@ -3433,6 +3433,7 @@ class Reports extends AdminController
 
         if ($this->input->post()) {
             $transaction_type = $this->input->post('transaction_type') ? $this->input->post('transaction_type') : 'both';
+            $aging_period = $this->input->post('aging_period') ? $this->input->post('aging_period') : 'extended';
 
             // Get time period filter
             $report_months = $this->input->post('report_months');
@@ -3440,6 +3441,7 @@ class Reports extends AdminController
             $report_to = $this->input->post('report_to');
 
             // Store selected values for the view
+            $data['selected_aging_period'] = $aging_period;
             $data['report_months'] = $report_months;
             if ($report_months == 'custom') {
                 $data['report_from'] = $report_from;
@@ -3449,16 +3451,26 @@ class Reports extends AdminController
             // Get date filter SQL
             $date_filter = '';
             if ($report_months) {
-                $date_filter = $this->get_where_report_period('date');
+                // Use appropriate date field based on transaction type
+                if ($transaction_type == 'purchases') {
+                    $date_filter = preg_replace('/^\s*AND\s+/i', '', $this->get_where_report_period('order_date'));
+                } elseif ($transaction_type == 'sales') {
+                    $date_filter = preg_replace('/^\s*AND\s+/i', '', $this->get_where_report_period('date'));
+                } else { // both
+                    // For 'both', we'll handle the date filtering in the model
+                    $date_filter = preg_replace('/^\s*AND\s+/i', '', $this->get_where_report_period('date'));
+                }
             }
 
             $data['report_data'] = $this->reports_model->get_avg_purchase_aging(
                 $transaction_type,
-                $date_filter
+                $date_filter,
+                $aging_period
             );
 
             // Store the selected parameters for the view
             $data['selected_transaction_type'] = $transaction_type;
+            $data['selected_aging_period'] = $aging_period;
         }
 
         $data['title'] = _l('avg_purchase_aging');
@@ -4076,5 +4088,258 @@ class Reports extends AdminController
             set_alert('warning', _l('purchase_module_not_available'));
             redirect(admin_url('reports'));
         }
+    }
+
+    /**
+     * Advanced analytics for a specific client
+     * Shows comprehensive analytics including purchase frequency, history, and client categorization
+     *
+     * @param integer $client_id The client ID to show analytics for
+     * @return view
+     */
+    public function client_advanced_analytics($client_id)
+    {
+        if (!has_permission('reports', '', 'view')) {
+            access_denied('reports');
+        }
+
+        if ($this->input->is_ajax_request()) {
+            $this->load->model('currencies_model');
+            $base_currency = $this->currencies_model->get_base_currency();
+            $currency = $base_currency;
+
+            // Get time period filter
+            $report_months = $this->input->post('report_months');
+            $report_from = $this->input->post('report_from');
+            $report_to = $this->input->post('report_to');
+
+            // Get date filter SQL
+            $date_filter = '';
+            if ($report_months) {
+                $date_filter = $report_months ? $this->get_where_report_period('date') : '';
+            }
+
+            // Get client data
+            $this->load->model('clients_model');
+            $client = $this->clients_model->get($client_id);
+
+            if (!$client) {
+                echo json_encode([
+                    'success' => false,
+                    'message' => 'Client not found'
+                ]);
+                die();
+            }
+
+            // Get analytics data from the model
+            $this->load->model('reports_model');
+            $analytics_data = $this->reports_model->get_client_advanced_analytics(
+                $client_id,
+                preg_replace('/^\s*AND\s+/i', '', $date_filter)
+            );
+
+            echo json_encode([
+                'success' => true,
+                'data' => $analytics_data
+            ]);
+            die();
+        }
+
+        // Load required models
+        $this->load->model('clients_model');
+        $this->load->model('currencies_model');
+        $this->load->model('invoices_model');
+        $this->load->model('estimates_model');
+        $this->load->model('proposals_model');
+        $this->load->model('credit_notes_model');
+
+        // Get client details
+        $client = $this->clients_model->get($client_id);
+        if (!$client) {
+            set_alert('warning', _l('client_not_found'));
+            redirect(admin_url('clients'));
+        }
+
+        $data = [];
+        $data['title'] = _l('advanced_analytics') . ' - ' . $client->company;
+        $data['client'] = $client;
+
+        // Get last 30 days purchase frequency
+        $thirty_days_ago = date('Y-m-d', strtotime('-30 days'));
+        $data['invoices_30_days'] = $this->invoices_model->get_invoices_total_by_client($client_id, $thirty_days_ago);
+        $data['estimates_30_days'] = $this->estimates_model->get_estimates_total_by_client($client_id, $thirty_days_ago);
+        $data['proposals_30_days'] = $this->proposals_model->get_proposals_total_by_client($client_id, $thirty_days_ago);
+
+        // Get purchase history
+        $data['total_invoiced'] = sum_from_table(db_prefix() . 'invoices', ['clientid' => $client_id, 'status !=' => 5], 'total');
+        $data['total_paid'] = sum_from_table(db_prefix() . 'payments', ['invoiceid IN (SELECT id FROM ' . db_prefix() . 'invoices WHERE clientid=' . $client_id . ')'], 'amount');
+
+        // Get credit notes
+        $data['total_credits'] = sum_from_table(db_prefix() . 'creditnotes', ['clientid' => $client_id], 'total');
+
+        // Calculate client score/categorization
+        $data['client_score'] = $this->calculate_client_score($client_id);
+
+        // Get most purchased items
+        $this->db->select('description, SUM(qty) as total_quantity, SUM(qty * rate) as total_amount');
+        $this->db->from(db_prefix() . 'itemable');
+        $this->db->join(db_prefix() . 'invoices', db_prefix() . 'invoices.id = ' . db_prefix() . 'itemable.rel_id');
+        $this->db->where('rel_type', 'invoice');
+        $this->db->where('clientid', $client_id);
+        $this->db->group_by('description');
+        $this->db->order_by('total_quantity', 'DESC');
+        $this->db->limit(5);
+        $data['top_purchased_items'] = $this->db->get()->result_array();
+
+        // Get payment history
+        $this->db->select('amount, date');
+        $this->db->from(db_prefix() . 'payments');
+        $this->db->join(db_prefix() . 'invoices', db_prefix() . 'invoices.id = ' . db_prefix() . 'payments.invoiceid');
+        $this->db->where('clientid', $client_id);
+        $this->db->order_by('date', 'DESC');
+        $this->db->limit(10);
+        $data['recent_payments'] = $this->db->get()->result_array();
+
+        // Get currencies
+        $data['currencies'] = $this->currencies_model->get();
+        $data['base_currency'] = $this->currencies_model->get_base_currency();
+
+        $this->load->view('admin/reports/client_advanced_analytics', $data);
+    }
+
+    /**
+     * Calculate client score based on various factors
+     * Higher score means better customer
+     *
+     * @param integer $client_id The client ID
+     * @return array Score details with total score and category
+     */
+    private function calculate_client_score($client_id)
+    {
+        $score = [
+            'payment_promptness' => 0,
+            'purchase_frequency' => 0,
+            'purchase_value' => 0,
+            'loyalty' => 0,
+            'total' => 0,
+            'category' => ''
+        ];
+
+        // Payment promptness (how quickly they pay invoices)
+        $this->db->select('DATEDIFF(datepaid, duedate) as days_diff');
+        $this->db->from(db_prefix() . 'payments');
+        $this->db->join(db_prefix() . 'invoices', db_prefix() . 'invoices.id = ' . db_prefix() . 'payments.invoiceid');
+        $this->db->where('clientid', $client_id);
+        $payment_days = $this->db->get()->result_array();
+
+        $total_days = 0;
+        $payment_count = count($payment_days);
+
+        if ($payment_count > 0) {
+            foreach ($payment_days as $payment) {
+                $total_days += $payment['days_diff'];
+            }
+            $avg_days = $total_days / $payment_count;
+
+            // Score based on average payment time
+            if ($avg_days <= 0) {
+                $score['payment_promptness'] = 25; // Paid before due date
+            } elseif ($avg_days <= 7) {
+                $score['payment_promptness'] = 20; // Paid within a week after due date
+            } elseif ($avg_days <= 14) {
+                $score['payment_promptness'] = 15; // Paid within two weeks after due date
+            } elseif ($avg_days <= 30) {
+                $score['payment_promptness'] = 10; // Paid within a month after due date
+            } else {
+                $score['payment_promptness'] = 5; // Paid more than a month after due date
+            }
+        }
+
+        // Purchase frequency (how often they make purchases)
+        $this->db->select('COUNT(*) as invoice_count');
+        $this->db->from(db_prefix() . 'invoices');
+        $this->db->where('clientid', $client_id);
+        $this->db->where('status !=', 5); // Exclude cancelled invoices
+        $invoice_count = $this->db->get()->row()->invoice_count;
+
+        // Get client creation date
+        $this->db->select('datecreated');
+        $this->db->from(db_prefix() . 'clients');
+        $this->db->where('userid', $client_id);
+        $client_created = $this->db->get()->row()->datecreated;
+
+        $days_as_client = max(1, ceil((time() - strtotime($client_created)) / (60 * 60 * 24)));
+        $months_as_client = $days_as_client / 30;
+
+        $invoices_per_month = $invoice_count / max(1, $months_as_client);
+
+        // Score based on invoices per month
+        if ($invoices_per_month >= 4) {
+            $score['purchase_frequency'] = 25; // More than weekly purchases
+        } elseif ($invoices_per_month >= 2) {
+            $score['purchase_frequency'] = 20; // Bi-weekly purchases
+        } elseif ($invoices_per_month >= 1) {
+            $score['purchase_frequency'] = 15; // Monthly purchases
+        } elseif ($invoices_per_month >= 0.5) {
+            $score['purchase_frequency'] = 10; // Bi-monthly purchases
+        } else {
+            $score['purchase_frequency'] = 5; // Less frequent purchases
+        }
+
+        // Purchase value (how much they spend)
+        $this->db->select('SUM(total) as total_spent');
+        $this->db->from(db_prefix() . 'invoices');
+        $this->db->where('clientid', $client_id);
+        $this->db->where('status !=', 5); // Exclude cancelled invoices
+        $total_spent = $this->db->get()->row()->total_spent;
+
+        $avg_invoice_value = $invoice_count > 0 ? $total_spent / $invoice_count : 0;
+
+        // Score based on average invoice value
+        if ($avg_invoice_value >= 5000) {
+            $score['purchase_value'] = 25; // High value customer
+        } elseif ($avg_invoice_value >= 1000) {
+            $score['purchase_value'] = 20;
+        } elseif ($avg_invoice_value >= 500) {
+            $score['purchase_value'] = 15;
+        } elseif ($avg_invoice_value >= 100) {
+            $score['purchase_value'] = 10;
+        } else {
+            $score['purchase_value'] = 5; // Low value customer
+        }
+
+        // Loyalty (how long they've been a customer)
+        $years_as_client = $days_as_client / 365;
+
+        // Score based on years as client
+        if ($years_as_client >= 5) {
+            $score['loyalty'] = 25; // Long-term customer (5+ years)
+        } elseif ($years_as_client >= 3) {
+            $score['loyalty'] = 20; // 3-5 years
+        } elseif ($years_as_client >= 2) {
+            $score['loyalty'] = 15; // 2-3 years
+        } elseif ($years_as_client >= 1) {
+            $score['loyalty'] = 10; // 1-2 years
+        } else {
+            $score['loyalty'] = 5; // Less than 1 year
+        }
+
+        // Calculate total score
+        $score['total'] = $score['payment_promptness'] + $score['purchase_frequency'] + $score['purchase_value'] + $score['loyalty'];
+
+        // Determine category based on total score
+        if ($score['total'] >= 80) {
+            $score['category'] = 'excellent';
+        } elseif ($score['total'] >= 60) {
+            $score['category'] = 'good';
+        } elseif ($score['total'] >= 40) {
+            $score['category'] = 'average';
+        } elseif ($score['total'] >= 20) {
+            $score['category'] = 'below_average';
+        } else {
+            $score['category'] = 'poor';
+        }
+
+        return $score;
     }
 }

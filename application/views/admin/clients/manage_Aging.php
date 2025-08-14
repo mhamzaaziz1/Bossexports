@@ -226,7 +226,7 @@
                   </div>
                   <?php } ?>
                   <hr class="hr-panel-heading" />
-    
+
                   <div class="modal fade bulk_actions" id="customers_bulk_action" tabindex="-1" role="dialog">
                      <div class="modal-dialog" role="document">
                         <div class="modal-content">
@@ -262,6 +262,10 @@
                      <label for="exclude_inactive"><?php echo _l('exclude_inactive'); ?> <?php echo _l('clients'); ?></label>
                   </div>
                   <div class="clearfix mtop20"></div>
+                  <div class="col-md-12">
+                    <h4 class="no-margin bold">Aging Summary</h4>
+                    <p class="text-muted">Outstanding invoices by age</p>
+                    <hr />
                   <?php
                      $table_data = array();
                      $_table_data = array(
@@ -275,45 +279,45 @@
                          'th_attrs'=>array('class'=>'toggleable', 'id'=>'th-company')
                         ),
                         array(
-                         'name'=>_l('Current Balance'),
-                         'th_attrs'=>array('class'=>'toggleable', 'id'=>'th-company')
+                         'name'=>_l('Current'),
+                         'th_attrs'=>array('class'=>'toggleable text-center', 'id'=>'th-current')
                         ),
                          array(
-                         'name'=>_l('7 Days'),
-                         'th_attrs'=>array('class'=>'toggleable', 'id'=>'th-primary-contact')
+                         'name'=>_l('1-30 Days'),
+                         'th_attrs'=>array('class'=>'toggleable text-center', 'id'=>'th-1-30-days')
                         ),
                          array(
-                         'name'=>_l('14 Days'),
-                         'th_attrs'=>array('class'=>'toggleable', 'id'=>'th-primary-contact-email')
+                         'name'=>_l('31-60 Days'),
+                         'th_attrs'=>array('class'=>'toggleable text-center', 'id'=>'th-31-60-days')
                         ),
                         array(
-                         'name'=>_l('21 Days'),
-                         'th_attrs'=>array('class'=>'toggleable', 'id'=>'th-phone')
+                         'name'=>_l('61-90 Days'),
+                         'th_attrs'=>array('class'=>'toggleable text-center', 'id'=>'th-61-90-days')
                         ),
                          array(
-                         'name'=>_l('1 month'),
-                         'th_attrs'=>array('class'=>'toggleable', 'id'=>'th-active')
+                         'name'=>_l('Over 90 Days'),
+                         'th_attrs'=>array('class'=>'toggleable text-center', 'id'=>'th-over-90-days')
                         ),
                         array(
-                         'name'=>_l('2 month'),
-                         'th_attrs'=>array('class'=>'toggleable', 'id'=>'th-groups')
-                        ),
-                        array(
-                         'name'=>_l('3 months'),
-                         'th_attrs'=>array('class'=>'toggleable', 'id'=>'th-date-created')
+                         'name'=>_l('Total'),
+                         'th_attrs'=>array('class'=>'toggleable text-center', 'id'=>'th-total')
                         ),
                       );
-                     foreach($_table_data as $_t){
-                      array_push($table_data,$_t);
-                     }
+                          foreach($_table_data as $_t){
+                           array_push($table_data,$_t);
+                          }
 
-                     $table_data = hooks()->apply_filters('customers_table_columns', $table_data);
+                          $table_data = hooks()->apply_filters('customers_table_columns', $table_data);
 
-                     render_datatable($table_data,'clients',[],[
-                           'data-last-order-identifier' => 'customers',
-                           'data-default-order'         => get_table_last_order('customers'),
-                     ]);
-                     ?>
+                          render_datatable($table_data,'clients',[],[
+                                'data-last-order-identifier' => 'customers',
+                                'data-default-order'         => get_table_last_order('customers'),
+                          ]);
+                          ?>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
                </div>
             </div>
          </div>

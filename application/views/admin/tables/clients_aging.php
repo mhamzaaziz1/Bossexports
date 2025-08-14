@@ -11,12 +11,7 @@ $aColumns = [
     '1',
     db_prefix().'clients.userid as userid',
     'company',
-    'firstname',
-    'email',
-    db_prefix().'clients.phonenumber as phonenumber',
-    db_prefix().'clients.active',
-    '(SELECT GROUP_CONCAT(name SEPARATOR ",") FROM '.db_prefix().'customer_groups JOIN '.db_prefix().'customers_groups ON '.db_prefix().'customer_groups.groupid = '.db_prefix().'customers_groups.id WHERE customer_id = '.db_prefix().'clients.userid ORDER by name ASC) as customerGroups',
-    db_prefix().'clients.datecreated as datecreated',
+
 ];
 
 $sIndexColumn = 'userid';
@@ -214,584 +209,142 @@ foreach ($rResult as $aRow) {
     $company .= '</div>';
 
     $row[] = $company;
-    
-             // Invoiced amount during the period
-        $result['invoiced_amount'] = $this->ci->db->query('SELECT
+
+    // Invoiced amount during the period
+    $result['invoiced_amount'] = $this->ci->db->query('SELECT
         SUM(' . db_prefix() . 'invoices.total) as invoiced_amount
         FROM ' . db_prefix() . 'invoices
         WHERE clientid = ' . $this->ci->db->escape_str($aRow['userid']) . '
         AND status != ' . Invoices_model::STATUS_DRAFT . ' AND status != ' . Invoices_model::STATUS_CANCELLED . '')
-            ->row()->invoiced_amount;
+        ->row()->invoiced_amount;
 
-        if ($result['invoiced_amount'] === null) {
-            $result['invoiced_amount'] = 0;
-        }
+    if ($result['invoiced_amount'] === null) {
+        $result['invoiced_amount'] = 0;
+    }
 
-        $result['credit_notes_amount'] = $this->ci->db->query('SELECT
+    $result['credit_notes_amount'] = $this->ci->db->query('SELECT
         SUM(' . db_prefix() . 'creditnotes.total) as credit_notes_amount
         FROM ' . db_prefix() . 'creditnotes
         WHERE clientid = ' . $this->ci->db->escape_str($aRow['userid']))->row()->credit_notes_amount;
 
-        if ($result['credit_notes_amount'] === null) {
-            $result['credit_notes_amount'] = 0;
-        }
-        $result['refunds_amount'] = $this->ci->db->query('SELECT
+    if ($result['credit_notes_amount'] === null) {
+        $result['credit_notes_amount'] = 0;
+    }
+    $result['refunds_amount'] = $this->ci->db->query('SELECT
         SUM(' . db_prefix() . 'creditnote_refunds.amount) as refunds_amount
         FROM ' . db_prefix() . 'creditnote_refunds
         WHERE credit_note_id IN (SELECT id FROM ' . db_prefix() . 'creditnotes where clientid=' . $this->ci->db->escape_str($aRow['userid']) . ')')->row()->refunds_amount;
 
-        if ($result['refunds_amount'] === null) {
-            $result['refunds_amount'] = 0;
-        }
+    if ($result['refunds_amount'] === null) {
+        $result['refunds_amount'] = 0;
+    }
 
-        $result['invoiced_amount'] = $result['invoiced_amount'];
+    $result['invoiced_amount'] = $result['invoiced_amount'];
 
-        // Amount paid during the period
-        $result['amount_paid'] = $this->ci->db->query('SELECT
+    // Amount paid during the period
+    $result['amount_paid'] = $this->ci->db->query('SELECT
         SUM(' . db_prefix() . 'invoicepaymentrecords.amount) as amount_paid
         FROM ' . db_prefix() . 'invoicepaymentrecords
         JOIN ' . db_prefix() . 'invoices ON ' . db_prefix() . 'invoices.id = ' . db_prefix() . 'invoicepaymentrecords.invoiceid
         WHERE ' . db_prefix() . 'invoices.clientid = ' . $this->ci->db->escape_str($aRow['userid']))
-            ->row()->amount_paid;
+        ->row()->amount_paid;
 
-        if ($result['amount_paid'] === null) {
-            $result['amount_paid'] = 0;
-        }
-        
-        
-        $result['direct_paid'] = $this->ci->db->query('SELECT
+    if ($result['amount_paid'] === null) {
+        $result['amount_paid'] = 0;
+    }
+
+
+    $result['direct_paid'] = $this->ci->db->query('SELECT
         SUM(' . db_prefix() . 'invoicepaymentrecords.amount) as amount_paid
         FROM ' . db_prefix() . 'invoicepaymentrecords
         WHERE client_id = ' . $this->ci->db->escape_str($aRow['userid']))
-            ->row()->amount_paid;
-        if ($result['direct_paid'] === null) {
-            $result['direct_paid'] = 0;
-        }
+        ->row()->amount_paid;
+    if ($result['direct_paid'] === null) {
+        $result['direct_paid'] = 0;
+    }
 
 
-            $result['beginning_balance'] = 0;
-            $abc =  ($this->ci->db->select("balance")->from('tblclients')->where('userid', $aRow['userid'])->get()->result());
-        $result['beginning_balance'] += (float)$abc[0]->balance;
-        
-        $sql_expense = 'SELECT
-        SUM(' . db_prefix() . 'expenses.amount) as invoice_amount
-        FROM ' . db_prefix() . 'expenses
-        WHERE '. db_prefix() . 'expenses.clientid = ' . $this->ci->db->escape_str($aRow['userid']) . '
-        ORDER by ' . db_prefix() . 'expenses.date DESC';
+    // Use the Statement_model to calculate aging buckets
+    $CI = &get_instance();
+    if (!class_exists('Statement_model', false)) {
+        $CI->load->model('statement_model');
+    }
 
-        $sumexpense = $this->ci->db->query($sql_expense)->row()->invoice_amount;
-        if ($sumexpense==NULL){
-            $sumexpense=0;
-        }
-        $dec = get_decimal_places();
-        
-            $result['balance_due'] = number_format($result['invoiced_amount'] - $result['amount_paid'], $dec, '.', '');
-            $result['balance_due'] = $result['balance_due'] + number_format($result['beginning_balance'], $dec, '.', '');
-            $result['balance_due'] = $result['balance_due'] - number_format($result['direct_paid'], $dec, '.', '');
-            // var_dump($this->ci->db->last_query());die;
-            $result['balance_due'] = $result['balance_due'] - number_format($result['refunds_amount'], $dec, '.', '');
-        $result['balance_due']=$result['balance_due'] + $sumexpense;
-        
+    // Get aging data using the optimized method from Statement_model
+    $aging = $CI->statement_model->get_invoices_aging($aRow['userid']);
+
+    // Store values for display
+    $result['current_balance'] = $aging['current'];
+    $result['1_30_days'] = $aging['1_30'];
+    $result['31_60_days'] = $aging['31_60'];
+    $result['61_90_days'] = $aging['61_90'];
+    $result['over_90_days'] = $aging['over_90'];
+    $result['balance_due'] = $aging['total'];
+
+    // Define variables for display
+    $current = $aging['current'];
+    $days_1_30 = $aging['1_30'];
+    $days_31_60 = $aging['31_60'];
+    $days_61_90 = $aging['61_90'];
+    $over_90 = $aging['over_90'];
+    $total_balance = $aging['total'];
+
     // $extend='Opening Balance: '. number_format($result['beginning_balance']).'<br>invoice: '.number_format($result['invoiced_amount']).'<br>paid='.(number_format($result['amount_paid'])+number_format($result['direct_paid'])).'<br>Refund: '.number_format($result['refunds_amount']).'<br>Expense: '.$sumexpense.'';
-       $extend='';
-    $row[] = number_format($result['balance_due']);
-    
-         // Invoiced amount during the period
-        $result['invoiced_amount'] = $this->ci->db->query('SELECT
-        SUM(' . db_prefix() . 'invoices.total) as invoiced_amount
-        FROM ' . db_prefix() . 'invoices
-        WHERE clientid = ' . $this->ci->db->escape_str($aRow['userid']) . ' and date between CURDATE() - 7 and CURDATE()
-        AND status != ' . Invoices_model::STATUS_DRAFT . ' AND status != ' . Invoices_model::STATUS_CANCELLED . '')
-            ->row()->invoiced_amount;
-
-        if ($result['invoiced_amount'] === null) {
-            $result['invoiced_amount'] = 0;
-        }
-
-        $result['credit_notes_amount'] = $this->ci->db->query('SELECT
-        SUM(' . db_prefix() . 'creditnotes.total) as credit_notes_amount
-        FROM ' . db_prefix() . 'creditnotes
-        WHERE date between CURDATE() - 7 and CURDATE() and clientid = ' . $this->ci->db->escape_str($aRow['userid']))->row()->credit_notes_amount;
-
-        if ($result['credit_notes_amount'] === null) {
-            $result['credit_notes_amount'] = 0;
-        }
-        $result['refunds_amount'] = $this->ci->db->query('SELECT
-        SUM(' . db_prefix() . 'creditnote_refunds.amount) as refunds_amount
-        FROM ' . db_prefix() . 'creditnote_refunds
-        WHERE credit_note_id IN (SELECT id FROM ' . db_prefix() . 'creditnotes where date between CURDATE() - 7 and CURDATE() and clientid=' . $this->ci->db->escape_str($aRow['userid']) . ')')->row()->refunds_amount;
-
-        if ($result['refunds_amount'] === null) {
-            $result['refunds_amount'] = 0;
-        }
-
-        $result['invoiced_amount'] = $result['invoiced_amount'];
-
-        // Amount paid during the period
-        $result['amount_paid'] = $this->ci->db->query('SELECT
-        SUM(' . db_prefix() . 'invoicepaymentrecords.amount) as amount_paid
-        FROM ' . db_prefix() . 'invoicepaymentrecords
-        JOIN ' . db_prefix() . 'invoices ON ' . db_prefix() . 'invoices.id = ' . db_prefix() . 'invoicepaymentrecords.invoiceid
-        WHERE ' . db_prefix() . 'invoices.clientid = ' . $this->ci->db->escape_str($aRow['userid']).' and tblinvoicepaymentrecords.date between CURDATE() - 7 and CURDATE()')
-            ->row()->amount_paid;
-
-        if ($result['amount_paid'] === null) {
-            $result['amount_paid'] = 0;
-        }
-        
-        
-        $result['direct_paid'] = $this->ci->db->query('SELECT
-        SUM(' . db_prefix() . 'invoicepaymentrecords.amount) as amount_paid
-        FROM ' . db_prefix() . 'invoicepaymentrecords
-        WHERE client_id = ' . $this->ci->db->escape_str($aRow['userid']).' and date between CURDATE() - 7 and CURDATE()')
-            ->row()->amount_paid;
-        if ($result['direct_paid'] === null) {
-            $result['direct_paid'] = 0;
-        }
-
-
-            $result['beginning_balance'] = 0;
-            $abc =  ($this->ci->db->select("balance")->from('tblclients')->where('userid', $aRow['userid'])->get()->result());
-        $result['beginning_balance'] += (float)$abc[0]->balance;
-        
-        $sql_expense = 'SELECT
-        SUM(' . db_prefix() . 'expenses.amount) as invoice_amount
-        FROM ' . db_prefix() . 'expenses
-        WHERE '. db_prefix() . 'expenses.clientid = ' . $this->ci->db->escape_str($aRow['userid']) . '  and date between CURDATE() - 7 and CURDATE()
-        ORDER by ' . db_prefix() . 'expenses.date DESC';
-
-        $sumexpense = $this->ci->db->query($sql_expense)->row()->invoice_amount;
-        if ($sumexpense==NULL){
-            $sumexpense=0;
-        }
-        $dec = get_decimal_places();
-        
-            $result['balance_due'] = number_format($result['invoiced_amount'] - $result['amount_paid'], $dec, '.', '');
-            // $result['balance_due'] = $result['balance_due'] + number_format($result['beginning_balance'], $dec, '.', '');
-            $result['balance_due'] = $result['balance_due'] - number_format($result['direct_paid'], $dec, '.', '');
-            // var_dump($this->ci->db->last_query());die;
-            $result['balance_due'] = $result['balance_due'] - number_format($result['refunds_amount'], $dec, '.', '');
-        $result['balance_due']=$result['balance_due'] + $sumexpense;
-        
-    $extend='Opening Balance: '. number_format($result['beginning_balance']).'<br>invoice: '.number_format($result['invoiced_amount']).'<br>paid='.$result['amount_paid'].'<br>Direct paid='.$result['direct_paid'].'<br>Refund: '.number_format($result['refunds_amount']).'<br>Expense: '.$sumexpense.'';
-    //   $extend='';
-    $row[] = number_format($result['balance_due']);
-    $row[] = $extend.'<br> aging='.number_format($result['balance_due']);
+    $extend='';
+    $row[] = '<div class="text-center">' . number_format($current, 2) . '</div>';
+    $row[] = '<div class="text-center">' . number_format($days_1_30, 2) . '</div>';
+    $row[] = '<div class="text-center">' . number_format($days_31_60, 2) . '</div>';
+    $row[] = '<div class="text-center">' . number_format($days_61_90, 2) . '</div>';
+    $row[] = '<div class="text-center">' . number_format($over_90, 2) . '</div>';
+    $row[] = '<div class="text-center"><strong>' . number_format($total_balance, 2) . '</strong></div>';
     // $row[]=$this->ci->db->last_query();
 
-    
-     // Invoiced amount during the period
-        $result['invoiced_amount'] = $this->ci->db->query('SELECT
-        SUM(' . db_prefix() . 'invoices.total) as invoiced_amount
-        FROM ' . db_prefix() . 'invoices
-        WHERE clientid = ' . $this->ci->db->escape_str($aRow['userid']) . ' and date <= CURDATE() -  14
-        AND status != ' . Invoices_model::STATUS_DRAFT . ' AND status != ' . Invoices_model::STATUS_CANCELLED . '')
-            ->row()->invoiced_amount;
 
-        if ($result['invoiced_amount'] === null) {
-            $result['invoiced_amount'] = 0;
-        }
+    // Calculate balance for 14 days ago using the optimized before_balance function
+    $date_14 = date('Y-m-d', strtotime('-14 days'));
+    $balance_14 = (float)before_balance($aRow['userid'], $date_14);
+    $result['balance_due'] = $balance_14;
 
-        $result['credit_notes_amount'] = $this->ci->db->query('SELECT
-        SUM(' . db_prefix() . 'creditnotes.total) as credit_notes_amount
-        FROM ' . db_prefix() . 'creditnotes
-        WHERE date <= CURDATE() -  14 and clientid = ' . $this->ci->db->escape_str($aRow['userid']))->row()->credit_notes_amount;
-
-        if ($result['credit_notes_amount'] === null) {
-            $result['credit_notes_amount'] = 0;
-        }
-        
-        
-
-        $result['refunds_amount'] = $this->ci->db->query('SELECT
-        SUM(' . db_prefix() . 'creditnote_refunds.amount) as refunds_amount
-        FROM ' . db_prefix() . 'creditnote_refunds
-        WHERE credit_note_id IN (SELECT id FROM ' . db_prefix() . 'creditnotes where date <= CURDATE() -  14 and clientid=' . $this->ci->db->escape_str($aRow['userid']) . ')')->row()->refunds_amount;
-
-        if ($result['refunds_amount'] === null) {
-            $result['refunds_amount'] = 0;
-        }
-
-        $result['invoiced_amount'] = $result['invoiced_amount'];
-
-        // Amount paid during the period
-        $result['amount_paid'] = $this->ci->db->query('SELECT
-        SUM(' . db_prefix() . 'invoicepaymentrecords.amount) as amount_paid
-        FROM ' . db_prefix() . 'invoicepaymentrecords
-        JOIN ' . db_prefix() . 'invoices ON ' . db_prefix() . 'invoices.id = ' . db_prefix() . 'invoicepaymentrecords.invoiceid
-        WHERE ' . db_prefix() . 'invoices.clientid = ' . $this->ci->db->escape_str($aRow['userid']).' and tblinvoicepaymentrecords.date <= CURDATE() -  14')
-            ->row()->amount_paid;
-
-        if ($result['amount_paid'] === null) {
-            $result['amount_paid'] = 0;
-        }
-        
-        
-        $result['direct_paid'] = $this->ci->db->query('SELECT
-        SUM(' . db_prefix() . 'invoicepaymentrecords.amount) as amount_paid
-        FROM ' . db_prefix() . 'invoicepaymentrecords
-        WHERE client_id = ' . $this->ci->db->escape_str($aRow['userid']).' and date <= CURDATE() -  14')
-            ->row()->amount_paid;
-        if ($result['direct_paid'] === null) {
-            $result['direct_paid'] = 0;
-        }
-
-
-            $result['beginning_balance'] = 0;
-            $abc =  ($this->ci->db->select("balance")->from('tblclients')->where('userid', $aRow['userid'])->get()->result());
-        $result['beginning_balance'] += (float)$abc[0]->balance;
-        
-        $sql_expense = 'SELECT
-        SUM(' . db_prefix() . 'expenses.amount) as invoice_amount
-        FROM ' . db_prefix() . 'expenses
-        WHERE '. db_prefix() . 'expenses.clientid = ' . $this->ci->db->escape_str($aRow['userid']) . ' AND tblexpenses.billable !=1 and date <= CURDATE() -  14
-        ORDER by ' . db_prefix() . 'expenses.date DESC';
-
-        $sumexpense = $this->ci->db->query($sql_expense)->row()->invoice_amount;
-        if ($sumexpense==NULL){
-            $sumexpense=0;
-        }
-
-        $dec = get_decimal_places();
-        
-            $result['balance_due'] = number_format($result['invoiced_amount'] - $result['amount_paid'], $dec, '.', '');
-            // $result['balance_due'] = $result['balance_due'] + number_format($result['beginning_balance'], $dec, '.', '');
-            $result['balance_due'] = $result['balance_due'] - number_format($result['direct_paid'], $dec, '.', '');
-            // var_dump($result['balance_due']);die;
-            $result['balance_due'] = $result['balance_due'] - number_format($result['refunds_amount'], $dec, '.', '');
-        $result['balance_due']=$result['balance_due'] + $sumexpense;
-        
     // $extend='Opening Balance: '. number_format($result['beginning_balance']).'<br>invoice: '.number_format($result['invoiced_amount']).'<br>paid='.(number_format($result['amount_paid'])+number_format($result['direct_paid'])).'<br>Refund: '.number_format($result['refunds_amount']).'<br>Expense: '.$sumexpense.'';
     $extend='';
-    $row[] = number_format($result['balance_due']);;
+    $row[] = '<div class="text-center">' . number_format($result['balance_due'], 2) . '</div>';
 
 
 
-             // Invoiced amount during the period
-        $result['invoiced_amount'] = $this->ci->db->query('SELECT
-        SUM(' . db_prefix() . 'invoices.total) as invoiced_amount
-        FROM ' . db_prefix() . 'invoices
-        WHERE clientid = ' . $this->ci->db->escape_str($aRow['userid']) . ' and date <= CURDATE() -  21
-        AND status != ' . Invoices_model::STATUS_DRAFT . ' AND status != ' . Invoices_model::STATUS_CANCELLED . '')
-            ->row()->invoiced_amount;
-
-        if ($result['invoiced_amount'] === null) {
-            $result['invoiced_amount'] = 0;
-        }
-
-        $result['credit_notes_amount'] = $this->ci->db->query('SELECT
-        SUM(' . db_prefix() . 'creditnotes.total) as credit_notes_amount
-        FROM ' . db_prefix() . 'creditnotes
-        WHERE date <= CURDATE() -  21 and clientid = ' . $this->ci->db->escape_str($aRow['userid']))->row()->credit_notes_amount;
-
-        if ($result['credit_notes_amount'] === null) {
-            $result['credit_notes_amount'] = 0;
-        }
-        $result['refunds_amount'] = $this->ci->db->query('SELECT
-        SUM(' . db_prefix() . 'creditnote_refunds.amount) as refunds_amount
-        FROM ' . db_prefix() . 'creditnote_refunds
-        WHERE credit_note_id IN (SELECT id FROM ' . db_prefix() . 'creditnotes where date <= CURDATE() -  21 and clientid=' . $this->ci->db->escape_str($aRow['userid']) . ')')->row()->refunds_amount;
-
-        if ($result['refunds_amount'] === null) {
-            $result['refunds_amount'] = 0;
-        }
-
-        $result['invoiced_amount'] = $result['invoiced_amount'];
-
-        // Amount paid during the period
-        $result['amount_paid'] = $this->ci->db->query('SELECT
-        SUM(' . db_prefix() . 'invoicepaymentrecords.amount) as amount_paid
-        FROM ' . db_prefix() . 'invoicepaymentrecords
-        JOIN ' . db_prefix() . 'invoices ON ' . db_prefix() . 'invoices.id = ' . db_prefix() . 'invoicepaymentrecords.invoiceid
-        WHERE ' . db_prefix() . 'invoices.clientid = ' . $this->ci->db->escape_str($aRow['userid']).' and tblinvoicepaymentrecords.date <= CURDATE() -  21')
-            ->row()->amount_paid;
-
-        if ($result['amount_paid'] === null) {
-            $result['amount_paid'] = 0;
-        }
-        
-        
-        $result['direct_paid'] = $this->ci->db->query('SELECT
-        SUM(' . db_prefix() . 'invoicepaymentrecords.amount) as amount_paid
-        FROM ' . db_prefix() . 'invoicepaymentrecords
-        WHERE client_id = ' . $this->ci->db->escape_str($aRow['userid']).' and date <= CURDATE() -  21')
-            ->row()->amount_paid;
-        if ($result['direct_paid'] === null) {
-            $result['direct_paid'] = 0;
-        }
-
-
-            $result['beginning_balance'] = 0;
-            $abc =  ($this->ci->db->select("balance")->from('tblclients')->where('userid', $aRow['userid'])->get()->result());
-        $result['beginning_balance'] += (float)$abc[0]->balance;
-        
-        $sql_expense = 'SELECT
-        SUM(' . db_prefix() . 'expenses.amount) as invoice_amount
-        FROM ' . db_prefix() . 'expenses
-        WHERE '. db_prefix() . 'expenses.clientid = ' . $this->ci->db->escape_str($aRow['userid']) . ' AND tblexpenses.billable !=1 and date <= CURDATE() -  21
-        ORDER by ' . db_prefix() . 'expenses.date DESC';
-
-        $sumexpense = $this->ci->db->query($sql_expense)->row()->invoice_amount;
-        if ($sumexpense==NULL){
-            $sumexpense=0;
-        }
-        
-        $dec = get_decimal_places();
-        
-            $result['balance_due'] = number_format($result['invoiced_amount'] - $result['amount_paid'], $dec, '.', '');
-            // $result['balance_due'] = $result['balance_due'] + number_format($result['beginning_balance'], $dec, '.', '');
-            $result['balance_due'] = $result['balance_due'] - number_format($result['direct_paid'], $dec, '.', '');
-            // var_dump($result['balance_due']);die;
-            $result['balance_due'] = $result['balance_due'] - number_format($result['refunds_amount'], $dec, '.', '');
-        $result['balance_due']=$result['balance_due'] + $sumexpense;
+    // Calculate balance for 21 days ago using the optimized before_balance function
+    $date_21 = date('Y-m-d', strtotime('-21 days'));
+    $balance_21 = (float)before_balance($aRow['userid'], $date_21);
+    $result['balance_due'] = $balance_21;
     // $extend='Opening Balance: '. number_format($result['beginning_balance']).'<br>invoice: '.number_format($result['invoiced_amount']).'<br>paid='.(number_format($result['amount_paid'])+number_format($result['direct_paid'])).'<br>Refund: '.number_format($result['refunds_amount']).'<br>Expense: '.$sumexpense.'';
     $extend='';
-    $row[] = number_format($result['balance_due']);;
+    $row[] = '<div class="text-center">' . number_format($result['balance_due'], 2) . '</div>';
 
 
-         // Invoiced amount during the period
-        $result['invoiced_amount'] = $this->ci->db->query('SELECT
-        SUM(' . db_prefix() . 'invoices.total) as invoiced_amount
-        FROM ' . db_prefix() . 'invoices
-        WHERE clientid = ' . $this->ci->db->escape_str($aRow['userid']) . ' and date <= CURDATE() -  30
-        AND status != ' . Invoices_model::STATUS_DRAFT . ' AND status != ' . Invoices_model::STATUS_CANCELLED . '')
-            ->row()->invoiced_amount;
-
-        if ($result['invoiced_amount'] === null) {
-            $result['invoiced_amount'] = 0;
-        }
-
-        $result['credit_notes_amount'] = $this->ci->db->query('SELECT
-        SUM(' . db_prefix() . 'creditnotes.total) as credit_notes_amount
-        FROM ' . db_prefix() . 'creditnotes
-        WHERE date <= CURDATE() -  30 and clientid = ' . $this->ci->db->escape_str($aRow['userid']))->row()->credit_notes_amount;
-
-        if ($result['credit_notes_amount'] === null) {
-            $result['credit_notes_amount'] = 0;
-        }
-        $result['refunds_amount'] = $this->ci->db->query('SELECT
-        SUM(' . db_prefix() . 'creditnote_refunds.amount) as refunds_amount
-        FROM ' . db_prefix() . 'creditnote_refunds
-        WHERE credit_note_id IN (SELECT id FROM ' . db_prefix() . 'creditnotes where date <= CURDATE() -  30 and clientid=' . $this->ci->db->escape_str($aRow['userid']) . ')')->row()->refunds_amount;
-
-        if ($result['refunds_amount'] === null) {
-            $result['refunds_amount'] = 0;
-        }
-
-        $result['invoiced_amount'] = $result['invoiced_amount'];
-
-        // Amount paid during the period
-        $result['amount_paid'] = $this->ci->db->query('SELECT
-        SUM(' . db_prefix() . 'invoicepaymentrecords.amount) as amount_paid
-        FROM ' . db_prefix() . 'invoicepaymentrecords
-        JOIN ' . db_prefix() . 'invoices ON ' . db_prefix() . 'invoices.id = ' . db_prefix() . 'invoicepaymentrecords.invoiceid
-        WHERE ' . db_prefix() . 'invoices.clientid = ' . $this->ci->db->escape_str($aRow['userid']).' and tblinvoicepaymentrecords.date <= CURDATE() -  30')
-            ->row()->amount_paid;
-
-        if ($result['amount_paid'] === null) {
-            $result['amount_paid'] = 0;
-        }
-        
-        
-        $result['direct_paid'] = $this->ci->db->query('SELECT
-        SUM(' . db_prefix() . 'invoicepaymentrecords.amount) as amount_paid
-        FROM ' . db_prefix() . 'invoicepaymentrecords
-        WHERE client_id = ' . $this->ci->db->escape_str($aRow['userid']).' and date <= CURDATE() -  30')
-            ->row()->amount_paid;
-        if ($result['direct_paid'] === null) {
-            $result['direct_paid'] = 0;
-        }
-
-
-            $result['beginning_balance'] = 0;
-            $abc =  ($this->ci->db->select("balance")->from('tblclients')->where('userid', $aRow['userid'])->get()->result());
-        $result['beginning_balance'] += (float)$abc[0]->balance;
-        
-        $sql_expense = 'SELECT
-        SUM(' . db_prefix() . 'expenses.amount) as invoice_amount
-        FROM ' . db_prefix() . 'expenses
-        WHERE '. db_prefix() . 'expenses.clientid = ' . $this->ci->db->escape_str($aRow['userid']) . ' AND tblexpenses.billable !=1 and date <= CURDATE() -  30
-        ORDER by ' . db_prefix() . 'expenses.date DESC';
-
-        $sumexpense = $this->ci->db->query($sql_expense)->row()->invoice_amount;
-        if ($sumexpense==NULL){
-            $sumexpense=0;
-        }
-        
-        $dec = get_decimal_places();
-        
-            $result['balance_due'] = number_format($result['invoiced_amount'] - $result['amount_paid'], $dec, '.', '');
-            // $result['balance_due'] = $result['balance_due'] + number_format($result['beginning_balance'], $dec, '.', '');
-            $result['balance_due'] = $result['balance_due'] - number_format($result['direct_paid'], $dec, '.', '');
-            // var_dump($result['balance_due']);die;
-            $result['balance_due'] = $result['balance_due'] - number_format($result['refunds_amount'], $dec, '.', '');
-        $result['balance_due']=$result['balance_due'] + $sumexpense;
+    // Calculate balance for 30 days ago using the optimized before_balance function
+    $date_30 = date('Y-m-d', strtotime('-30 days'));
+    $balance_30 = (float)before_balance($aRow['userid'], $date_30);
+    $result['balance_due'] = $balance_30;
     // $extend='Opening Balance: '. number_format($result['beginning_balance']).'<br>invoice: '.number_format($result['invoiced_amount']).'<br>paid='.(number_format($result['amount_paid'])+number_format($result['direct_paid'])).'<br>Refund: '.number_format($result['refunds_amount']).'<br>Expense: '.$sumexpense.'';
     $extend='';
-    $row[] = number_format($result['balance_due']);;
+    $row[] = '<div class="text-center">' . number_format($result['balance_due'], 2) . '</div>';
 
 
-         // Invoiced amount during the period
-        $result['invoiced_amount'] = $this->ci->db->query('SELECT
-        SUM(' . db_prefix() . 'invoices.total) as invoiced_amount
-        FROM ' . db_prefix() . 'invoices
-        WHERE clientid = ' . $this->ci->db->escape_str($aRow['userid']) . ' and date <= CURDATE() -  60
-        AND status != ' . Invoices_model::STATUS_DRAFT . ' AND status != ' . Invoices_model::STATUS_CANCELLED . '')
-            ->row()->invoiced_amount;
-
-        if ($result['invoiced_amount'] === null) {
-            $result['invoiced_amount'] = 0;
-        }
-
-        $result['credit_notes_amount'] = $this->ci->db->query('SELECT
-        SUM(' . db_prefix() . 'creditnotes.total) as credit_notes_amount
-        FROM ' . db_prefix() . 'creditnotes
-        WHERE date <= CURDATE() -  60 and clientid = ' . $this->ci->db->escape_str($aRow['userid']))->row()->credit_notes_amount;
-
-        if ($result['credit_notes_amount'] === null) {
-            $result['credit_notes_amount'] = 0;
-        }
-        $result['refunds_amount'] = $this->ci->db->query('SELECT
-        SUM(' . db_prefix() . 'creditnote_refunds.amount) as refunds_amount
-        FROM ' . db_prefix() . 'creditnote_refunds
-        WHERE credit_note_id IN (SELECT id FROM ' . db_prefix() . 'creditnotes where date <= CURDATE() -  60 and clientid=' . $this->ci->db->escape_str($aRow['userid']) . ')')->row()->refunds_amount;
-
-        if ($result['refunds_amount'] === null) {
-            $result['refunds_amount'] = 0;
-        }
-
-        $result['invoiced_amount'] = $result['invoiced_amount'];
-
-        // Amount paid during the period
-        $result['amount_paid'] = $this->ci->db->query('SELECT
-        SUM(' . db_prefix() . 'invoicepaymentrecords.amount) as amount_paid
-        FROM ' . db_prefix() . 'invoicepaymentrecords
-        JOIN ' . db_prefix() . 'invoices ON ' . db_prefix() . 'invoices.id = ' . db_prefix() . 'invoicepaymentrecords.invoiceid
-        WHERE ' . db_prefix() . 'invoices.clientid = ' . $this->ci->db->escape_str($aRow['userid']).' and tblinvoicepaymentrecords.date <= CURDATE() -  60')
-            ->row()->amount_paid;
-
-        if ($result['amount_paid'] === null) {
-            $result['amount_paid'] = 0;
-        }
-        
-        
-        $result['direct_paid'] = $this->ci->db->query('SELECT
-        SUM(' . db_prefix() . 'invoicepaymentrecords.amount) as amount_paid
-        FROM ' . db_prefix() . 'invoicepaymentrecords
-        WHERE client_id = ' . $this->ci->db->escape_str($aRow['userid']).' and date <= CURDATE() -  60')
-            ->row()->amount_paid;
-        if ($result['direct_paid'] === null) {
-            $result['direct_paid'] = 0;
-        }
-
-
-            $result['beginning_balance'] = 0;
-            $abc =  ($this->ci->db->select("balance")->from('tblclients')->where('userid', $aRow['userid'])->get()->result());
-        $result['beginning_balance'] += (float)$abc[0]->balance;
-        
-        $sql_expense = 'SELECT
-        SUM(' . db_prefix() . 'expenses.amount) as invoice_amount
-        FROM ' . db_prefix() . 'expenses
-        WHERE '. db_prefix() . 'expenses.clientid = ' . $this->ci->db->escape_str($aRow['userid']) . ' AND tblexpenses.billable !=1 and date <= CURDATE() -  60
-        ORDER by ' . db_prefix() . 'expenses.date DESC';
-
-        $sumexpense = $this->ci->db->query($sql_expense)->row()->invoice_amount;
-        if ($sumexpense==NULL){
-            $sumexpense=0;
-        }
-        
-        $dec = get_decimal_places();
-        
-            $result['balance_due'] = number_format($result['invoiced_amount'] - $result['amount_paid'], $dec, '.', '');
-            // $result['balance_due'] = $result['balance_due'] + number_format($result['beginning_balance'], $dec, '.', '');
-            $result['balance_due'] = $result['balance_due'] - number_format($result['direct_paid'], $dec, '.', '');
-            // var_dump($result['balance_due']);die;
-            $result['balance_due'] = $result['balance_due'] - number_format($result['refunds_amount'], $dec, '.', '');
-        $result['balance_due']=$result['balance_due'] + $sumexpense;
+    // Calculate balance for 60 days ago using the optimized before_balance function
+    $date_60 = date('Y-m-d', strtotime('-60 days'));
+    $balance_60 = (float)before_balance($aRow['userid'], $date_60);
+    $result['balance_due'] = $balance_60;
     // $extend='Opening Balance: '. number_format($result['beginning_balance']).'<br>invoice: '.number_format($result['invoiced_amount']).'<br>paid='.(number_format($result['amount_paid'])+number_format($result['direct_paid'])).'<br>Refund: '.number_format($result['refunds_amount']).'<br>Expense: '.$sumexpense.'';
     $extend='';
-    $row[] = number_format($result['balance_due']);;
+    $row[] = '<div class="text-center">' . number_format($result['balance_due'], 2) . '</div>';
 
 
-         // Invoiced amount during the period
-        $result['invoiced_amount'] = $this->ci->db->query('SELECT
-        SUM(' . db_prefix() . 'invoices.total) as invoiced_amount
-        FROM ' . db_prefix() . 'invoices
-        WHERE clientid = ' . $this->ci->db->escape_str($aRow['userid']) . ' and date <= CURDATE() -  90
-        AND status != ' . Invoices_model::STATUS_DRAFT . ' AND status != ' . Invoices_model::STATUS_CANCELLED . '')
-            ->row()->invoiced_amount;
-
-        if ($result['invoiced_amount'] === null) {
-            $result['invoiced_amount'] = 0;
-        }
-
-        $result['credit_notes_amount'] = $this->ci->db->query('SELECT
-        SUM(' . db_prefix() . 'creditnotes.total) as credit_notes_amount
-        FROM ' . db_prefix() . 'creditnotes
-        WHERE date <= CURDATE() -  90 and clientid = ' . $this->ci->db->escape_str($aRow['userid']))->row()->credit_notes_amount;
-
-        if ($result['credit_notes_amount'] === null) {
-            $result['credit_notes_amount'] = 0;
-        }
-        $result['refunds_amount'] = $this->ci->db->query('SELECT
-        SUM(' . db_prefix() . 'creditnote_refunds.amount) as refunds_amount
-        FROM ' . db_prefix() . 'creditnote_refunds
-        WHERE credit_note_id IN (SELECT id FROM ' . db_prefix() . 'creditnotes where date <= CURDATE() -  90 and clientid=' . $this->ci->db->escape_str($aRow['userid']) . ')')->row()->refunds_amount;
-
-        if ($result['refunds_amount'] === null) {
-            $result['refunds_amount'] = 0;
-        }
-
-        $result['invoiced_amount'] = $result['invoiced_amount'];
-
-        // Amount paid during the period
-        $result['amount_paid'] = $this->ci->db->query('SELECT
-        SUM(' . db_prefix() . 'invoicepaymentrecords.amount) as amount_paid
-        FROM ' . db_prefix() . 'invoicepaymentrecords
-        JOIN ' . db_prefix() . 'invoices ON ' . db_prefix() . 'invoices.id = ' . db_prefix() . 'invoicepaymentrecords.invoiceid
-        WHERE ' . db_prefix() . 'invoices.clientid = ' . $this->ci->db->escape_str($aRow['userid']).' and tblinvoicepaymentrecords.date <= CURDATE() -  90')
-            ->row()->amount_paid;
-
-        if ($result['amount_paid'] === null) {
-            $result['amount_paid'] = 0;
-        }
-        
-        
-        $result['direct_paid'] = $this->ci->db->query('SELECT
-        SUM(' . db_prefix() . 'invoicepaymentrecords.amount) as amount_paid
-        FROM ' . db_prefix() . 'invoicepaymentrecords
-        WHERE client_id = ' . $this->ci->db->escape_str($aRow['userid']).' and date <= CURDATE() -  90')
-            ->row()->amount_paid;
-        if ($result['direct_paid'] === null) {
-            $result['direct_paid'] = 0;
-        }
-
-
-            $result['beginning_balance'] = 0;
-        $abc =  ($this->ci->db->select("balance")->from('tblclients')->where('userid', $aRow['userid'])->get()->result());
-        $result['beginning_balance'] += (float)$abc[0]->balance;
-        
-        $sql_expense = 'SELECT
-        SUM(' . db_prefix() . 'expenses.amount) as invoice_amount
-        FROM ' . db_prefix() . 'expenses
-        WHERE '. db_prefix() . 'expenses.clientid = ' . $this->ci->db->escape_str($aRow['userid']) . ' AND tblexpenses.billable !=1 and date <= CURDATE() -  90
-        ORDER by ' . db_prefix() . 'expenses.date DESC';
-
-        $sumexpense = $this->ci->db->query($sql_expense)->row()->invoice_amount;
-        if ($sumexpense==NULL){
-            $sumexpense=0;
-        }
-        $dec = get_decimal_places();
-        
-            $result['balance_due'] = number_format($result['invoiced_amount'] - $result['amount_paid'], $dec, '.', '');
-            // $result['balance_due'] = $result['balance_due'] + number_format($result['beginning_balance'], $dec, '.', '');
-            $result['balance_due'] = $result['balance_due'] - number_format($result['direct_paid'], $dec, '.', '');
-            // var_dump($result['balance_due']);die;
-            $result['balance_due'] = $result['balance_due'] - number_format($result['refunds_amount'], $dec, '.', '');
-        $result['balance_due']=$result['balance_due'] + $sumexpense;
+    // Calculate balance for 90 days ago using the optimized before_balance function
+    $date_90 = date('Y-m-d', strtotime('-90 days'));
+    $balance_90 = (float)before_balance($aRow['userid'], $date_90);
+    $result['balance_due'] = $balance_90;
     // $extend='Opening Balance: '. number_format($result['beginning_balance']).'<br>invoice: '.number_format($result['invoiced_amount']).'<br>paid='.(number_format($result['amount_paid'])+number_format($result['direct_paid'])).'<br>Refund: '.number_format($result['refunds_amount']).'<br>Expense: '.$sumexpense.'';
     $extend='';
-    $row[] =number_format($result['balance_due']);
+    $row[] = '<div class="text-center">' . number_format($result['balance_due'], 2) . '</div>';
 
     $row = hooks()->apply_filters('customers_table_row_data', $row, $aRow);
 
