@@ -42,29 +42,17 @@ foreach ($rResult as $aRow) {
     $row[] = $aRow['consumer_secret'];
 
     $option = '';
+    $option .= '<div class="border_cus">';
     $option .= '<a href="' . admin_url('omni_sales/detail_channel_wcm/'. $aRow['id']) . '" class="btn btn-primary btn-icon" data-toggle="tooltip" data-placement="top" data-original-title="'._l("setting_product").'" data-id="'.$aRow['id'].'" >';
     $option .= '<i class="fa fa-arrow-right "></i>';
     $option .= '</a>';
-  
-    $option .= '<a href="#" onclick="sync_store(this); return false;" data-id="'.$aRow['id'].'" data-toggle="tooltip" data-placement="top" data-original-title="'._l("sync_from_the_system_to_the_store").'" class="btn btn-warning btn-icon orders-woo" data-toggle="dropdown" aria-expanded="false">';
-    $option .= '<i class="fa fa-refresh" aria-hidden="true"></i>';
-    $option .= '</a>';
-
-    $option .= '<a href="#" onclick="sync_inventory_synchronization(this); return false;" data-id="'.$aRow['id'].'" data-toggle="tooltip" data-placement="top" data-original-title="'._l("sync_from_store").'" class="btn btn-success btn-icon">';
-    $option .= '<i class="fa fa-refresh" aria-hidden="true" data-toggle="dropdown" aria-expanded="false"></i>';
-    $option .= '</a>';
-
-    $option .= '<a href="#" onclick="sync_decriptions_synchronization(this); return false;" data-id="'.$aRow['id'].'" data-toggle="tooltip" data-placement="top" data-original-title="'._l("sync_decriptions").'" class="btn btn-info btn-icon">';
-    $option .= '<i class="fa fa-refresh" aria-hidden="true" data-toggle="dropdown" aria-expanded="false"></i>';
-    $option .= '</a>';
-
-
-    $option .= '<a href="#" onclick="sync_images_synchronization(this); return false;" data-id="'.$aRow['id'].'" data-toggle="tooltip" data-placement="top" data-original-title="'._l("sync_images").'" class="btn btn-danger btn-icon">';
-    $option .= '<i class="fa fa-refresh" aria-hidden="true" data-toggle="dropdown" aria-expanded="false"></i>';
-    $option .= '</a>';
+    $option .= '</div>';
 
     $row[] = $option;
 
     $output['aaData'][] = $row;
 
 }
+
+echo json_encode($output);
+die;

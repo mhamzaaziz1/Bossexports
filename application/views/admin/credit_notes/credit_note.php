@@ -443,7 +443,7 @@
                         <span class="bold"><?php echo _l('estimate_adjustment'); ?></span>
                      </div>
                      <div class="col-md-2" hidden>
-                        <input id="adj"   type="number" data-toggle="tooltip" data-title="<?php echo _l('numbers_not_formatted_while_editing'); ?>" value="<?php if(isset($estimate)){echo $estimate->adjustment; } else { echo 0; } ?>" class="form-control pull-left" name="adjustment">
+                        <input id="adj"   type="number" data-toggle="tooltip" data-title="<?php echo _l('numbers_not_formatted_while_editing'); ?>" value="<?php if(isset($credit_note)){echo $credit_note->adjustment; } else { echo 0; } ?>" class="form-control pull-left" name="adjustment">
                      </div>
                      <div class="col-md-7">
                         <select class="selectpicker" id="adjust">
@@ -501,6 +501,39 @@
        init_ajax_project_search_by_customer_id();
        // Maybe items ajax search
        init_ajax_search('items','#item_select.ajax-search',undefined,admin_url+'items/search');
+     });
+
+     $("#caldata").click(function(){
+         var volume = 0.00;
+         var weight = 0.00;
+         var vol = 0.00;
+         var wei = 0.00;
+         var volit = 0.00;
+         var weiit = 0.00;
+         for( var i=1; i<=500; i++) {
+             vol = Number($('[name="newitems['+i+'][custom_fields][items][5]"]').val());
+             if (isNaN(vol)) vol = 0;
+             volume += vol;
+
+             wei = Number($('[name="newitems['+i+'][custom_fields][items][1]"]').val());
+             if (isNaN(wei)) wei = 0;
+             weight += wei;
+
+             volit = Number($('[name="items['+i+'][custom_fields][items][5]"]').val());
+             if (isNaN(volit)) volit = 0;
+             volume += volit;
+
+             weiit = Number($('[name="items['+i+'][custom_fields][items][1]"]').val());
+             if (isNaN(weiit)) weiit = 0;
+             weight += weiit;
+         }
+         $("#weight").text(weight.toFixed(2));
+         $("#volu").text(volume.toFixed(2));
+     });
+
+     $("#adjust").change(function(){
+         $("#adj").val($(this).val());
+         calculate_total();
      });
    </script>
  </body>

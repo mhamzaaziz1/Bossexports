@@ -93,8 +93,6 @@ class Estimate_pdf extends App_pdf
 
         hooks()->do_action('pdf_close', ['pdf_instance' => $this, 'type' => $this->type()]);
 
-        $this->last_page_flag = true;
-
         if (!empty(getPdfOptions('estimate', 'closing_page', 'image')) || !empty(getPdfOptions('estimate', 'closing_page', 'text'))) {
             $this->AddPage();
             $this->is_ending_page = true;
@@ -117,6 +115,8 @@ class Estimate_pdf extends App_pdf
             $this->SetAutoPageBreak($auto_page_break, $bMargin);
             $this->setPageMark();
         }
+
+        $this->last_page_flag = true;
 
         TCPDF::Close();
     }

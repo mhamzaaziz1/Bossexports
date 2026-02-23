@@ -26,7 +26,11 @@
  * - quinterocesar
  * - Daniel Commesse Liévanos (danielcommesse)
  * - Pete Scopes (pdscopes)
+ * - gam04
  */
+
+use Carbon\CarbonInterface;
+
 return [
     'year' => ':count año|:count años',
     'a_year' => 'un año|:count años',
@@ -68,6 +72,10 @@ return [
     'diff_tomorrow_regexp' => 'mañana(?:\\s+a)?(?:\\s+las)?',
     'diff_before_yesterday' => 'anteayer',
     'diff_after_tomorrow' => 'pasado mañana',
+    'period_recurrences' => 'una vez|:count veces',
+    'period_interval' => 'cada :interval',
+    'period_start_date' => 'de :date',
+    'period_end_date' => 'a :date',
     'formats' => [
         'LT' => 'H:mm',
         'LTS' => 'H:mm:ss',
@@ -77,19 +85,19 @@ return [
         'LLLL' => 'dddd, D [de] MMMM [de] YYYY H:mm',
     ],
     'calendar' => [
-        'sameDay' => function (\Carbon\CarbonInterface $current) {
+        'sameDay' => static function (CarbonInterface $current) {
             return '[hoy a la'.($current->hour !== 1 ? 's' : '').'] LT';
         },
-        'nextDay' => function (\Carbon\CarbonInterface $current) {
+        'nextDay' => static function (CarbonInterface $current) {
             return '[mañana a la'.($current->hour !== 1 ? 's' : '').'] LT';
         },
-        'nextWeek' => function (\Carbon\CarbonInterface $current) {
+        'nextWeek' => static function (CarbonInterface $current) {
             return 'dddd [a la'.($current->hour !== 1 ? 's' : '').'] LT';
         },
-        'lastDay' => function (\Carbon\CarbonInterface $current) {
+        'lastDay' => static function (CarbonInterface $current) {
             return '[ayer a la'.($current->hour !== 1 ? 's' : '').'] LT';
         },
-        'lastWeek' => function (\Carbon\CarbonInterface $current) {
+        'lastWeek' => static function (CarbonInterface $current) {
             return '[el] dddd [pasado a la'.($current->hour !== 1 ? 's' : '').'] LT';
         },
         'sameElse' => 'L',
@@ -105,4 +113,13 @@ return [
     'day_of_first_week_of_year' => 4,
     'list' => [', ', ' y '],
     'meridiem' => ['a. m.', 'p. m.'],
+    'ordinal_words' => [
+        'of' => 'de',
+        'first' => 'primer',
+        'second' => 'segundo',
+        'third' => 'tercer',
+        'fourth' => 'cuarto',
+        'fifth' => 'quinto',
+        'last' => 'último',
+    ],
 ];

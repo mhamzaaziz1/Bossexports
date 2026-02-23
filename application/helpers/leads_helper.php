@@ -92,7 +92,7 @@ function get_leads_summary()
     $statuses = $CI->leads_model->get_status();
 
     $totalStatuses         = count($statuses);
-    $has_permission_view   = has_permission('leads', '', 'view');
+    $has_permission_view   = staff_can('view',  'leads');
     $sql                   = '';
     $whereNoViewPermission = '(addedfrom = ' . get_staff_user_id() . ' OR assigned=' . get_staff_user_id() . ' OR is_public = 1)';
 
@@ -176,7 +176,7 @@ function render_leads_status_select($statuses, $selected = '', $lang_key = '', $
     }
 
     if (is_admin() || get_option('staff_members_create_inline_lead_status') == '1') {
-        return render_select_with_input_group($name, $statuses, ['id', 'name'], $lang_key, $selected, '<a href="#" onclick="new_lead_status_inline();return false;" class="inline-field-new"><i class="fa fa-plus"></i></a>', $select_attrs);
+        return render_select_with_input_group($name, $statuses, ['id', 'name'], $lang_key, $selected, '<div class="input-group-btn"><a href="#" class="btn btn-default" onclick="new_lead_status_inline();return false;" class="inline-field-new"><i class="fa fa-plus"></i></a></div>', $select_attrs);
     }
 
     return render_select($name, $statuses, ['id', 'name'], $lang_key, $selected, $select_attrs);
@@ -194,7 +194,7 @@ function render_leads_status_select($statuses, $selected = '', $lang_key = '', $
 function render_leads_source_select($sources, $selected = '', $lang_key = '', $name = 'source', $select_attrs = [])
 {
     if (is_admin() || get_option('staff_members_create_inline_lead_source') == '1') {
-        echo render_select_with_input_group($name, $sources, ['id', 'name'], $lang_key, $selected, '<a href="#" onclick="new_lead_source_inline();return false;" class="inline-field-new"><i class="fa fa-plus"></i></a>', $select_attrs);
+        echo render_select_with_input_group($name, $sources, ['id', 'name'], $lang_key, $selected, '<div class="input-group-btn"><a href="#" class="btn btn-default" onclick="new_lead_source_inline();return false;" class="inline-field-new"><i class="fa fa-plus"></i></a></div>', $select_attrs);
     } else {
         echo render_select($name, $sources, ['id', 'name'], $lang_key, $selected, $select_attrs);
     }
@@ -227,9 +227,8 @@ function load_lead_language($lead_id)
     $CI->lang->language  = [];
 
     $CI->lang->load($language . '_lang', $language);
-    if (file_exists(APPPATH . 'language/' . $language . '/custom_lang.php')) {
-        $CI->lang->load('custom_lang', $language);
-    }
+    load_custom_lang_file($language);
+    $CI->lang->set_last_loaded_language($language);
 
     return true;
 }

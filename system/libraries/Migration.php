@@ -48,6 +48,8 @@ defined('BASEPATH') OR exit('No direct script access allowed');
  * @category	Libraries
  * @author		Reactor Engineers
  * @link
+ *
+ * @property-read CI_DB $db
  */
 class CI_Migration {
 

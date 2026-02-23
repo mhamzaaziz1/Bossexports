@@ -55,7 +55,7 @@ class Reports extends AdminController
 
         // Get all KB groups with articles filtered by date
         $data['groups'] = $this->knowledge_base_model->get_kbg($group, '', $date_filter);
-        $data['title']  = _l('kb_reports');
+        $data['title'] = _l('kb_reports');
         $this->load->view('admin/reports/knowledge_base_articles', $data);
     }
 
@@ -72,13 +72,13 @@ class Reports extends AdminController
     {
         $type = 'leads';
         if ($this->input->get('type')) {
-            $type                       = $type . '_' . $this->input->get('type');
+            $type = $type . '_' . $this->input->get('type');
             $data['leads_staff_report'] = json_encode($this->reports_model->leads_staff_report());
         }
         $this->load->model('leads_model');
-        $data['statuses']               = $this->leads_model->get_status();
+        $data['statuses'] = $this->leads_model->get_status();
         $data['leads_this_week_report'] = json_encode($this->reports_model->leads_this_week_report());
-        $data['leads_sources_report']   = json_encode($this->reports_model->leads_sources_report());
+        $data['leads_sources_report'] = json_encode($this->reports_model->leads_sources_report());
         $this->load->view('admin/reports/' . $type, $data);
     }
 
@@ -86,7 +86,7 @@ class Reports extends AdminController
     public function sales()
     {
         $data['mysqlVersion'] = $this->db->query('SELECT VERSION() as version')->row();
-        $data['sqlMode']      = $this->db->query('SELECT @@sql_mode as mode')->row();
+        $data['sqlMode'] = $this->db->query('SELECT @@sql_mode as mode')->row();
 
         if (is_using_multiple_currencies() || is_using_multiple_currencies(db_prefix() . 'creditnotes') || is_using_multiple_currencies(db_prefix() . 'estimates') || is_using_multiple_currencies(db_prefix() . 'proposals')) {
             $this->load->model('currencies_model');
@@ -98,20 +98,20 @@ class Reports extends AdminController
         $this->load->model('credit_notes_model');
 
         $data['credit_notes_statuses'] = $this->credit_notes_model->get_statuses();
-        $data['invoice_statuses']      = $this->invoices_model->get_statuses();
-        $data['estimate_statuses']     = $this->estimates_model->get_statuses();
-        $data['payments_years']        = $this->reports_model->get_distinct_payments_years();
+        $data['invoice_statuses'] = $this->invoices_model->get_statuses();
+        $data['estimate_statuses'] = $this->estimates_model->get_statuses();
+        $data['payments_years'] = $this->reports_model->get_distinct_payments_years();
         $data['estimates_sale_agents'] = $this->estimates_model->get_sale_agents();
 
         $data['invoices_sale_agents'] = $this->db->query('SELECT * FROM tblclients')->result_array();
         $data['invoices_sale_product'] = $this->db->query('SELECT * FROM tblitems')->result_array();
 
         $data['proposals_sale_agents'] = $this->proposals_model->get_sale_agents();
-        $data['proposals_statuses']    = $this->proposals_model->get_statuses();
+        $data['proposals_statuses'] = $this->proposals_model->get_statuses();
 
-        $data['invoice_taxes']     = $this->distinct_taxes('invoice');
-        $data['estimate_taxes']    = $this->distinct_taxes('estimate');
-        $data['proposal_taxes']    = $this->distinct_taxes('proposal');
+        $data['invoice_taxes'] = $this->distinct_taxes('invoice');
+        $data['estimate_taxes'] = $this->distinct_taxes('estimate');
+        $data['proposal_taxes'] = $this->distinct_taxes('proposal');
         $data['credit_note_taxes'] = $this->distinct_taxes('credit_note');
 
 
@@ -144,7 +144,7 @@ class Reports extends AdminController
                 }
             }
             $by_currency = $this->input->post('report_currency');
-            $currency    = $this->currencies_model->get_base_currency();
+            $currency = $this->currencies_model->get_base_currency();
             if ($by_currency) {
                 $i = 0;
                 foreach ($select as $_select) {
@@ -157,17 +157,17 @@ class Reports extends AdminController
                 }
                 $currency = $this->currencies_model->get($by_currency);
             }
-            $aColumns     = $select;
+            $aColumns = $select;
             $sIndexColumn = 'userid';
-            $sTable       = db_prefix() . 'clients';
-            $where        = [];
+            $sTable = db_prefix() . 'clients';
+            $where = [];
 
             $result = data_tables_init($aColumns, $sIndexColumn, $sTable, [], $where, [
                 'userid',
             ]);
-            $output  = $result['output'];
+            $output = $result['output'];
             $rResult = $result['rResult'];
-            $x       = 0;
+            $x = 0;
             foreach ($rResult as $aRow) {
                 $row = [];
                 for ($i = 0; $i < count($aColumns); $i++) {
@@ -200,7 +200,7 @@ class Reports extends AdminController
             $this->load->model('currencies_model');
             $this->load->model('payment_modes_model');
             $payment_gateways = $this->payment_modes_model->get_payment_gateways(true);
-            $select           = [
+            $select = [
                 db_prefix() . 'invoicepaymentrecords.id',
                 db_prefix() . 'invoicepaymentrecords.date',
                 'invoiceid',
@@ -227,10 +227,10 @@ class Reports extends AdminController
                 $currency = $this->currencies_model->get_base_currency();
             }
 
-            $aColumns     = $select;
+            $aColumns = $select;
             $sIndexColumn = 'id';
-            $sTable       = db_prefix() . 'invoicepaymentrecords';
-            $join         = [
+            $sTable = db_prefix() . 'invoicepaymentrecords';
+            $join = [
                 // 'JOIN ' . db_prefix() . 'invoices ON ' . db_prefix() . 'invoices.id = ' . db_prefix() . 'invoicepaymentrecords.invoiceid',
                 'LEFT JOIN ' . db_prefix() . 'clients ON ' . db_prefix() . 'clients.userid = ' . db_prefix() . 'invoicepaymentrecords.client_id',
                 'LEFT JOIN ' . db_prefix() . 'payment_modes ON ' . db_prefix() . 'payment_modes.id = ' . db_prefix() . 'invoicepaymentrecords.paymentmode',
@@ -246,7 +246,7 @@ class Reports extends AdminController
             ]);
             // var_dump($this->db->last_query());
 
-            $output  = $result['output'];
+            $output = $result['output'];
             $rResult = $result['rResult'];
 
             $footer_data['total_amount'] = 0;
@@ -271,6 +271,9 @@ class Reports extends AdminController
                         if (!empty($aRow['paymentmethod'])) {
                             $_data .= ' - ' . $aRow['paymentmethod'];
                         }
+                        if (empty($_data)) {
+                            $_data = 'Unspecified';
+                        }
                     } elseif ($aColumns[$i] == db_prefix() . 'invoicepaymentrecords.id') {
                         $_data = '<a href="' . admin_url('payments/payment/' . $_data) . '" target="_blank">' . $_data . '</a>';
                     } elseif ($aColumns[$i] == db_prefix() . 'invoicepaymentrecords.date') {
@@ -294,7 +297,7 @@ class Reports extends AdminController
             }
 
             $footer_data['total_amount'] = app_format_money($footer_data['total_amount'], $currency->name);
-            $output['sums']              = $footer_data;
+            $output['sums'] = $footer_data;
             echo json_encode($output);
             die();
         }
@@ -306,7 +309,7 @@ class Reports extends AdminController
             $this->load->model('currencies_model');
             $this->load->model('proposals_model');
 
-            $proposalsTaxes    = $this->distinct_taxes('proposal');
+            $proposalsTaxes = $this->distinct_taxes('proposal');
             $totalTaxesColumns = count($proposalsTaxes);
 
             $select = [
@@ -337,14 +340,14 @@ class Reports extends AdminController
                     WHERE ' . db_prefix() . 'itemable.rel_type="proposal" AND taxname="' . $tax['taxname'] . '" AND taxrate="' . $tax['taxrate'] . '" AND ' . db_prefix() . 'itemable.rel_id=' . db_prefix() . 'proposals.id) as total_tax_single_' . $key);
             }
 
-            $where              = [];
+            $where = [];
             $custom_date_select = $this->get_where_report_period();
             if ($custom_date_select != '') {
                 array_push($where, $custom_date_select);
             }
 
             if ($this->input->post('proposal_status')) {
-                $statuses  = $this->input->post('proposal_status');
+                $statuses = $this->input->post('proposal_status');
                 $_statuses = [];
                 if (is_array($statuses)) {
                     foreach ($statuses as $status) {
@@ -359,7 +362,7 @@ class Reports extends AdminController
             }
 
             if ($this->input->post('proposals_sale_agents')) {
-                $agents  = $this->input->post('proposals_sale_agents');
+                $agents = $this->input->post('proposals_sale_agents');
                 $_agents = [];
                 if (is_array($agents)) {
                     foreach ($agents as $agent) {
@@ -382,10 +385,10 @@ class Reports extends AdminController
                 $currency = $this->currencies_model->get_base_currency();
             }
 
-            $aColumns     = $select;
+            $aColumns = $select;
             $sIndexColumn = 'id';
-            $sTable       = db_prefix() . 'proposals';
-            $join         = [];
+            $sTable = db_prefix() . 'proposals';
+            $join = [];
 
             $result = data_tables_init($aColumns, $sIndexColumn, $sTable, $join, $where, [
                 'rel_id',
@@ -393,15 +396,15 @@ class Reports extends AdminController
                 'discount_percent',
             ]);
 
-            $output  = $result['output'];
+            $output = $result['output'];
             $rResult = $result['rResult'];
 
             $footer_data = [
-                'total'          => 0,
-                'subtotal'       => 0,
-                'total_tax'      => 0,
+                'total' => 0,
+                'subtotal' => 0,
+                'total_tax' => 0,
                 'discount_total' => 0,
-                'adjustment'     => 0,
+                'adjustment' => 0,
             ];
 
             foreach ($proposalsTaxes as $key => $tax) {
@@ -451,7 +454,7 @@ class Reports extends AdminController
                 $row[] = app_format_money($aRow['adjustment'], $currency->name);
                 $footer_data['adjustment'] += $aRow['adjustment'];
 
-                $row[]              = format_proposal_status($aRow['status']);
+                $row[] = format_proposal_status($aRow['status']);
                 $output['aaData'][] = $row;
             }
 
@@ -471,7 +474,7 @@ class Reports extends AdminController
             $this->load->model('currencies_model');
             $this->load->model('estimates_model');
 
-            $estimateTaxes     = $this->distinct_taxes('estimate');
+            $estimateTaxes = $this->distinct_taxes('estimate');
             $totalTaxesColumns = count($estimateTaxes);
 
             $select = [
@@ -504,14 +507,14 @@ class Reports extends AdminController
                     WHERE ' . db_prefix() . 'itemable.rel_type="estimate" AND taxname="' . $tax['taxname'] . '" AND taxrate="' . $tax['taxrate'] . '" AND ' . db_prefix() . 'itemable.rel_id=' . db_prefix() . 'estimates.id) as total_tax_single_' . $key);
             }
 
-            $where              = [];
+            $where = [];
             $custom_date_select = $this->get_where_report_period();
             if ($custom_date_select != '') {
                 array_push($where, $custom_date_select);
             }
 
             if ($this->input->post('estimate_status')) {
-                $statuses  = $this->input->post('estimate_status');
+                $statuses = $this->input->post('estimate_status');
                 $_statuses = [];
                 if (is_array($statuses)) {
                     foreach ($statuses as $status) {
@@ -526,7 +529,7 @@ class Reports extends AdminController
             }
 
             if ($this->input->post('sale_agent_estimates')) {
-                $agents  = $this->input->post('sale_agent_estimates');
+                $agents = $this->input->post('sale_agent_estimates');
                 $_agents = [];
                 if (is_array($agents)) {
                     foreach ($agents as $agent) {
@@ -548,10 +551,10 @@ class Reports extends AdminController
                 $currency = $this->currencies_model->get_base_currency();
             }
 
-            $aColumns     = $select;
+            $aColumns = $select;
             $sIndexColumn = 'id';
-            $sTable       = db_prefix() . 'estimates';
-            $join         = [
+            $sTable = db_prefix() . 'estimates';
+            $join = [
                 'LEFT JOIN ' . db_prefix() . 'clients ON ' . db_prefix() . 'clients.userid = ' . db_prefix() . 'estimates.clientid',
             ];
 
@@ -563,15 +566,15 @@ class Reports extends AdminController
                 'deleted_customer_name',
             ]);
 
-            $output  = $result['output'];
+            $output = $result['output'];
             $rResult = $result['rResult'];
 
             $footer_data = [
-                'total'          => 0,
-                'subtotal'       => 0,
-                'total_tax'      => 0,
+                'total' => 0,
+                'subtotal' => 0,
+                'total_tax' => 0,
                 'discount_total' => 0,
-                'adjustment'     => 0,
+                'adjustment' => 0,
             ];
 
             foreach ($estimateTaxes as $key => $tax) {
@@ -650,19 +653,19 @@ class Reports extends AdminController
 
     private function get_where_report_period($field = 'date')
     {
-        $months_report      = $this->input->post('report_months');
+        $months_report = $this->input->post('report_months');
         $custom_date_select = '';
         if ($months_report != '') {
             if (is_numeric($months_report)) {
                 // Last month
                 if ($months_report == '1') {
                     $beginMonth = date('Y-m-01', strtotime('first day of last month'));
-                    $endMonth   = date('Y-m-t', strtotime('last day of last month'));
+                    $endMonth = date('Y-m-t', strtotime('last day of last month'));
                 } else {
-                    $months_report = (int) $months_report;
+                    $months_report = (int)$months_report;
                     $months_report--;
                     $beginMonth = date('Y-m-01', strtotime("-$months_report MONTH"));
-                    $endMonth   = date('Y-m-t');
+                    $endMonth = date('Y-m-t');
                 }
 
                 $custom_date_select = ' AND (' . $field . ' BETWEEN "' . $beginMonth . '" AND "' . $endMonth . '")';
@@ -725,7 +728,7 @@ class Reports extends AdminController
             }
 
             $sIndexColumn = 'id';
-            $sTable       = db_prefix() . 'itemable';
+            $sTable = db_prefix() . 'itemable';
 
             // Optimize join by using LEFT JOIN for items to ensure all records are included
             $join = [
@@ -748,7 +751,7 @@ class Reports extends AdminController
             }
 
             if ($this->input->post('sale_agent_items')) {
-                $agents  = $this->input->post('sale_agent_items');
+                $agents = $this->input->post('sale_agent_items');
                 $_agents = [];
                 if (is_array($agents)) {
                     foreach ($agents as $agent) {
@@ -762,7 +765,7 @@ class Reports extends AdminController
                 }
             }
             if ($this->input->post('sale_product_items')) {
-                $agents  = $this->input->post('sale_product_items');
+                $agents = $this->input->post('sale_product_items');
                 $_agents = [];
                 if (is_array($agents)) {
                     foreach ($agents as $agent) {
@@ -783,12 +786,12 @@ class Reports extends AdminController
 //                'tblestimates.number'
             ], 'GROUP by description,tblinvoices.id,date, tblinvoices.clientid');
 
-            $output  = $result['output'];
+            $output = $result['output'];
             $rResult = $result['rResult'];
 
             $footer_data = [
                 'total_amount' => 0,
-                'total_qty'    => 0,
+                'total_qty' => 0,
             ];
 
             // Optimize by pre-fetching all estimate data in a single query
@@ -916,7 +919,7 @@ class Reports extends AdminController
             }
 
             if ($this->input->post('credit_note_status')) {
-                $statuses  = $this->input->post('credit_note_status');
+                $statuses = $this->input->post('credit_note_status');
                 $_statuses = [];
                 if (is_array($statuses)) {
                     foreach ($statuses as $status) {
@@ -930,10 +933,10 @@ class Reports extends AdminController
                 }
             }
 
-            $aColumns     = $select;
+            $aColumns = $select;
             $sIndexColumn = 'id';
-            $sTable       = db_prefix() . 'creditnotes';
-            $join         = [
+            $sTable = db_prefix() . 'creditnotes';
+            $join = [
                 'LEFT JOIN ' . db_prefix() . 'clients ON ' . db_prefix() . 'clients.userid = ' . db_prefix() . 'creditnotes.clientid',
             ];
 
@@ -945,15 +948,15 @@ class Reports extends AdminController
                 'deleted_customer_name',
             ]);
 
-            $output  = $result['output'];
+            $output = $result['output'];
             $rResult = $result['rResult'];
 
             $footer_data = [
-                'total'            => 0,
-                'subtotal'         => 0,
-                'total_tax'        => 0,
-                'discount_total'   => 0,
-                'adjustment'       => 0,
+                'total' => 0,
+                'subtotal' => 0,
+                'total_tax' => 0,
+                'discount_total' => 0,
+                'adjustment' => 0,
                 'remaining_amount' => 0,
             ];
 
@@ -1020,7 +1023,7 @@ class Reports extends AdminController
     public function invoices_report()
     {
         if ($this->input->is_ajax_request()) {
-            $invoice_taxes     = $this->distinct_taxes('invoice');
+            $invoice_taxes = $this->distinct_taxes('invoice');
             $totalTaxesColumns = count($invoice_taxes);
 
             $this->load->model('currencies_model');
@@ -1066,7 +1069,7 @@ class Reports extends AdminController
             }
 
             if ($this->input->post('sale_agent_invoices')) {
-                $agents  = $this->input->post('sale_agent_invoices');
+                $agents = $this->input->post('sale_agent_invoices');
                 $_agents = [];
                 if (is_array($agents)) {
                     foreach ($agents as $agent) {
@@ -1080,7 +1083,7 @@ class Reports extends AdminController
                 }
             }
 
-            $by_currency              = $this->input->post('report_currency');
+            $by_currency = $this->input->post('report_currency');
             $totalPaymentsColumnIndex = (12 + $totalTaxesColumns - 1);
 
             if ($by_currency) {
@@ -1091,12 +1094,12 @@ class Reports extends AdminController
                 $currency = $this->currencies_model->get($by_currency);
                 array_push($where, 'AND currency=' . $this->db->escape_str($by_currency));
             } else {
-                $currency                          = $this->currencies_model->get_base_currency();
+                $currency = $this->currencies_model->get_base_currency();
                 $select[$totalPaymentsColumnIndex] = $select[$totalPaymentsColumnIndex] .= ' as amount_open';
             }
 
             if ($this->input->post('invoice_status')) {
-                $statuses  = $this->input->post('invoice_status');
+                $statuses = $this->input->post('invoice_status');
                 $_statuses = [];
                 if (is_array($statuses)) {
                     foreach ($statuses as $status) {
@@ -1110,10 +1113,10 @@ class Reports extends AdminController
                 }
             }
 
-            $aColumns     = $select;
+            $aColumns = $select;
             $sIndexColumn = 'id';
-            $sTable       = db_prefix() . 'invoices';
-            $join         = [
+            $sTable = db_prefix() . 'invoices';
+            $join = [
                 'LEFT JOIN ' . db_prefix() . 'clients ON ' . db_prefix() . 'clients.userid = ' . db_prefix() . 'invoices.clientid',
             ];
 
@@ -1125,17 +1128,17 @@ class Reports extends AdminController
                 'deleted_customer_name',
             ]);
 
-            $output  = $result['output'];
+            $output = $result['output'];
             $rResult = $result['rResult'];
 
             $footer_data = [
-                'total'           => 0,
-                'subtotal'        => 0,
-                'total_tax'       => 0,
-                'discount_total'  => 0,
-                'adjustment'      => 0,
+                'total' => 0,
+                'subtotal' => 0,
+                'total_tax' => 0,
+                'discount_total' => 0,
+                'adjustment' => 0,
                 'applied_credits' => 0,
-                'amount_open'     => 0,
+                'amount_open' => 0,
             ];
 
             foreach ($invoice_taxes as $key => $tax) {
@@ -1163,7 +1166,7 @@ class Reports extends AdminController
                 $estimate = $query->result();
 
 
-                $row[] =  'SO-'.$estimate[0]->number;
+                $row[] = 'SO-' . $estimate[0]->number;
 
                 $row[] = app_format_money($aRow['subtotal'], $currency->name);
                 $footer_data['subtotal'] += $aRow['subtotal'];
@@ -1193,7 +1196,7 @@ class Reports extends AdminController
                 $footer_data['applied_credits'] += $aRow['credits_applied'];
 
                 $amountOpen = $aRow['amount_open'];
-                $row[]      = app_format_money($amountOpen, $currency->name);
+                $row[] = app_format_money($amountOpen, $currency->name);
                 $footer_data['amount_open'] += $amountOpen;
 
                 $row[] = format_invoice_status($aRow['status']);
@@ -1212,9 +1215,7 @@ class Reports extends AdminController
     }
 
 
-
-
-    public function get_sum_payments_today($customer_id,$date)
+    public function get_sum_payments_today($customer_id, $date)
     {
         // Select the sum of the 'amount' column
         $this->db->select_sum('amount');
@@ -1232,8 +1233,8 @@ class Reports extends AdminController
     }
 
 
-
-    public function directors_report(){
+    public function directors_report()
+    {
         if ($this->input->is_ajax_request()) {
             $this->load->model('currencies_model');
             $this->load->model('invoices_model');
@@ -1254,7 +1255,7 @@ class Reports extends AdminController
 
             // Sale agent filter
             if ($this->input->post('sale_agent_invoices')) {
-                $agents  = $this->input->post('sale_agent_invoices');
+                $agents = $this->input->post('sale_agent_invoices');
                 $_agents = [];
                 if (is_array($agents)) {
                     foreach ($agents as $agent) {
@@ -1377,7 +1378,7 @@ class Reports extends AdminController
                 $estimate = $query->result();
                 // var_dump($estimate);die;
 
-                $row[] = $invoiceLink.' - SO-000' .  $estimate[0]->number;
+                $row[] = $invoiceLink . ' - SO-000' . $estimate[0]->number;
                 $row[] = $aRow['PaymentID'];
                 $row[] = $aRow['TRANSACTIONID'];
 
@@ -1397,28 +1398,26 @@ class Reports extends AdminController
                 $row[] = _d($aRow['date']);
                 $row[] = app_format_money($aRow['amount'], $currency->name);
 
-                if (empty($aRow['status'])){
-                    $row[]="";
-                }
-                else if (!empty($aRow['status']) && $aRow['status']==2) {
-                    $row[]=format_invoice_status(2);
-                }else{
-                    $row[]=format_invoice_status(1);
+                if (empty($aRow['status'])) {
+                    $row[] = "";
+                } else if (!empty($aRow['status']) && $aRow['status'] == 2) {
+                    $row[] = format_invoice_status(2);
+                } else {
+                    $row[] = format_invoice_status(1);
                 }
                 // $row[] = $totalLeftToPay;
                 $this->db->select("value as value");
                 $this->db->from('tblcustomfieldsvalues');
-                $this->db->where('tblcustomfieldsvalues.relid',$aRow['ID']);
-                $this->db->where('tblcustomfieldsvalues.fieldid',7);
-                $this->db->where('tblcustomfieldsvalues.fieldto',"invoice");
+                $this->db->where('tblcustomfieldsvalues.relid', $aRow['ID']);
+                $this->db->where('tblcustomfieldsvalues.fieldid', 7);
+                $this->db->where('tblcustomfieldsvalues.fieldto', "invoice");
                 $query = $this->db->get()->result();
                 // var_dump($query);die;
-                if (empty($query)){
+                if (empty($query)) {
                     $row[] = '';
-                }else{
+                } else {
                     $row[] = $query->value;
                 }
-
 
 
                 $output['aaData'][] = $row;
@@ -1430,31 +1429,30 @@ class Reports extends AdminController
     }
 
 
-
     public function expenses($type = 'simple_report')
     {
         $this->load->model('currencies_model');
         $data['base_currency'] = $this->currencies_model->get_base_currency();
-        $data['currencies']    = $this->currencies_model->get();
+        $data['currencies'] = $this->currencies_model->get();
 
         $data['title'] = _l('expenses_report');
         if ($type != 'simple_report') {
             $this->load->model('expenses_model');
             $data['categories'] = $this->expenses_model->get_category();
-            $data['years']      = $this->expenses_model->get_expenses_years();
+            $data['years'] = $this->expenses_model->get_expenses_years();
 
             $this->load->model('payment_modes_model');
-            $data['payment_modes']  = $this->payment_modes_model->get('', [], true);
+            $data['payment_modes'] = $this->payment_modes_model->get('', [], true);
 
             if ($this->input->is_ajax_request()) {
                 $aColumns = [
-                    db_prefix().'expenses.category',
-                    db_prefix().'expenses.amount as amount',
+                    db_prefix() . 'expenses.category',
+                    db_prefix() . 'expenses.amount as amount',
                     'expense_name',
                     'tax',
                     'tax2',
                     '(SELECT taxrate FROM ' . db_prefix() . 'taxes WHERE id=' . db_prefix() . 'expenses.tax)',
-                    db_prefix().'expenses.amount as amount_with_tax',
+                    db_prefix() . 'expenses.amount as amount_with_tax',
                     'billable',
                     'date',
                     get_sql_select_client_company(),
@@ -1466,7 +1464,7 @@ class Reports extends AdminController
                     'LEFT JOIN ' . db_prefix() . 'clients ON ' . db_prefix() . 'clients.userid = ' . db_prefix() . 'expenses.clientid',
                     'LEFT JOIN ' . db_prefix() . 'expenses_categories ON ' . db_prefix() . 'expenses_categories.id = ' . db_prefix() . 'expenses.category',
                 ];
-                $where  = [];
+                $where = [];
                 $filter = [];
                 include_once(APPPATH . 'views/admin/tables/includes/expenses_filter.php');
                 if (count($filter) > 0) {
@@ -1482,23 +1480,23 @@ class Reports extends AdminController
                 }
 
                 $sIndexColumn = 'id';
-                $sTable       = db_prefix() . 'expenses';
-                $result       = data_tables_init($aColumns, $sIndexColumn, $sTable, $join, $where, [
+                $sTable = db_prefix() . 'expenses';
+                $result = data_tables_init($aColumns, $sIndexColumn, $sTable, $join, $where, [
                     db_prefix() . 'expenses_categories.name as category_name',
                     db_prefix() . 'expenses.id',
                     db_prefix() . 'expenses.clientid',
                     'currency',
                 ]);
-                $output  = $result['output'];
+                $output = $result['output'];
                 $rResult = $result['rResult'];
                 $this->load->model('currencies_model');
                 $this->load->model('payment_modes_model');
 
                 $footer_data = [
-                    'tax_1'           => 0,
-                    'tax_2'           => 0,
-                    'amount'          => 0,
-                    'total_tax'       => 0,
+                    'tax_1' => 0,
+                    'tax_2' => 0,
+                    'amount' => 0,
+                    'total_tax' => 0,
                     'amount_with_tax' => 0,
                 ];
 
@@ -1617,14 +1615,14 @@ class Reports extends AdminController
                 'billable' => 0,
             ], [
                 'backgroundColor' => 'rgba(252,45,66,0.4)',
-                'borderColor'     => '#fc2d42',
+                'borderColor' => '#fc2d42',
             ], $data['current_year']));
 
             $data['chart_billable'] = json_encode($this->reports_model->get_stats_chart_data(_l('billable_expenses_by_categories'), [
                 'billable' => 1,
             ], [
                 'backgroundColor' => 'rgba(37,155,35,0.2)',
-                'borderColor'     => '#84c529',
+                'borderColor' => '#84c529',
             ], $data['current_year']));
 
             $data['expense_years'] = $this->expenses_model->get_expenses_years();
@@ -1645,7 +1643,7 @@ class Reports extends AdminController
     public function expenses_vs_income($year = '')
     {
         $_expenses_years = [];
-        $_years          = [];
+        $_years = [];
         $this->load->model('expenses_model');
         $expenses_years = $this->expenses_model->get_expenses_years();
         $payments_years = $this->reports_model->get_distinct_payments_years();
@@ -1666,10 +1664,10 @@ class Reports extends AdminController
         rsort($_years, SORT_NUMERIC);
         $data['report_year'] = $year == '' ? date('Y') : $year;
 
-        $data['years']                           = $_years;
+        $data['years'] = $_years;
         $data['chart_expenses_vs_income_values'] = json_encode($this->reports_model->get_expenses_vs_income_report($year));
-        $data['base_currency']                   = get_base_currency();
-        $data['title']                           = _l('als_expenses_vs_income');
+        $data['base_currency'] = get_base_currency();
+        $data['title'] = _l('als_expenses_vs_income');
         $this->load->view('admin/reports/expenses_vs_income', $data);
     }
 
@@ -1745,7 +1743,9 @@ class Reports extends AdminController
             foreach ($payment_modes as $mode) {
                 if ($mode['id'] === 'others') {
                     // For "Others" category, include all payment modes that are not cash or bank
-                    $other_mode_ids = array_map(function($m) { return $m['id']; }, $other_modes);
+                    $other_mode_ids = array_map(function ($m) {
+                        return $m['id'];
+                    }, $other_modes);
                     if (!empty($other_mode_ids)) {
                         $payment_mode_columns['payment_mode_others'] = '(SELECT COALESCE(SUM(amount),0) FROM ' . db_prefix() . 'invoicepaymentrecords WHERE invoiceid = ' . db_prefix() . 'invoices.id AND paymentmode IN (' . implode(',', $other_mode_ids) . ')) as payment_mode_others';
                     } else {
@@ -1767,7 +1767,30 @@ class Reports extends AdminController
                 db_prefix() . 'invoices.total as invoice_amount',
                 '(SELECT COALESCE(SUM(amount),0) FROM ' . db_prefix() . 'invoicepaymentrecords WHERE invoiceid = ' . db_prefix() . 'invoices.id AND paymentmode = 2) as cash_paid',
                 '(SELECT COALESCE(SUM(amount),0) FROM ' . db_prefix() . 'invoicepaymentrecords WHERE invoiceid = ' . db_prefix() . 'invoices.id) as cash_paid_out',
-                '(SELECT COALESCE(SUM(amount),0) FROM ' . db_prefix() . 'invoicepaymentrecords WHERE invoiceid = ' . db_prefix() . 'invoices.id AND DATE(' . db_prefix() . 'invoicepaymentrecords.date) = DATE(' . db_prefix() . 'invoices.date)) as today_amount_due',
+                '(
+                    SELECT 
+                        GROUP_CONCAT(
+                            CONCAT(
+                                "Transaction ID: ", IFNULL(ipr.transactionid, "N/A"), 
+                                ", Amount: ", IFNULL(ipr.amount, 0)
+                            )
+                            ORDER BY ipr.transactionid
+                            SEPARATOR "\n"
+                        )
+                    FROM (
+                        SELECT 
+                            p.transactionid, 
+                            SUM(p.amount) as amount
+                        FROM ' . db_prefix() . 'invoicepaymentrecords p
+                        LEFT JOIN ' . db_prefix() . 'payments pay ON p.paymentid = pay.id
+                        WHERE 
+                            (p.invoiceid = ' . db_prefix() . 'invoices.id OR 
+                             (p.invoiceid = 0 OR p.invoiceid IS NULL) AND pay.clientid = ' . db_prefix() . 'invoices.clientid
+                            )
+                            AND DATE(p.date) = DATE(' . db_prefix() . 'invoices.date)
+                        GROUP BY p.transactionid
+                    ) ipr
+                ) as today_amount_due',
                 '(' . db_prefix() . 'invoices.total - (SELECT COALESCE(SUM(amount),0) FROM ' . db_prefix() . 'invoicepaymentrecords WHERE invoiceid = ' . db_prefix() . 'invoices.id)) as total_invoice_due',
                 '(SELECT IF(EXISTS(SELECT 1 FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name = "' . db_prefix() . 'acc_accounts"), (SELECT COALESCE(balance,0) FROM ' . db_prefix() . 'acc_accounts WHERE key_name LIKE "%Zim%"  LIMIT 1), 0)) as zim_account',
                 '(SELECT COALESCE(SUM(total),0) FROM ' . db_prefix() . 'creditnotes WHERE DATE(' . db_prefix() . 'creditnotes.date) = DATE(' . db_prefix() . 'invoices.date) AND ' . db_prefix() . 'creditnotes.clientid = ' . db_prefix() . 'invoices.clientid) as credit_note',
@@ -1851,7 +1874,30 @@ class Reports extends AdminController
                 db_prefix() . 'invoices.total as invoice_amount',
                 '(SELECT COALESCE(SUM(amount),0) FROM ' . db_prefix() . 'invoicepaymentrecords WHERE invoiceid = ' . db_prefix() . 'invoices.id AND paymentmode = 2) as cash_paid',
                 '(SELECT COALESCE(SUM(amount),0) FROM ' . db_prefix() . 'invoicepaymentrecords WHERE invoiceid = ' . db_prefix() . 'invoices.id) as cash_paid_out',
-                '(SELECT COALESCE(SUM(amount),0) FROM ' . db_prefix() . 'invoicepaymentrecords WHERE invoiceid = ' . db_prefix() . 'invoices.id AND DATE(' . db_prefix() . 'invoicepaymentrecords.date) = DATE(' . db_prefix() . 'invoices.date)) as today_amount_due',
+                '(
+                    SELECT 
+                        GROUP_CONCAT(
+                            CONCAT(
+                                "Transaction ID: ", IFNULL(ipr.transactionid, "N/A"), 
+                                ", Amount: ", IFNULL(ipr.amount, 0)
+                            )
+                            ORDER BY ipr.transactionid
+                            SEPARATOR "\n"
+                        )
+                    FROM (
+                        SELECT 
+                            p.transactionid, 
+                            SUM(p.amount) as amount
+                        FROM ' . db_prefix() . 'invoicepaymentrecords p
+                        LEFT JOIN ' . db_prefix() . 'payments pay ON p.paymentid = pay.id
+                        WHERE 
+                            (p.invoiceid = ' . db_prefix() . 'invoices.id OR 
+                             (p.invoiceid = 0 OR p.invoiceid IS NULL) AND pay.clientid = ' . db_prefix() . 'invoices.clientid
+                            )
+                            AND DATE(p.date) = DATE(' . db_prefix() . 'invoices.date)
+                        GROUP BY p.transactionid
+                    ) ipr
+                ) as today_amount_due',
                 '(' . db_prefix() . 'invoices.total - (SELECT COALESCE(SUM(amount),0) FROM ' . db_prefix() . 'invoicepaymentrecords WHERE invoiceid = ' . db_prefix() . 'invoices.id)) as total_invoice_due',
                 '(SELECT IF(EXISTS(SELECT 1 FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name = "' . db_prefix() . 'acc_accounts"), (SELECT COALESCE(balance,0) FROM ' . db_prefix() . 'acc_accounts WHERE key_name LIKE "%Zim%"  LIMIT 1), 0)) as zim_account',
                 '(SELECT COALESCE(SUM(total),0) FROM ' . db_prefix() . 'creditnotes WHERE DATE(' . db_prefix() . 'creditnotes.date) = DATE(' . db_prefix() . 'invoices.date) AND ' . db_prefix() . 'creditnotes.clientid = ' . db_prefix() . 'invoices.clientid) as credit_note',
@@ -2050,7 +2096,6 @@ class Reports extends AdminController
                     }
                 }
             }
-
 
 
             $footer_data = [
@@ -2298,6 +2343,391 @@ class Reports extends AdminController
         $this->load->view('admin/reports/cashbook', $data);
     }
 
+    public function cashbook2()
+    {
+        $data['title'] = _l('cashbook2_report');
+        $this->load->view('admin/reports/cashbook2', $data);
+    }
+
+    /**
+     * Cashbook2 report - Detailed report grouped by Customer Name and sorted by Invoice Date
+     * This endpoint is used for the Cashbook2 report data
+     */
+    public function cashbook2_report()
+{
+    try {
+        $this->load->model('currencies_model');
+        $this->load->model('invoices_model');
+        $this->load->model('payment_modes_model');
+        $this->load->model('credit_notes_model'); // Ensure model is loaded
+        
+        $currency = $this->currencies_model->get_base_currency();
+
+        // ---------------------------------------------------
+        // 1. SETUP HELPERS & FILTERS
+        // ---------------------------------------------------
+        
+        // Payment Modes Map
+        $all_payment_modes = $this->payment_modes_model->get();
+        $payment_modes_map = [];
+        $bank_modes = [];
+        foreach ($all_payment_modes as $pm) {
+            if (isset($pm['id'])) {
+                $payment_modes_map[(string)$pm['id']] = $pm['name'] ?? '';
+                if (stripos($pm['name'], 'bank') !== false) $bank_modes[] = $pm['id'];
+            }
+        }
+
+        // Prepare Client Filter IDs
+        $client_ids = [];
+        if ($this->input->post('customer_id')) {
+            $client_ids = array_map([$this->db, 'escape_str'], (array)$this->input->post('customer_id'));
+            $client_ids = array_filter($client_ids);
+        }
+
+        // Prepare Date Filter Logic
+        $months_report = $this->input->post('report_months');
+        $date_range = []; // [start, end]
+        
+        if ($months_report != '') {
+            if (is_numeric($months_report)) {
+                if ($months_report == '1') {
+                    $date_range = [date('Y-m-01', strtotime('first day of last month')), date('Y-m-t', strtotime('last day of last month'))];
+                } else {
+                    $months_report = (int) $months_report - 1;
+                    $date_range = [date('Y-m-01', strtotime("-$months_report MONTH")), date('Y-m-t')];
+                }
+            } elseif ($months_report == 'this_month') {
+                $date_range = [date('Y-m-01'), date('Y-m-t')];
+            } elseif ($months_report == 'this_year') {
+                $date_range = [date('Y-01-01'), date('Y-12-31')];
+            } elseif ($months_report == 'last_year') {
+                $date_range = [date('Y-01-01', strtotime('last year')), date('Y-12-31', strtotime('last year'))];
+            } elseif ($months_report == 'custom') {
+                $from = to_sql_date($this->input->post('report_from'));
+                $to = to_sql_date($this->input->post('report_to'));
+                if ($from && $to) $date_range = [$from, $to];
+            }
+        }
+
+
+        // ---------------------------------------------------
+        // 2. FETCH INVOICES (DEBITS)
+        // ---------------------------------------------------
+        $this->db->select('
+            id, clientid, date, number, (total+ship_expense+other_expense) as amount, adminnote,
+            (SELECT company FROM ' . db_prefix() . 'clients WHERE userid = ' . db_prefix() . 'invoices.clientid) as company,
+            (SELECT CONCAT(prefix, number) FROM ' . db_prefix() . 'estimates WHERE invoiceid = ' . db_prefix() . 'invoices.id LIMIT 1) as so_number,
+            (SELECT total FROM ' . db_prefix() . 'estimates WHERE invoiceid = ' . db_prefix() . 'invoices.id LIMIT 1) as so_amount
+        ');
+        $this->db->from(db_prefix() . 'invoices');
+        $this->db->where(db_prefix() . 'invoices.status !=', 5); // Not Cancelled
+
+        if (!empty($date_range)) {
+            $this->db->where(db_prefix() . 'invoices.date >=', $date_range[0]);
+            $this->db->where(db_prefix() . 'invoices.date <=', $date_range[1]);
+        }
+        if (!empty($client_ids)) {
+            $this->db->where_in(db_prefix() . 'invoices.clientid', $client_ids);
+        }
+        
+        $invoices = $this->db->get()->result_array();
+
+
+        // ---------------------------------------------------
+        // 3. FETCH PAYMENTS (CREDITS)
+        // ---------------------------------------------------
+        $this->db->select('
+            ' . db_prefix() . 'invoicepaymentrecords.id,
+            ' . db_prefix() . 'invoicepaymentrecords.date,
+            ' . db_prefix() . 'invoicepaymentrecords.transactionid,
+            SUM(' . db_prefix() . 'invoicepaymentrecords.amount) as amount,
+            GROUP_CONCAT(DISTINCT ' . db_prefix() . 'invoicepaymentrecords.paymentmode) as payment_modes,
+            COALESCE(' . db_prefix() . 'clients.company, direct_client.company) as company,
+            COALESCE(' . db_prefix() . 'clients.userid, direct_client.userid) as clientid
+        ', false);
+        
+        $this->db->from(db_prefix() . 'invoicepaymentrecords');
+        $this->db->join(db_prefix() . 'invoices', db_prefix() . 'invoices.id = ' . db_prefix() . 'invoicepaymentrecords.invoiceid', 'left');
+        $this->db->join(db_prefix() . 'clients', db_prefix() . 'clients.userid = ' . db_prefix() . 'invoices.clientid', 'left');
+        $this->db->join(db_prefix() . 'clients as direct_client', 'direct_client.userid = ' . db_prefix() . 'invoicepaymentrecords.client_id', 'left');
+
+        if (!empty($date_range)) {
+            $this->db->where(db_prefix() . 'invoicepaymentrecords.date >=', $date_range[0]);
+            $this->db->where(db_prefix() . 'invoicepaymentrecords.date <=', $date_range[1]);
+        }
+        if (!empty($client_ids)) {
+            $this->db->group_start();
+            $this->db->where_in(db_prefix() . 'clients.userid', $client_ids);
+            $this->db->or_where_in('direct_client.userid', $client_ids);
+            $this->db->group_end();
+        }
+
+        $this->db->group_by(db_prefix() . 'invoicepaymentrecords.transactionid, ' . db_prefix() . 'invoicepaymentrecords.date');
+        $payments = $this->db->get()->result_array();
+
+
+        // ---------------------------------------------------
+        // 4. FETCH EXPENSES (DEBITS)
+        // ---------------------------------------------------
+        $this->db->select('
+            ' . db_prefix() . 'expenses.id,
+            ' . db_prefix() . 'expenses.date,
+            ' . db_prefix() . 'expenses.clientid,
+            ' . db_prefix() . 'expenses.expense_name,
+            ' . db_prefix() . 'expenses.note,
+            ' . db_prefix() . 'expenses.billable,
+            ' . db_prefix() . 'clients.company,
+            (' . db_prefix() . 'expenses.amount + 
+                COALESCE((' . db_prefix() . 'expenses.amount * t1.taxrate / 100), 0) + 
+                COALESCE((' . db_prefix() . 'expenses.amount * t2.taxrate / 100), 0)
+            ) as final_amount
+        ', false);
+
+        $this->db->from(db_prefix() . 'expenses');
+        $this->db->join(db_prefix() . 'clients', db_prefix() . 'clients.userid = ' . db_prefix() . 'expenses.clientid', 'left');
+        $this->db->join(db_prefix() . 'taxes t1', 't1.id = ' . db_prefix() . 'expenses.tax', 'left');
+        $this->db->join(db_prefix() . 'taxes t2', 't2.id = ' . db_prefix() . 'expenses.tax2', 'left');
+
+        $this->db->group_start();
+        $this->db->where(db_prefix() . 'expenses.invoiceid IS NULL');
+        $this->db->or_where(db_prefix() . 'expenses.invoiceid', 0);
+        $this->db->group_end();
+
+        if (!empty($client_ids)) {
+            $this->db->where_in(db_prefix() . 'expenses.clientid', $client_ids);
+        }
+        if (!empty($date_range)) {
+            $this->db->where(db_prefix() . 'expenses.date >=', $date_range[0]);
+            $this->db->where(db_prefix() . 'expenses.date <=', $date_range[1]);
+        }
+        $expenses = $this->db->get()->result_array();
+
+        // ---------------------------------------------------
+        // 5. FETCH CREDIT NOTES (CREDITS) - [NEW]
+        // ---------------------------------------------------
+        $this->db->select('
+            id, clientid, date, number, total as amount, adminnote,
+            (SELECT company FROM ' . db_prefix() . 'clients WHERE userid = ' . db_prefix() . 'creditnotes.clientid) as company
+        ');
+        $this->db->from(db_prefix() . 'creditnotes');
+        $this->db->where(db_prefix() . 'creditnotes.status !=', 3); // 3 = Void
+
+        if (!empty($date_range)) {
+            $this->db->where(db_prefix() . 'creditnotes.date >=', $date_range[0]);
+            $this->db->where(db_prefix() . 'creditnotes.date <=', $date_range[1]);
+        }
+        if (!empty($client_ids)) {
+            $this->db->where_in(db_prefix() . 'creditnotes.clientid', $client_ids);
+        }
+        
+        $credit_notes = $this->db->get()->result_array();
+
+
+        // ---------------------------------------------------
+        // 6. MERGE DATA INTO LEDGER
+        // ---------------------------------------------------
+        $grouped_data = [];
+
+        $init_client = function($cid, $name) use (&$grouped_data) {
+            if (!isset($grouped_data[$cid])) $grouped_data[$cid] = ['name' => $name, 'rows' => []];
+        };
+
+        // A. Add Invoices
+        foreach ($invoices as $inv) {
+            $init_client($inv['clientid'], $inv['company']);
+            $grouped_data[$inv['clientid']]['rows'][] = [
+                'type' => 'invoice',
+                'date' => $inv['date'],
+                'amount' => $inv['amount'], // Debit
+                'data' => $inv
+            ];
+        }
+
+        // B. Add Payments
+        foreach ($payments as $pay) {
+            if(!$pay['clientid']) continue;
+            $init_client($pay['clientid'], $pay['company']);
+            $grouped_data[$pay['clientid']]['rows'][] = [
+                'type' => 'payment',
+                'date' => $pay['date'],
+                'amount' => $pay['amount'], // Credit
+                'data' => $pay
+            ];
+        }
+
+        // C. Add Expenses
+        foreach ($expenses as $exp) {
+            if(!$exp['clientid']) continue;
+            $init_client($exp['clientid'], $exp['company']);
+            $grouped_data[$exp['clientid']]['rows'][] = [
+                'type' => 'expense',
+                'date' => $exp['date'],
+                'amount' => $exp['final_amount'], // Debit
+                'data' => $exp
+            ];
+        }
+
+        // D. Add Credit Notes [NEW]
+        foreach ($credit_notes as $cn) {
+            if(!$cn['clientid']) continue;
+            $init_client($cn['clientid'], $cn['company']);
+            $grouped_data[$cn['clientid']]['rows'][] = [
+                'type' => 'credit_note',
+                'date' => $cn['date'],
+                'amount' => $cn['amount'], // Credit
+                'data' => $cn
+            ];
+        }
+
+
+        // ---------------------------------------------------
+        // 7. PROCESS & CALCULATE
+        // ---------------------------------------------------
+        $output_rows = [];
+        $footer = ['invoice_amount' => 0, 'cash' => 0, 'bank' => 0, 'others' => 0, 'paid' => 0, 'due' => 0, 'credits' => 0];
+
+        foreach ($grouped_data as $client_id => $client_data) {
+            // Sort Chronologically
+            usort($client_data['rows'], function ($a, $b) {
+                return strtotime($a['date']) - strtotime($b['date']);
+            });
+
+            // Calculate Opening Balance
+            $first_date = !empty($client_data['rows']) ? $client_data['rows'][0]['date'] : date('Y-m-d');
+            $balance_bf = before_balance($client_id, $first_date);
+            
+            $running_balance = $balance_bf;
+            $prev_balance = $balance_bf;
+            $first_row = true;
+
+            foreach ($client_data['rows'] as $r) {
+                $row = [];
+                // 1. Date
+                $row[] = _d($r['date']); 
+                
+                // 2. Client
+                $row[] = '<a href="' . admin_url('clients/client/' . $client_id) . '">' . $client_data['name'] . '</a>'; 
+                
+                // 3. Balance B/F
+                $row[] = app_format_money($first_row ? $balance_bf : $prev_balance, $currency->name);
+
+                if ($r['type'] == 'invoice') {
+                    // --- INVOICE ROW ---
+                    $inv = $r['data'];
+                    // S/O
+                    $so = $inv['so_number'] ? $inv['so_number'] . ' (' . app_format_money($inv['so_amount'], $currency->name) . ')' : '';
+                    $row[] = $so;
+                    // Invoice Link
+                    $row[] = '<a href="' . admin_url('invoices/list_invoices/' . $inv['id']) . '">' . format_invoice_number($inv['id']) . ' (' . app_format_money($inv['amount'], $currency->name) . ')</a>';
+                    // Payment (Empty)
+                    $row[] = '';
+                    // Calc
+                    $running_balance += $inv['amount'];
+                    $footer['invoice_amount'] += $inv['amount'];
+                    $note = $inv['adminnote'];
+
+                } elseif ($r['type'] == 'expense') {
+                    // --- EXPENSE ROW ---
+                    $exp = $r['data'];
+                    $label = $exp['billable'] == 1 ? 'Billable' : 'Non-Billable';
+                    $row[] = '';
+                    $row[] = '<strong>' . _l('expense') . ' (' . $label . '):</strong> ' . $exp['expense_name'] . ' (' . app_format_money($exp['final_amount'], $currency->name) . ')';
+                    $row[] = '';
+                    // Calc
+                    $running_balance += $exp['final_amount'];
+                    $footer['invoice_amount'] += $exp['final_amount'];
+                    $note = $exp['note'];
+
+                } elseif ($r['type'] == 'credit_note') {
+                    // --- CREDIT NOTE ROW ---
+                    $cn = $r['data'];
+                    $row[] = '';
+                    $row[] = '';
+                    // Credit Note shown in Payment/Credit Column
+                    $cn_str = '<strong>' . _l('credit_note') . ':</strong> <a href="' . admin_url('credit_notes/list_credit_notes/' . $cn['id']) . '">' . format_credit_note_number($cn['id']) . '</a>';
+                    $cn_str .= ' (' . app_format_money($cn['amount'], $currency->name) . ')';
+                    $row[] = $cn_str;
+                    
+                    // Calc
+                    $running_balance -= $cn['amount'];
+                    $footer['credits'] += $cn['amount']; // Separate bucket for footer, or add to 'paid'
+                    $footer['paid'] += $cn['amount']; // Adding to total credits for simple footer math
+                    $note = $cn['adminnote'];
+
+                } else {
+                    // --- PAYMENT ROW ---
+                    $pay = $r['data'];
+                    $row[] = ''; // S/O
+                    $row[] = ''; // Invoice
+                    
+                    // Payment Cell
+                    $pay_str = app_format_money($pay['amount'], $currency->name);
+                    if ($pay['transactionid']) $pay_str .= ' [' . $pay['transactionid'] . ']';
+                    
+                    $modes = array_unique(array_filter(explode(',', $pay['payment_modes'])));
+                    $mode_names = [];
+                    foreach($modes as $m) $mode_names[] = $payment_modes_map[$m] ?? '';
+                    if(!empty($mode_names)) $pay_str .= ' - ' . implode('/', $mode_names);
+                    
+                    $row[] = $pay_str;
+
+                    // Calc
+                    $running_balance -= $pay['amount'];
+                    $footer['paid'] += $pay['amount'];
+
+                    // Buckets
+                    $m_id = isset($modes[0]) ? $modes[0] : 'others';
+                    if($m_id == 2) $footer['cash'] += $pay['amount'];
+                    elseif(in_array($m_id, $bank_modes)) $footer['bank'] += $pay['amount'];
+                    else $footer['others'] += $pay['amount'];
+                    
+                    $note = '';
+                }
+
+                // 7. Balance C/F
+                $row[] = app_format_money($running_balance, $currency->name);
+                $prev_balance = $running_balance;
+
+                // 8. Running Balance
+                $row[] = app_format_money($running_balance, $currency->name);
+                
+                // 9. Note
+                $row[] = $note;
+
+                $output_rows[] = $row;
+                $first_row = false;
+            }
+
+            $footer['due'] += ($running_balance - $balance_bf);
+        }
+
+        // ---------------------------------------------------
+        // 8. OUTPUT JSON
+        // ---------------------------------------------------
+        echo json_encode([
+            'draw' => $this->input->post('draw') ? (int)$this->input->post('draw') : 1,
+            'recordsTotal' => count($output_rows),
+            'recordsFiltered' => count($output_rows),
+            'aaData' => $output_rows,
+            'sums' => [
+                'invoice_amount' => app_format_money($footer['invoice_amount'], $currency->name),
+                'cash' => app_format_money($footer['cash'], $currency->name),
+                'bank' => app_format_money($footer['bank'], $currency->name),
+                'payment_mode_others' => app_format_money($footer['others'], $currency->name),
+                'total_amount_paid' => app_format_money($footer['paid'], $currency->name),
+                'total_invoice_due' => app_format_money($footer['due'], $currency->name),
+                'sales_order_amount' => 0
+            ]
+        ]);
+        die();
+
+    } catch (Exception $e) {
+        echo json_encode(['error' => $e->getMessage()]);
+        die();
+    }
+}
+
     /**
      * Combined cashbook report - shows both date-based and invoice-based payment information
      * This endpoint is used for the combined cashbook report
@@ -2330,7 +2760,9 @@ class Reports extends AdminController
             }
 
             // Get other mode IDs
-            $other_mode_ids = array_map(function($m) { return $m['id']; }, $other_modes);
+            $other_mode_ids = array_map(function ($m) {
+                return $m['id'];
+            }, $other_modes);
 
             // Define where conditions
             $where = [
@@ -2389,9 +2821,11 @@ class Reports extends AdminController
                 ' . db_prefix() . 'invoices.total as invoice_amount,
                 (SELECT GROUP_CONCAT(date ORDER BY date SEPARATOR ", ") FROM ' . db_prefix() . 'invoicepaymentrecords WHERE invoiceid = ' . db_prefix() . 'invoices.id) as payment_dates,
                 (SELECT COALESCE(SUM(amount),0) FROM ' . db_prefix() . 'invoicepaymentrecords WHERE invoiceid = ' . db_prefix() . 'invoices.id AND paymentmode = 2) as cash,
-                (SELECT COALESCE(SUM(amount),0) FROM ' . db_prefix() . 'invoicepaymentrecords WHERE invoiceid = ' . db_prefix() . 'invoices.id AND paymentmode != 2 AND ' . 
-                (!empty($bank_modes) ? 'paymentmode IN (' . implode(',', array_map(function($m) { return $m['id']; }, $bank_modes)) . ')' : 'FALSE') . ') as bank,
-                (SELECT COALESCE(SUM(amount),0) FROM ' . db_prefix() . 'invoicepaymentrecords WHERE invoiceid = ' . db_prefix() . 'invoices.id AND ' . 
+                (SELECT COALESCE(SUM(amount),0) FROM ' . db_prefix() . 'invoicepaymentrecords WHERE invoiceid = ' . db_prefix() . 'invoices.id AND paymentmode != 2 AND ' .
+                (!empty($bank_modes) ? 'paymentmode IN (' . implode(',', array_map(function ($m) {
+                        return $m['id'];
+                    }, $bank_modes)) . ')' : 'FALSE') . ') as bank,
+                (SELECT COALESCE(SUM(amount),0) FROM ' . db_prefix() . 'invoicepaymentrecords WHERE invoiceid = ' . db_prefix() . 'invoices.id AND ' .
                 (!empty($other_mode_ids) ? 'paymentmode IN (' . implode(',', $other_mode_ids) . ')' : 'FALSE') . ') as payment_mode_others,
                 (SELECT COALESCE(SUM(amount),0) FROM ' . db_prefix() . 'invoicepaymentrecords WHERE invoiceid = ' . db_prefix() . 'invoices.id) as total_amount_paid,
                 (' . db_prefix() . 'invoices.total - (SELECT COALESCE(SUM(amount),0) FROM ' . db_prefix() . 'invoicepaymentrecords WHERE invoiceid = ' . db_prefix() . 'invoices.id)) as total_invoice_due,
@@ -2400,9 +2834,11 @@ class Reports extends AdminController
                 /* New columns for payments on invoice date */
                 (SELECT COALESCE(SUM(amount),0) FROM ' . db_prefix() . 'invoicepaymentrecords WHERE DATE(' . db_prefix() . 'invoicepaymentrecords.date) = DATE(' . db_prefix() . 'invoices.date)) as total_paid_on_invoice_date,
                 (SELECT COALESCE(SUM(amount),0) FROM ' . db_prefix() . 'invoicepaymentrecords WHERE DATE(' . db_prefix() . 'invoicepaymentrecords.date) = DATE(' . db_prefix() . 'invoices.date) AND paymentmode = 2) as cash_paid_on_invoice_date,
-                (SELECT COALESCE(SUM(amount),0) FROM ' . db_prefix() . 'invoicepaymentrecords WHERE DATE(' . db_prefix() . 'invoicepaymentrecords.date) = DATE(' . db_prefix() . 'invoices.date) AND paymentmode != 2 AND ' . 
-                (!empty($bank_modes) ? 'paymentmode IN (' . implode(',', array_map(function($m) { return $m['id']; }, $bank_modes)) . ')' : 'FALSE') . ') as bank_paid_on_invoice_date,
-                (SELECT COALESCE(SUM(amount),0) FROM ' . db_prefix() . 'invoicepaymentrecords WHERE DATE(' . db_prefix() . 'invoicepaymentrecords.date) = DATE(' . db_prefix() . 'invoices.date) AND ' . 
+                (SELECT COALESCE(SUM(amount),0) FROM ' . db_prefix() . 'invoicepaymentrecords WHERE DATE(' . db_prefix() . 'invoicepaymentrecords.date) = DATE(' . db_prefix() . 'invoices.date) AND paymentmode != 2 AND ' .
+                (!empty($bank_modes) ? 'paymentmode IN (' . implode(',', array_map(function ($m) {
+                        return $m['id'];
+                    }, $bank_modes)) . ')' : 'FALSE') . ') as bank_paid_on_invoice_date,
+                (SELECT COALESCE(SUM(amount),0) FROM ' . db_prefix() . 'invoicepaymentrecords WHERE DATE(' . db_prefix() . 'invoicepaymentrecords.date) = DATE(' . db_prefix() . 'invoices.date) AND ' .
                 (!empty($other_mode_ids) ? 'paymentmode IN (' . implode(',', $other_mode_ids) . ')' : 'FALSE') . ') as others_paid_on_invoice_date,
 
                 /* Sales Order data for searching */
@@ -2638,7 +3074,9 @@ class Reports extends AdminController
             }
 
             // Get other mode IDs
-            $other_mode_ids = array_map(function($m) { return $m['id']; }, $other_modes);
+            $other_mode_ids = array_map(function ($m) {
+                return $m['id'];
+            }, $other_modes);
 
             // Define where conditions
             $where = [
@@ -2695,9 +3133,11 @@ class Reports extends AdminController
                 ' . db_prefix() . 'invoices.total as invoice_amount,
                 (SELECT GROUP_CONCAT(date ORDER BY date SEPARATOR ", ") FROM ' . db_prefix() . 'invoicepaymentrecords WHERE invoiceid = ' . db_prefix() . 'invoices.id) as payment_dates,
                 (SELECT COALESCE(SUM(amount),0) FROM ' . db_prefix() . 'invoicepaymentrecords WHERE invoiceid = ' . db_prefix() . 'invoices.id AND paymentmode = 2) as cash,
-                (SELECT COALESCE(SUM(amount),0) FROM ' . db_prefix() . 'invoicepaymentrecords WHERE invoiceid = ' . db_prefix() . 'invoices.id AND paymentmode != 2 AND ' . 
-                (!empty($bank_modes) ? 'paymentmode IN (' . implode(',', array_map(function($m) { return $m['id']; }, $bank_modes)) . ')' : 'FALSE') . ') as bank,
-                (SELECT COALESCE(SUM(amount),0) FROM ' . db_prefix() . 'invoicepaymentrecords WHERE invoiceid = ' . db_prefix() . 'invoices.id AND ' . 
+                (SELECT COALESCE(SUM(amount),0) FROM ' . db_prefix() . 'invoicepaymentrecords WHERE invoiceid = ' . db_prefix() . 'invoices.id AND paymentmode != 2 AND ' .
+                (!empty($bank_modes) ? 'paymentmode IN (' . implode(',', array_map(function ($m) {
+                        return $m['id'];
+                    }, $bank_modes)) . ')' : 'FALSE') . ') as bank,
+                (SELECT COALESCE(SUM(amount),0) FROM ' . db_prefix() . 'invoicepaymentrecords WHERE invoiceid = ' . db_prefix() . 'invoices.id AND ' .
                 (!empty($other_mode_ids) ? 'paymentmode IN (' . implode(',', $other_mode_ids) . ')' : 'FALSE') . ') as payment_mode_others,
                 (SELECT COALESCE(SUM(amount),0) FROM ' . db_prefix() . 'invoicepaymentrecords WHERE invoiceid = ' . db_prefix() . 'invoices.id) as total_amount_paid,
                 (' . db_prefix() . 'invoices.total - (SELECT COALESCE(SUM(amount),0) FROM ' . db_prefix() . 'invoicepaymentrecords WHERE invoiceid = ' . db_prefix() . 'invoices.id)) as total_invoice_due
@@ -2902,7 +3342,7 @@ class Reports extends AdminController
             // Get date filter SQL
             $date_filter = '';
             if ($report_months) {
-                $date_filter = $this->get_where_report_period('date');
+                $date_filter = preg_replace('/^\s*AND\s+/i', '', $this->get_where_report_period('date'));
             }
 
             $data['report_data'] = $this->reports_model->get_top_customers_vendors($limit, $transaction_type, $metric, $date_filter);
@@ -2998,8 +3438,8 @@ class Reports extends AdminController
      * Most/Least Items Bought by Contact report
      * Shows which products were bought the most or least by a specific contact (customer or vendor)
      *
-     * @param  string  $contact_type   customer or vendor
-     * @param  integer $contact_id     contact id
+     * @param string $contact_type customer or vendor
+     * @param integer $contact_id contact id
      * @return view
      */
     /**
@@ -3019,6 +3459,7 @@ class Reports extends AdminController
 
         if ($this->input->post()) {
             $transaction_type = $this->input->post('transaction_type') ? $this->input->post('transaction_type') : 'both';
+            $aging_period = $this->input->post('aging_period') ? $this->input->post('aging_period') : 'extended';
 
             // Get time period filter
             $report_months = $this->input->post('report_months');
@@ -3026,6 +3467,7 @@ class Reports extends AdminController
             $report_to = $this->input->post('report_to');
 
             // Store selected values for the view
+            $data['selected_aging_period'] = $aging_period;
             $data['report_months'] = $report_months;
             if ($report_months == 'custom') {
                 $data['report_from'] = $report_from;
@@ -3035,16 +3477,26 @@ class Reports extends AdminController
             // Get date filter SQL
             $date_filter = '';
             if ($report_months) {
-                $date_filter = $this->get_where_report_period('date');
+                // Use appropriate date field based on transaction type
+                if ($transaction_type == 'purchases') {
+                    $date_filter = preg_replace('/^\s*AND\s+/i', '', $this->get_where_report_period('order_date'));
+                } elseif ($transaction_type == 'sales') {
+                    $date_filter = preg_replace('/^\s*AND\s+/i', '', $this->get_where_report_period('date'));
+                } else { // both
+                    // For 'both', we'll handle the date filtering in the model
+                    $date_filter = preg_replace('/^\s*AND\s+/i', '', $this->get_where_report_period('date'));
+                }
             }
 
             $data['report_data'] = $this->reports_model->get_avg_purchase_aging(
                 $transaction_type,
-                $date_filter
+                $date_filter,
+                $aging_period
             );
 
             // Store the selected parameters for the view
             $data['selected_transaction_type'] = $transaction_type;
+            $data['selected_aging_period'] = $aging_period;
         }
 
         $data['title'] = _l('avg_purchase_aging');
@@ -3112,7 +3564,7 @@ class Reports extends AdminController
             // Get date filter SQL
             $date_filter = '';
             if ($report_months) {
-                $date_filter = $report_months ? $this->get_where_report_period($contact_type === 'vendor' ? 'order_date' : 'date'): '';
+                $date_filter = $report_months ? $this->get_where_report_period($contact_type === 'vendor' ? 'order_date' : 'date') : '';
             }
 
             $data['report_data'] = $this->reports_model->get_items_by_contact(
@@ -3130,6 +3582,88 @@ class Reports extends AdminController
             $data['selected_ranking'] = $ranking;
             $data['selected_limit'] = $limit;
             $data['selected_metric'] = $metric;
+        } else {
+            // Default values for the report
+            $transaction_type = 'both';
+            $ranking = 'most';
+            $limit = 10;
+            $metric = 'quantity';
+            $date_filter = '';
+
+            // Get report data for the current contact
+            $data['report_data'] = $this->reports_model->get_items_by_contact(
+                $contact_id,
+                $contact_type,
+                $transaction_type,
+                $ranking,
+                $limit,
+                $metric,
+                $date_filter
+            );
+
+            // Check if this is being called from the purchase_summary view
+            // and if the current customer is not already customer 1430
+            $is_purchase_summary = $this->input->get('from_purchase_summary');
+            if ($is_purchase_summary && $contact_type == 'customer' && $contact_id != '1430') {
+                // Get data for customer 1430
+                $customer_1430_data = $this->reports_model->get_items_by_contact(
+                    '1430',
+                    'customer',
+                    $transaction_type,
+                    $ranking,
+                    $limit,
+                    $metric,
+                    $date_filter
+                );
+
+                // Merge the data
+                if (!empty($customer_1430_data)) {
+                    if (empty($data['report_data'])) {
+                        $data['report_data'] = $customer_1430_data;
+                    } else {
+                        // Combine the data from both customers
+                        $data['report_data'] = array_merge($data['report_data'], $customer_1430_data);
+
+                        // Group items by description to avoid duplicates
+                        $grouped_items = [];
+                        foreach ($data['report_data'] as $item) {
+                            $key = $item['description'];
+                            if (!isset($grouped_items[$key])) {
+                                $grouped_items[$key] = $item;
+                            } else {
+                                // Add quantities and amounts
+                                $grouped_items[$key]['total_quantity'] += $item['total_quantity'];
+                                $grouped_items[$key]['total_amount'] += $item['total_amount'];
+                            }
+                        }
+
+                        // Convert back to indexed array
+                        $data['report_data'] = array_values($grouped_items);
+
+                        // Sort by the selected metric and ranking
+                        usort($data['report_data'], function($a, $b) use ($metric, $ranking) {
+                            if ($metric == 'amount') {
+                                return $ranking == 'most'
+                                    ? $b['total_amount'] - $a['total_amount']
+                                    : $a['total_amount'] - $b['total_amount'];
+                            } else {
+                                return $ranking == 'most'
+                                    ? $b['total_quantity'] - $a['total_quantity']
+                                    : $a['total_quantity'] - $b['total_quantity'];
+                            }
+                        });
+
+                        // Limit to the specified number of results
+                        $data['report_data'] = array_slice($data['report_data'], 0, $limit);
+                    }
+                }
+            }
+
+            // Store the selected parameters for the view
+            $data['selected_transaction_type'] = $transaction_type;
+            $data['selected_ranking'] = $ranking;
+            $data['selected_limit'] = $limit;
+            $data['selected_metric'] = $metric;
         }
 
         $data['title'] = _l('contact_items_report');
@@ -3140,6 +3674,7 @@ class Reports extends AdminController
             $this->load->view('admin/reports/contact_items_report_wrapper', $data);
         }
     }
+
     /**
      * Sales aging report based on items sold
      * Shows aging of sales based on items sold
@@ -3165,7 +3700,7 @@ class Reports extends AdminController
             ];
 
             $sIndexColumn = 'id';
-            $sTable       = db_prefix() . 'itemable';
+            $sTable = db_prefix() . 'itemable';
 
             $join = [
                 'JOIN ' . db_prefix() . 'invoices ON ' . db_prefix() . 'invoices.id = ' . db_prefix() . 'itemable.rel_id',
@@ -3189,7 +3724,7 @@ class Reports extends AdminController
             }
 
             if ($this->input->post('sale_agent_items')) {
-                $agents  = $this->input->post('sale_agent_items');
+                $agents = $this->input->post('sale_agent_items');
                 $_agents = [];
                 if (is_array($agents)) {
                     foreach ($agents as $agent) {
@@ -3204,7 +3739,7 @@ class Reports extends AdminController
             }
 
             if ($this->input->post('sale_product_items')) {
-                $products  = $this->input->post('sale_product_items');
+                $products = $this->input->post('sale_product_items');
                 $_products = [];
                 if (is_array($products)) {
                     foreach ($products as $product) {
@@ -3225,17 +3760,17 @@ class Reports extends AdminController
                 'tblinvoices.prefix'
             ]);
 
-            $output  = $result['output'];
+            $output = $result['output'];
             $rResult = $result['rResult'];
 
             $footer_data = [
                 'total_amount' => 0,
-                'total_qty'    => 0,
-                'aging_30'     => 0,
-                'aging_60'     => 0,
-                'aging_90'     => 0,
-                'aging_120'    => 0,
-                'aging_older'  => 0,
+                'total_qty' => 0,
+                'aging_30' => 0,
+                'aging_60' => 0,
+                'aging_90' => 0,
+                'aging_120' => 0,
+                'aging_older' => 0,
             ];
 
             foreach ($rResult as $aRow) {
@@ -3313,6 +3848,7 @@ class Reports extends AdminController
             die();
         }
     }
+
     /**
      * Average sale aging report based on items sold
      * Shows average aging of sales based on items sold
@@ -3334,7 +3870,7 @@ class Reports extends AdminController
             ];
 
             $sIndexColumn = 'id';
-            $sTable       = db_prefix() . 'itemable';
+            $sTable = db_prefix() . 'itemable';
 
             $join = [
                 'JOIN ' . db_prefix() . 'invoices ON ' . db_prefix() . 'invoices.id = ' . db_prefix() . 'itemable.rel_id',
@@ -3358,7 +3894,7 @@ class Reports extends AdminController
             }
 
             if ($this->input->post('sale_agent_items')) {
-                $agents  = $this->input->post('sale_agent_items');
+                $agents = $this->input->post('sale_agent_items');
                 $_agents = [];
                 if (is_array($agents)) {
                     foreach ($agents as $agent) {
@@ -3373,7 +3909,7 @@ class Reports extends AdminController
             }
 
             if ($this->input->post('sale_product_items')) {
-                $products  = $this->input->post('sale_product_items');
+                $products = $this->input->post('sale_product_items');
                 $_products = [];
                 if (is_array($products)) {
                     foreach ($products as $product) {
@@ -3392,14 +3928,14 @@ class Reports extends AdminController
                 'tblinvoices.clientid'
             ], 'GROUP BY tblitemable.description');
 
-            $output  = $result['output'];
+            $output = $result['output'];
             $rResult = $result['rResult'];
 
             $footer_data = [
                 'total_amount' => 0,
-                'total_qty'    => 0,
-                'avg_days'     => 0,
-                'total_items'  => 0
+                'total_qty' => 0,
+                'avg_days' => 0,
+                'total_items' => 0
             ];
 
             $total_days = 0;
@@ -3486,7 +4022,7 @@ class Reports extends AdminController
             ];
 
             $sIndexColumn = 'id';
-            $sTable       = db_prefix() . 'itemable';
+            $sTable = db_prefix() . 'itemable';
 
             $join = [
                 'JOIN ' . db_prefix() . 'pur_orders ON ' . db_prefix() . 'pur_orders.id = ' . db_prefix() . 'itemable.rel_id',
@@ -3510,7 +4046,7 @@ class Reports extends AdminController
             }
 
             if ($this->input->post('vendor_items')) {
-                $vendors  = $this->input->post('vendor_items');
+                $vendors = $this->input->post('vendor_items');
                 $_vendors = [];
                 if (is_array($vendors)) {
                     foreach ($vendors as $vendor) {
@@ -3525,7 +4061,7 @@ class Reports extends AdminController
             }
 
             if ($this->input->post('purchase_product_items')) {
-                $products  = $this->input->post('purchase_product_items');
+                $products = $this->input->post('purchase_product_items');
                 $_products = [];
                 if (is_array($products)) {
                     foreach ($products as $product) {
@@ -3546,17 +4082,17 @@ class Reports extends AdminController
                 'tblpur_orders.prefix'
             ]);
 
-            $output  = $result['output'];
+            $output = $result['output'];
             $rResult = $result['rResult'];
 
             $footer_data = [
                 'total_amount' => 0,
-                'total_qty'    => 0,
-                'aging_30'     => 0,
-                'aging_60'     => 0,
-                'aging_90'     => 0,
-                'aging_120'    => 0,
-                'aging_older'  => 0,
+                'total_qty' => 0,
+                'aging_30' => 0,
+                'aging_60' => 0,
+                'aging_90' => 0,
+                'aging_120' => 0,
+                'aging_older' => 0,
             ];
 
             foreach ($rResult as $aRow) {
@@ -3661,4 +4197,690 @@ class Reports extends AdminController
             redirect(admin_url('reports'));
         }
     }
+
+    /**
+     * Advanced analytics for a specific client
+     * Shows comprehensive analytics including purchase frequency, history, and client categorization
+     *
+     * @param integer $client_id The client ID to show analytics for
+     * @return view
+     */
+    public function client_advanced_analytics($client_id)
+    {
+        if (!has_permission('reports', '', 'view')) {
+            access_denied('reports');
+        }
+
+        if ($this->input->is_ajax_request()) {
+            $this->load->model('currencies_model');
+            $base_currency = $this->currencies_model->get_base_currency();
+            $currency = $base_currency;
+
+            // Get time period filter
+            $report_months = $this->input->post('report_months');
+            $report_from = $this->input->post('report_from');
+            $report_to = $this->input->post('report_to');
+
+            // Get date filter SQL
+            $date_filter = '';
+            if ($report_months) {
+                $date_filter = $report_months ? $this->get_where_report_period('date') : '';
+            }
+
+            // Get client data
+            $this->load->model('clients_model');
+            $client = $this->clients_model->get($client_id);
+
+            if (!$client) {
+                echo json_encode([
+                    'success' => false,
+                    'message' => 'Client not found'
+                ]);
+                die();
+            }
+
+            // Get analytics data from the model
+            $this->load->model('reports_model');
+            $analytics_data = $this->reports_model->get_client_advanced_analytics(
+                $client_id,
+                preg_replace('/^\s*AND\s+/i', '', $date_filter)
+            );
+
+            echo json_encode([
+                'success' => true,
+                'data' => $analytics_data
+            ]);
+            die();
+        }
+
+        // Load required models
+        $this->load->model('clients_model');
+        $this->load->model('currencies_model');
+        $this->load->model('invoices_model');
+        $this->load->model('estimates_model');
+        $this->load->model('proposals_model');
+        $this->load->model('credit_notes_model');
+
+        // Get client details
+        $client = $this->clients_model->get($client_id);
+        if (!$client) {
+            set_alert('warning', _l('client_not_found'));
+            redirect(admin_url('clients'));
+        }
+
+        $data = [];
+        $data['title'] = _l('advanced_analytics') . ' - ' . $client->company;
+        $data['client'] = $client;
+
+        // Get last 30 days purchase frequency
+        $thirty_days_ago = date('Y-m-d', strtotime('-30 days'));
+        $data['invoices_30_days'] = $this->invoices_model->get_invoices_total_by_client($client_id, $thirty_days_ago);
+        $data['estimates_30_days'] = $this->estimates_model->get_estimates_total_by_client($client_id, $thirty_days_ago);
+        $data['proposals_30_days'] = $this->proposals_model->get_proposals_total_by_client($client_id, $thirty_days_ago);
+
+        // Get purchase history
+        $data['total_invoiced'] = sum_from_table(db_prefix() . 'invoices', ['field' => 'total', 'where' => ['clientid' => $client_id, 'status !=' => 5]]);
+        $data['total_paid'] = sum_from_table(db_prefix() . 'invoicepaymentrecords', ['field' => 'amount', 'where' => ['invoiceid IN (SELECT id FROM ' . db_prefix() . 'invoices WHERE clientid=' . $client_id . ')']]);
+
+        // Get credit notes
+        $data['total_credits'] = sum_from_table(db_prefix() . 'creditnotes', ['field' => 'total', 'where' => ['clientid' => $client_id]]);
+
+        // Calculate client score/categorization
+        $data['client_score'] = $this->calculate_client_score($client_id);
+
+        // Get most purchased items
+        $this->db->select('description, SUM(qty) as total_quantity, SUM(qty * rate) as total_amount');
+        $this->db->from(db_prefix() . 'itemable');
+        $this->db->join(db_prefix() . 'invoices', db_prefix() . 'invoices.id = ' . db_prefix() . 'itemable.rel_id');
+        $this->db->where('rel_type', 'invoice');
+        $this->db->where('clientid', $client_id);
+        $this->db->group_by('description');
+        $this->db->order_by('total_quantity', 'DESC');
+        $this->db->limit(5);
+        $data['top_purchased_items'] = $this->db->get()->result_array();
+
+        // Get payment history
+        $this->db->select('amount, '.db_prefix() . 'invoicepaymentrecords.date');
+        $this->db->from(db_prefix() . 'invoicepaymentrecords');
+        $this->db->join(db_prefix() . 'invoices', db_prefix() . 'invoices.id = ' . db_prefix() . 'invoicepaymentrecords.invoiceid');
+        $this->db->where('clientid', $client_id);
+        $this->db->order_by('date', 'DESC');
+        $this->db->limit(10);
+        $data['recent_payments'] = $this->db->get()->result_array();
+
+        // Get currencies
+        $data['currencies'] = $this->currencies_model->get();
+        $data['base_currency'] = $this->currencies_model->get_base_currency();
+
+        $this->load->view('admin/reports/client_advanced_analytics', $data);
+    }
+
+    /**
+     * Calculate client score based on various factors
+     * Higher score means better customer
+     *
+     * @param integer $client_id The client ID
+     * @return array Score details with total score and category
+     */
+    private function calculate_client_score($client_id)
+    {
+        $score = [
+            'payment_promptness' => 0,
+            'purchase_frequency' => 0,
+            'purchase_value' => 0,
+            'loyalty' => 0,
+            'total' => 0,
+            'category' => ''
+        ];
+
+        // Payment promptness (how quickly they pay invoices)
+        $this->db->select('DATEDIFF(' . db_prefix() . 'invoicepaymentrecords.date, '.db_prefix() . 'invoices.duedate) as days_diff');
+        $this->db->from(db_prefix() . 'invoicepaymentrecords');
+        $this->db->join(db_prefix() . 'invoices', db_prefix() . 'invoices.id = ' . db_prefix() . 'invoicepaymentrecords.invoiceid');
+        $this->db->where('clientid', $client_id);
+        $payment_days = $this->db->get()->result_array();
+
+        $total_days = 0;
+        $payment_count = count($payment_days);
+
+        if ($payment_count > 0) {
+            foreach ($payment_days as $payment) {
+                $total_days += $payment['days_diff'];
+            }
+            $avg_days = $total_days / $payment_count;
+
+            // Score based on average payment time
+            if ($avg_days <= 0) {
+                $score['payment_promptness'] = 25; // Paid before due date
+            } elseif ($avg_days <= 7) {
+                $score['payment_promptness'] = 20; // Paid within a week after due date
+            } elseif ($avg_days <= 14) {
+                $score['payment_promptness'] = 15; // Paid within two weeks after due date
+            } elseif ($avg_days <= 30) {
+                $score['payment_promptness'] = 10; // Paid within a month after due date
+            } else {
+                $score['payment_promptness'] = 5; // Paid more than a month after due date
+            }
+        }
+
+        // Purchase frequency (how often they make purchases)
+        $this->db->select('COUNT(*) as invoice_count');
+        $this->db->from(db_prefix() . 'invoices');
+        $this->db->where('clientid', $client_id);
+        $this->db->where('status !=', 5); // Exclude cancelled invoices
+        $invoice_count = $this->db->get()->row()->invoice_count;
+
+        // Get client creation date
+        $this->db->select('datecreated');
+        $this->db->from(db_prefix() . 'clients');
+        $this->db->where('userid', $client_id);
+        $client_created = $this->db->get()->row()->datecreated;
+
+        $days_as_client = max(1, ceil((time() - strtotime($client_created)) / (60 * 60 * 24)));
+        $months_as_client = $days_as_client / 30;
+
+        $invoices_per_month = $invoice_count / max(1, $months_as_client);
+
+        // Score based on invoices per month
+        if ($invoices_per_month >= 4) {
+            $score['purchase_frequency'] = 25; // More than weekly purchases
+        } elseif ($invoices_per_month >= 2) {
+            $score['purchase_frequency'] = 20; // Bi-weekly purchases
+        } elseif ($invoices_per_month >= 1) {
+            $score['purchase_frequency'] = 15; // Monthly purchases
+        } elseif ($invoices_per_month >= 0.5) {
+            $score['purchase_frequency'] = 10; // Bi-monthly purchases
+        } else {
+            $score['purchase_frequency'] = 5; // Less frequent purchases
+        }
+
+        // Purchase value (how much they spend)
+        $this->db->select('SUM(total) as total_spent');
+        $this->db->from(db_prefix() . 'invoices');
+        $this->db->where('clientid', $client_id);
+        $this->db->where('status !=', 5); // Exclude cancelled invoices
+        $total_spent = $this->db->get()->row()->total_spent;
+
+        $avg_invoice_value = $invoice_count > 0 ? $total_spent / $invoice_count : 0;
+
+        // Score based on average invoice value
+        if ($avg_invoice_value >= 5000) {
+            $score['purchase_value'] = 25; // High value customer
+        } elseif ($avg_invoice_value >= 1000) {
+            $score['purchase_value'] = 20;
+        } elseif ($avg_invoice_value >= 500) {
+            $score['purchase_value'] = 15;
+        } elseif ($avg_invoice_value >= 100) {
+            $score['purchase_value'] = 10;
+        } else {
+            $score['purchase_value'] = 5; // Low value customer
+        }
+
+        // Loyalty (how long they've been a customer)
+        $years_as_client = $days_as_client / 365;
+
+        // Score based on years as client
+        if ($years_as_client >= 5) {
+            $score['loyalty'] = 25; // Long-term customer (5+ years)
+        } elseif ($years_as_client >= 3) {
+            $score['loyalty'] = 20; // 3-5 years
+        } elseif ($years_as_client >= 2) {
+            $score['loyalty'] = 15; // 2-3 years
+        } elseif ($years_as_client >= 1) {
+            $score['loyalty'] = 10; // 1-2 years
+        } else {
+            $score['loyalty'] = 5; // Less than 1 year
+        }
+
+        // Calculate total score
+        $score['total'] = $score['payment_promptness'] + $score['purchase_frequency'] + $score['purchase_value'] + $score['loyalty'];
+
+        // Determine category based on total score
+        if ($score['total'] >= 80) {
+            $score['category'] = 'excellent';
+        } elseif ($score['total'] >= 60) {
+            $score['category'] = 'good';
+        } elseif ($score['total'] >= 40) {
+            $score['category'] = 'average';
+        } elseif ($score['total'] >= 20) {
+            $score['category'] = 'below_average';
+        } else {
+            $score['category'] = 'poor';
+        }
+
+        return $score;
+    }
+    
+    public function stock_full_view_report()
+    {
+        $this->load->model('warehouse/warehouse_model');
+
+        $data = [];
+        $data['title'] = 'Stock full view report';
+
+        // Warehouses list for dynamic columns
+        $warehouses = $this->db->select('warehouse_id, warehouse_name')
+            ->from(db_prefix() . 'warehouse')
+            ->order_by('warehouse_name', 'asc')
+            ->get()->result_array();
+        $data['warehouses'] = $warehouses;
+
+        // On hand qty per item
+        $on_hand_rows = $this->db->select('commodity_id as item_id, SUM(inventory_number) as qty')
+            ->from(db_prefix() . 'inventory_manage')
+            ->group_by('commodity_id')
+            ->get()->result_array();
+        $on_hand = [];
+        foreach ($on_hand_rows as $r) {
+            $on_hand[(int)$r['item_id']] = (float)$r['qty'];
+        }
+
+        // Per-warehouse qty per item
+        $per_wh_rows = $this->db->select('commodity_id as item_id, warehouse_id, SUM(inventory_number) as qty')
+            ->from(db_prefix() . 'inventory_manage')
+            ->group_by('commodity_id, warehouse_id')
+            ->get()->result_array();
+        $per_wh = [];
+        foreach ($per_wh_rows as $r) {
+            $iid = (int)$r['item_id'];
+            $wid = (int)$r['warehouse_id'];
+            if (!isset($per_wh[$iid])) { $per_wh[$iid] = []; }
+            $per_wh[$iid][$wid] = (float)$r['qty'];
+        }
+
+        // Stock on sales order per item (using estimates as Sales Orders)
+        $so_rows = $this->db
+            ->select('i.id as item_id, SUM(it.qty) as qty', false)
+            ->from(db_prefix() . 'items i')
+            ->join(db_prefix() . 'itemable it', 'it.description = i.description AND it.rel_type = "estimate"', 'inner')
+            ->join(db_prefix() . 'estimates e', 'e.id = it.rel_id', 'inner')
+            ->where('e.status !=', 4) // follow existing pattern in codebase
+            ->group_by('i.id')
+            ->get()->result_array();
+        $on_so = [];
+        foreach ($so_rows as $r) {
+            $on_so[(int)$r['item_id']] = (float)$r['qty'];
+        }
+
+        // Determine items to include: any with movement or active items
+        $item_ids = array_unique(array_merge(array_keys($on_hand), array_keys($on_so)));
+        if (empty($item_ids)) {
+            $items = [];
+        } else {
+            $this->db->select('id, commodity_code, description');
+            $this->db->from(db_prefix() . 'items');
+            $this->db->where_in('id', $item_ids);
+            $items = $this->db->get()->result_array();
+        }
+
+        // Build rows
+        $rows = [];
+        $totals = [
+            'on_hand' => 0,
+            'on_so' => 0,
+            'available' => 0,
+            'per_wh' => []
+        ];
+        foreach ($items as $it) {
+            $iid = (int)$it['id'];
+            $row = [
+                'item_id' => $iid,
+                'code' => $it['commodity_code'],
+                'name' => $it['description'],
+                'on_hand' => isset($on_hand[$iid]) ? $on_hand[$iid] : 0,
+                'on_so' => isset($on_so[$iid]) ? $on_so[$iid] : 0,
+                'per_wh' => [],
+            ];
+            $row['available'] = $row['on_hand'] - $row['on_so'];
+            foreach ($warehouses as $w) {
+                $wid = (int)$w['warehouse_id'];
+                $qty = isset($per_wh[$iid][$wid]) ? $per_wh[$iid][$wid] : 0;
+                $row['per_wh'][$wid] = $qty;
+                if (!isset($totals['per_wh'][$wid])) { $totals['per_wh'][$wid] = 0; }
+                $totals['per_wh'][$wid] += $qty;
+            }
+            $rows[] = $row;
+            $totals['on_hand'] += $row['on_hand'];
+            $totals['on_so'] += $row['on_so'];
+            $totals['available'] += $row['available'];
+        }
+
+        // CSV export
+        if ($this->input->get('format') === 'csv') {
+            header('Content-Type: text/csv');
+            header('Content-Disposition: attachment;filename="stock_full_view_report.csv"');
+            $out = fopen('php://output', 'w');
+            $header = ['Item Code', 'Item Name', 'On Hand', 'On Sales Order', 'Available'];
+            foreach ($warehouses as $w) { $header[] = $w['warehouse_name']; }
+            fputcsv($out, $header);
+            foreach ($rows as $r) {
+                $line = [$r['code'], $r['name'], (float)$r['on_hand'], (float)$r['on_so'], (float)$r['available']];
+                foreach ($warehouses as $w) { $line[] = isset($r['per_wh'][(int)$w['warehouse_id']]) ? (float)$r['per_wh'][(int)$w['warehouse_id']] : 0; }
+                fputcsv($out, $line);
+            }
+            $total_line = ['Totals', '', (float)$totals['on_hand'], (float)$totals['on_so'], (float)$totals['available']];
+            foreach ($warehouses as $w) { $total_line[] = isset($totals['per_wh'][(int)$w['warehouse_id']]) ? (float)$totals['per_wh'][(int)$w['warehouse_id']] : 0; }
+            fputcsv($out, $total_line);
+            fclose($out);
+            die();
+        }
+
+        $data['rows'] = $rows;
+        $data['totals'] = $totals;
+
+        $this->load->view('admin/reports/stock_full_view_report', $data);
+    }
+    
+    public function container_report()
+    {
+        // Prepare data for view
+        $data = [];
+        $data['title'] = 'Container-wise Purchase Reconciliation';
+
+        // Get container number from POST or GET (for CSV export)
+        $container_no = $this->input->post('container_no');
+        if ($container_no === null || $container_no === '') {
+            $container_no = $this->input->get('container_no');
+        }
+
+        if ($container_no !== null && $container_no !== '') {
+            $data['selected_container_no'] = $container_no;
+
+            // Fetch estimate quantities for this container
+            $this->db->select('d.item_code, SUM(d.quantity) AS qty');
+            $this->db->from(db_prefix() . 'pur_estimate_detail d');
+            $this->db->join(db_prefix() . 'pur_estimates e', 'e.id = d.pur_estimate', 'inner');
+            $this->db->where('e.container_no', $container_no);
+            $this->db->group_by('d.item_code');
+            $estimate_rows = $this->db->get()->result_array();
+
+            // Fetch PO quantities for this container
+            $this->db->select('d.item_code, SUM(d.quantity) AS qty');
+            $this->db->from(db_prefix() . 'pur_order_detail d');
+            $this->db->join(db_prefix() . 'pur_orders o', 'o.id = d.pur_order', 'inner');
+            $this->db->where('o.container_no', $container_no);
+            $this->db->group_by('d.item_code');
+            $po_rows = $this->db->get()->result_array();
+
+            // Index by item_code
+            $est_map = [];
+            foreach ($estimate_rows as $r) {
+                $est_map[$r['item_code']] = (float)$r['qty'];
+            }
+            $po_map = [];
+            foreach ($po_rows as $r) {
+                $po_map[$r['item_code']] = (float)$r['qty'];
+            }
+
+            $all_items = array_unique(array_merge(array_keys($est_map), array_keys($po_map)));
+            sort($all_items);
+
+            $report_rows = [];
+            $totals = ['estimate_qty' => 0, 'po_qty' => 0, 'difference' => 0];
+            foreach ($all_items as $code) {
+                $eq = isset($est_map[$code]) ? $est_map[$code] : 0;
+                $pq = isset($po_map[$code]) ? $po_map[$code] : 0;
+                $diff = $pq - $eq;
+                $report_rows[] = [
+                    'item_code' => $code,
+                    'estimate_qty' => $eq,
+                    'po_qty' => $pq,
+                    'difference' => $diff,
+                ];
+                $totals['estimate_qty'] += $eq;
+                $totals['po_qty'] += $pq;
+                $totals['difference'] += $diff;
+            }
+
+            // Additional simple stats
+            $data['other_reports'] = [
+                'estimates_count' => count($estimate_rows) > 0 ? 1 : 0,
+                'po_count' => count($po_rows) > 0 ? 1 : 0,
+            ];
+
+            // CSV export
+            if ($this->input->get('format') === 'csv') {
+                header('Content-Type: text/csv');
+                header('Content-Disposition: attachment;filename="container_report_' . preg_replace('/[^A-Za-z0-9_-]/', '_', $container_no) . '.csv"');
+                $out = fopen('php://output', 'w');
+                fputcsv($out, ['Container No', $container_no]);
+                fputcsv($out, ['Item Code', 'Estimate Qty', 'PO Qty', 'Difference']);
+                foreach ($report_rows as $r) {
+                    fputcsv($out, [$r['item_code'], $r['estimate_qty'], $r['po_qty'], $r['difference']]);
+                }
+                fputcsv($out, ['Totals', $totals['estimate_qty'], $totals['po_qty'], $totals['difference']]);
+                fclose($out);
+                die();
+            }
+
+            $data['report_rows'] = $report_rows;
+            $data['totals'] = $totals;
+        }
+
+        $this->load->view('admin/reports/container_report', $data);
+    }
+    
+    
+        public function sales_quotes_report()
+{
+    // 1. AJAX Request Handling
+    if ($this->input->is_ajax_request()) {
+        
+        // Clear any previous output (whitespace/HTML) to prevent "Special Character" errors
+        if (ob_get_length()) ob_clean(); 
+
+        $type = $this->input->get('report_type');
+        if(!$type){ $type = 'proposals'; }
+
+        // Setup variables based on selection
+        $table_main = '';
+        $rel_type   = '';
+        $date_col   = '';
+        
+        switch ($type) {
+            case 'invoices':
+                $table_main = 'invoices';
+                $rel_type   = 'invoice';
+                $date_col   = 'date';
+                break;
+            case 'estimates':
+                $table_main = 'estimates';
+                $rel_type   = 'estimate';
+                $date_col   = 'date';
+                break;
+            case 'credit_notes':
+                $table_main = 'creditnotes';
+                $rel_type   = 'credit_note';
+                $date_col   = 'date';
+                break;
+            case 'proposals':
+            default:
+                $table_main = 'proposals';
+                $rel_type   = 'proposal';
+                $date_col   = 'date';
+                break;
+        }
+
+        // Map Filter inputs
+        if ($this->input->get('report_months')) {
+            $_POST['report_months'] = $this->input->get('report_months');
+            $_POST['report_from']   = $this->input->get('report_from');
+            $_POST['report_to']     = $this->input->get('report_to');
+        }
+
+        // 2. Define Columns
+        // Note: We ONLY ask for ID, Company, Product, Quantity. No 'number' column to avoid errors.
+        $aColumns = [
+            db_prefix() . $table_main . '.id as main_id',
+            db_prefix() . $table_main . '.' . $date_col . ' as date',
+            db_prefix() . 'clients.company as company',
+            db_prefix() . 'itemable.description as product',
+            'SUM(' . db_prefix() . 'itemable.qty) as quantity',
+        ];
+
+        $sIndexColumn = 'id';
+        $sTable       = db_prefix() . 'itemable';
+        
+        // 3. Joins
+        $join = [
+            'JOIN ' . db_prefix() . $table_main . ' ON ' . db_prefix() . $table_main . '.id = ' . db_prefix() . 'itemable.rel_id',
+        ];
+
+        // Handle Client Join (Proposals use rel_id, others use clientid)
+        if($type == 'proposals'){
+             $join[] = 'JOIN ' . db_prefix() . 'clients ON ' . db_prefix() . 'clients.userid = ' . db_prefix() . 'proposals.rel_id';
+        } else {
+             $join[] = 'JOIN ' . db_prefix() . 'clients ON ' . db_prefix() . 'clients.userid = ' . db_prefix() . $table_main . '.clientid';
+        }
+
+        // 4. Where Conditions
+        $where = [
+            'AND ' . db_prefix() . 'itemable.rel_type = "' . $rel_type . '"',
+        ];
+
+        // Proposal specific check
+        if($type == 'proposals'){
+             array_push($where, 'AND ' . db_prefix() . 'proposals.rel_type = "customer"');
+        }
+
+        // Date Filter
+        $reportDateColumn = db_prefix() . $table_main . '.' . $date_col;
+        $date_filter = $this->get_where_report_period($reportDateColumn);
+        if ($date_filter != '') {
+            array_push($where, $date_filter);
+        }
+
+        // 5. Group By
+        $groupBy = 'GROUP BY ' . db_prefix() . 'clients.company, ' . db_prefix() . $table_main . '.' . $date_col . ', ' . db_prefix() . 'itemable.description';
+
+        // 6. Init DataTables
+        // We pass the JOINs and WHEREs. We do NOT pass extra columns that might not exist.
+        $result = data_tables_init(
+            $aColumns, 
+            $sIndexColumn, 
+            $sTable, 
+            $join, 
+            $where, 
+            [db_prefix() . $table_main . '.id'], // Just fetch ID for safety
+            $groupBy 
+        );
+
+        $output  = $result['output'];
+        $rResult = $result['rResult'];
+
+        foreach ($rResult as $aRow) {
+            $row = [];
+            
+            // Generate Link & Number
+            $numberOutput = '';
+            
+            if($type == 'invoices'){
+                $numberOutput = '<a href="' . admin_url('invoices/list_invoices/' . $aRow['main_id']) . '" target="_blank">' . format_invoice_number($aRow['main_id']) . '</a>';
+            } elseif($type == 'estimates'){
+                $numberOutput = '<a href="' . admin_url('estimates/list_estimates/' . $aRow['main_id']) . '" target="_blank">' . format_estimate_number($aRow['main_id']) . '</a>';
+            } elseif($type == 'credit_notes'){
+                $numberOutput = '<a href="' . admin_url('credit_notes/list_credit_notes/' . $aRow['main_id']) . '" target="_blank">' . format_credit_note_number($aRow['main_id']) . '</a>';
+            } else {
+                // Proposals: Uses ID
+                $numberOutput = '<a href="' . admin_url('proposals/list_proposals/' . $aRow['main_id']) . '" target="_blank">' . format_proposal_number($aRow['main_id']) . '</a>';
+            }
+
+            $row[] = $numberOutput;
+            $row[] = _d($aRow['date']);
+            $row[] = $aRow['company'];
+            $row[] = $aRow['product'];
+            $row[] = (float)$aRow['quantity'];
+
+            $output['aaData'][] = $row;
+        }
+
+        // 7. Final Output Cleaning (Crucial Step for JSON errors)
+        if (ob_get_length()) {
+            ob_end_clean(); // Wipes any HTML/Errors generated before this point
+        }
+        
+        header('Content-Type: application/json; charset=utf-8');
+        echo json_encode($output);
+        die();
+    }
+
+    // Load View
+    $data = [];
+    $data['title'] = 'Sales Report - Item Details';
+    $this->load->view('admin/reports/sales_quotes_report', $data);
+}
+    
+    
+    /* Optimized Customer Balance Report */
+    public function customer_balances()
+{
+    if ($this->input->is_ajax_request()) {
+        $this->load->model('currencies_model');
+        $currency = $this->currencies_model->get_base_currency();
+        $report_date = to_sql_date($this->input->post('report_date'));
+
+        $sIndexColumn = 'userid';
+        $sTable = db_prefix() . 'clients';
+
+        // Aggregate Invoices (Debits)
+        $join[] = 'LEFT JOIN (
+            SELECT clientid, SUM(total) as total_invoiced 
+            FROM ' . db_prefix() . 'invoices 
+            WHERE date < "' . $report_date . '" 
+            AND status NOT IN (5,6) 
+            GROUP BY clientid
+        ) as inv ON inv.clientid = ' . db_prefix() . 'clients.userid';
+
+        // Aggregate Payments (Credits)
+        $join[] = 'LEFT JOIN (
+            SELECT client_id, SUM(amount) as total_paid 
+            FROM ' . db_prefix() . 'invoicepaymentrecords 
+            WHERE date < "' . $report_date . '" 
+            GROUP BY client_id
+        ) as pay ON pay.client_id = ' . db_prefix() . 'clients.userid';
+
+        // Aggregate Credit Notes (Credits)
+        $join[] = 'LEFT JOIN (
+            SELECT clientid, SUM(total) as total_credited 
+            FROM ' . db_prefix() . 'creditnotes 
+            WHERE date < "' . $report_date . '" 
+            GROUP BY clientid
+        ) as cn ON cn.clientid = ' . db_prefix() . 'clients.userid';
+
+        $aColumns = [
+            db_prefix() . 'clients.userid as userid',
+            'company',
+            'phonenumber',
+            '(SELECT GROUP_CONCAT(name SEPARATOR ",") FROM ' . db_prefix() . 'customer_groups 
+              JOIN ' . db_prefix() . 'customers_groups ON ' . db_prefix() . 'customer_groups.groupid = ' . db_prefix() . 'customers_groups.id 
+              WHERE customer_id = ' . db_prefix() . 'clients.userid) as customerGroups',
+            // The Balance Formula: (Opening + Invoices) - (Payments + Credits)
+            '(COALESCE(' . db_prefix() . 'clients.balance, 0) + 
+              COALESCE(inv.total_invoiced, 0) - 
+              (COALESCE(pay.total_paid, 0) + COALESCE(cn.total_credited, 0))) as total_balance',
+        ];
+
+        // Ensure we pass the base table and joins to the DataTables helper
+        $result = data_tables_init($aColumns, $sIndexColumn, $sTable, $join, [], [db_prefix() . 'clients.userid']);
+
+        $output  = $result['output'];
+        $rResult = $result['rResult'];
+
+        foreach ($rResult as $aRow) {
+            $row = [];
+            $row[] = $aRow['userid'];
+            $row[] = '<a href="' . admin_url('clients/client/' . $aRow['userid']) . '">' . $aRow['company'] . '</a>';
+            $row[] = '<a href="tel:' . $aRow['phonenumber'] . '">' . $aRow['phonenumber'] . '</a>';
+            $row[] = $aRow['customerGroups'];
+            $row[] = app_format_money($aRow['total_balance'], $currency->name);
+
+            $output['aaData'][] = $row;
+        }
+
+        echo json_encode($output);
+        die();
+    }
+
+    $this->load->view('admin/reports/customer_balances');
+}
 }

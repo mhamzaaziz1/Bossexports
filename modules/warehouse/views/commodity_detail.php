@@ -15,28 +15,37 @@
 
                   <tr class="project-overview">
                     <td class="bold" width="30%"><?php echo _l('commodity_code'); ?></td>
-                    <td><?php echo html_entity_decode($commodites->commodity_code) ; ?></td>
+                    <td><?php echo new_html_entity_decode($commodites->commodity_code) ; ?></td>
                  </tr>
                  <tr class="project-overview">
                     <td class="bold"><?php echo _l('commodity_name'); ?></td>
-                    <td><?php echo html_entity_decode($commodites->description) ; ?></td>
+                    <td><?php echo new_html_entity_decode($commodites->description) ; ?></td>
                  </tr>
                  <tr class="project-overview">
                     <td class="bold"><?php echo _l('commodity_group'); ?></td>
-                    <td><?php echo get_wh_group_name(html_entity_decode($commodites->group_id)) != null ? get_wh_group_name(html_entity_decode($commodites->group_id))->name : '' ; ?></td>
+                    <td><?php echo get_wh_group_name(new_html_entity_decode($commodites->group_id)) != null ? get_wh_group_name(new_html_entity_decode($commodites->group_id))->name : '' ; ?></td>
                  </tr>
                  <tr class="project-overview">
                     <td class="bold"><?php echo _l('commodity_barcode'); ?></td>
-                    <td><?php echo html_entity_decode($commodites->commodity_barcode) ; ?></td>
+                    <td><?php echo new_html_entity_decode($commodites->commodity_barcode) ; ?></td>
                  </tr>
                  <tr class="project-overview">
                     <td class="bold"><?php echo _l('sku_code'); ?></td>
-                    <td><?php echo html_entity_decode($commodites->sku_code) ; ?></td>
+                    <td><?php echo new_html_entity_decode($commodites->sku_code) ; ?></td>
                  </tr>
                  <tr class="project-overview">
                     <td class="bold"><?php echo _l('sku_name'); ?></td>
-                    <td><?php echo html_entity_decode($commodites->sku_name) ; ?></td>
+                    <td><?php echo new_html_entity_decode($commodites->sku_name) ; ?></td>
                  </tr>
+                 <tr class="project-overview">
+                    <td class="bold"><?php echo _l('tax_1'); ?></td>
+                    <td><?php echo new_html_entity_decode($commodites->tax) != '' && get_tax_rate($commodites->tax) != null ? get_tax_rate($commodites->tax)->name : '';  ?></td>
+                 </tr> 
+                 <tr class="project-overview">
+                    <td class="bold"><?php echo _l('tax_2'); ?></td>
+                    <td><?php echo new_html_entity_decode($commodites->tax2) != '' && get_tax_rate($commodites->tax2) != null ? get_tax_rate($commodites->tax2)->name : '';  ?></td>
+                 </tr> 
+                
 
                 </tbody>
           </table>
@@ -49,10 +58,10 @@
               <?php foreach ($commodity_file as $key => $value) { ?>
 
                   <?php if(file_exists(WAREHOUSE_ITEM_UPLOAD .$value["rel_id"].'/'.$value["file_name"])){ ?>
-                      <a  class="images_w_table" href="<?php echo site_url('modules/warehouse/uploads/item_img/'.$value["rel_id"].'/'.$value["file_name"]); ?>"><img class="images_w_table" src="<?php echo site_url('modules/warehouse/uploads/item_img/'.$value["rel_id"].'/'.$value["file_name"]); ?>" alt="<?php echo html_entity_decode($value['file_name']) ?>"/></a>
+                      <a  class="images_w_table" href="<?php echo site_url('modules/warehouse/uploads/item_img/'.$value["rel_id"].'/'.$value["file_name"]); ?>"><img class="images_w_table" src="<?php echo site_url('modules/warehouse/uploads/item_img/'.$value["rel_id"].'/'.$value["file_name"]); ?>" alt="<?php echo new_html_entity_decode($value['file_name']) ?>"/></a>
                        
                     <?php }elseif(file_exists('modules/purchase/uploads/item_img/'. $value["rel_id"] . '/' . $value["file_name"])) { ?>
-                      <a  class="images_w_table" href="<?php echo site_url('modules/purchase/uploads/item_img/'.$value["rel_id"].'/'.$value["file_name"]); ?>"><img class="images_w_table" src="<?php echo site_url('modules/purchase/uploads/item_img/'.$value["rel_id"].'/'.$value["file_name"]); ?>" alt="<?php echo html_entity_decode($value['file_name']) ?>"/></a>
+                      <a  class="images_w_table" href="<?php echo site_url('modules/purchase/uploads/item_img/'.$value["rel_id"].'/'.$value["file_name"]); ?>"><img class="images_w_table" src="<?php echo site_url('modules/purchase/uploads/item_img/'.$value["rel_id"].'/'.$value["file_name"]); ?>" alt="<?php echo new_html_entity_decode($value['file_name']) ?>"/></a>
                         
                        
                     <?php } ?>
@@ -82,7 +91,7 @@
             <tbody>
                <tr class="project-overview">
                   <td class="bold td-width"><?php echo _l('origin'); ?></td>
-                    <td><?php echo html_entity_decode($commodites->origin) ; ?></td>
+                    <td><?php echo new_html_entity_decode($commodites->origin) ; ?></td>
                </tr>
                <tr class="project-overview">
                   <td class="bold"><?php echo _l('colors'); ?></td>
@@ -95,43 +104,17 @@
                     }
                   }
                    ?>
-                    <td><?php echo html_entity_decode($color_value) ; ?></td>
+                    <td><?php echo new_html_entity_decode($color_value) ; ?></td>
                </tr>
                <tr class="project-overview">
                   <td class="bold"><?php echo _l('style_id'); ?></td>
-                <td><?php  if($commodites->style_id != null){ echo get_style_name(html_entity_decode($commodites->style_id)) != null ? get_style_name(html_entity_decode($commodites->style_id))->style_name : '';}else{echo '';} ?></td>
+                <td><?php  if($commodites->style_id != null){ echo get_style_name(new_html_entity_decode($commodites->style_id)) != null ? get_style_name(new_html_entity_decode($commodites->style_id))->style_name : '';}else{echo '';} ?></td>
                </tr>
 
                 <tr class="project-overview">
                   <td class="bold"><?php echo _l('rate'); ?></td>
                   <td><?php echo app_format_money((float)$commodites->rate,'') ; ?></td>
                </tr>
-               <tr class="project-overview">
-                  <td class="bold"><?php echo "ECOMM "._l('rate'); ?></td>
-                  <td><?php echo app_format_money((float)$commodites->ECOMM,'') ; ?></td>
-               </tr>
-               <tr class="project-overview">
-                  <td class="bold"><?php echo "SELLER "._l('rate'); ?></td>
-                  <td><?php echo app_format_money((float)$commodites->SELLER,'') ; ?></td>
-               </tr>
-               <tr class="project-overview">
-                  <td class="bold"><?php echo "RETAILER"._l('rate'); ?></td>
-                  <td><?php echo app_format_money((float)$commodites->RETAILER,'') ; ?></td>
-               </tr>
-               <tr class="project-overview">
-                  <td class="bold"><?php echo "WHOLESALER"._l('rate'); ?></td>
-                  <td><?php echo app_format_money((float)$commodites->WHOLESALER,'') ; ?></td>
-               </tr>
-               <tr class="project-overview">
-                  <td class="bold"><?php echo _l('status'); ?></td>
-                  <td>
-                        <select name='isactive'>
-                          <option value="1">active</option>
-                          <option value="0">Inactive</option>
-                        </select>
-                  </td>
-               </tr>
-               
 
             </tbody>
         </table>
@@ -142,12 +125,12 @@
             <tbody>
                <tr class="project-overview">
                   <td class="bold" width="40%"><?php echo _l('model_id'); ?></td>
-                   <td><?php if($commodites->style_id != null){ echo get_model_name(html_entity_decode($commodites->model_id)) != null ? get_model_name(html_entity_decode($commodites->model_id))->body_name : ''; }else{echo '';}?></td>
+                   <td><?php if($commodites->style_id != null){ echo get_model_name(new_html_entity_decode($commodites->model_id)) != null ? get_model_name(new_html_entity_decode($commodites->model_id))->body_name : ''; }else{echo '';}?></td>
                </tr>
                <tr class="project-overview">
                   <td class="bold"><?php echo _l('size_id'); ?></td>
 
-                  <td><?php if($commodites->style_id != null){ echo get_size_name(html_entity_decode($commodites->size_id)) != null ? get_size_name(html_entity_decode($commodites->size_id))->size_name : ''; }else{ echo '';}?></td>
+                  <td><?php if($commodites->style_id != null){ echo get_size_name(new_html_entity_decode($commodites->size_id)) != null ? get_size_name(new_html_entity_decode($commodites->size_id))->size_name : ''; }else{ echo '';}?></td>
                </tr>
                
                  <tr class="project-overview">
@@ -168,7 +151,7 @@
 
        <h4 class="h4-color"><?php echo _l('description'); ?></h4>
       <hr class="hr-color">
-      <p><?php echo html_entity_decode($commodites->long_description) ; ?></p>
+      <p><?php echo new_html_entity_decode($commodites->long_description) ; ?></p>
       
           
     </div>

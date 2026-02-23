@@ -77,6 +77,16 @@ class Arr
         return false;
     }
 
+    public static function pull(&$array, $key)
+    {
+        if (array_key_exists($key, $array)) {
+            $value = $array[$key];
+            unset($array[$key]);
+
+            return $value;
+        }
+    }
+
     public static function pluck($array, $key)
     {
         return array_map(function ($v) use ($key) {
@@ -121,7 +131,10 @@ class Arr
         $func = $keepIndex ? 'usort' : 'uasort';
 
         $func($array, function ($a, $b) use ($key) {
-            return $a[$key] - $b[$key];
+            // Handle missing keys gracefully
+            $aVal = isset($a[$key]) ? $a[$key] : 0;
+            $bVal = isset($b[$key]) ? $b[$key] : 0;
+            return $aVal - $bVal;
         });
 
         return $array;

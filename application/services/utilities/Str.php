@@ -7,14 +7,25 @@ defined('BASEPATH') or exit('No direct script access allowed');
 use Cocur\Slugify\RuleProvider\DefaultRuleProvider as DefaultSlugRuleProvider;
 use Cocur\Slugify\Slugify;
 use app\services\utilities\StrClickable as Clickable;
+use OutOfBoundsException;
 
 class Str
 {
     use Clickable;
 
-    public static function startsWith($haystack, $needle)
+    public static function startsWith($haystack, $needles)
     {
-        return $needle === '' || strrpos($haystack, $needle, -strlen($haystack)) !== false;
+        if (! is_iterable($needles)) {
+            $needles = [$needles];
+        }
+
+        foreach ($needles as $needle) {
+            if ((string) $needle !== '' && strrpos($haystack, $needle, -strlen($haystack)) !== false) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public static function endsWith($haystack, $needle)
@@ -141,11 +152,14 @@ class Str
         }
 
         if (!in_array($set, $default_active_rule_sets)) {
-            $r = @$m->getRules($set);
-            // Check if set exist
-            if ($r) {
-                $defaults['rulesets'] = [$set];
-            }
+            try {
+                $r = @$m->getRules($set);
+
+                // Check if set exist
+                if ($r) {
+                    $defaults['rulesets'] = [$set];
+                }
+            } catch(OutOfBoundsException $e){}
         }
 
         $options = array_merge($defaults, $options);

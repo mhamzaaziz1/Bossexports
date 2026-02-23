@@ -10,6 +10,7 @@
 	      _l('voucher').', '._l('coupon'),
 	      _l('total_order'),      
 		  _l('discount'),     
+		  _l('tax'),     
 		  _l('after_discount'),     
 	      _l('date_apply'),
 		    );

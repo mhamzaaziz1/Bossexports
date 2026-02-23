@@ -19,7 +19,7 @@ class Configuration implements ConfigurationInterface
     /**
      * {@inheritdoc}
      */
-    public function getConfigTreeBuilder()
+    public function getConfigTreeBuilder(): TreeBuilder
     {
         $treeBuilder = new TreeBuilder('cocur_slugify');
 
@@ -28,7 +28,6 @@ class Configuration implements ConfigurationInterface
             $rootNode = $treeBuilder->getRootNode();
         } else {
             $rootNode = $treeBuilder->root('cocur_slugify');
-
         }
 
         $rootNode

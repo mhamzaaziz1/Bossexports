@@ -49,7 +49,7 @@
       'rate': 'required',
     },expenseSubmitHandler);
 
-    $('input[name="commodity_id"]').val("<?php echo html_entity_decode($commodity_item->id) ;?>");
+    $('input[name="commodity_id"]').val("<?php echo new_html_entity_decode($commodity_item->id) ;?>");
 
     var ProposalServerParams = {
       "warehouse_ft": "[name='warehouse_filter[]']",
@@ -984,5 +984,49 @@ $( "#parent_id" ).change(function() {
     });
 
 });
+
+  function delete_product_attachment(wrapper, attachment_id, rel_type) {
+      "use strict";  
+      
+      if (confirm_delete()) {
+        $.get(admin_url + 'warehouse/delete_product_attachment/' +attachment_id+'/'+rel_type, function (response) {
+          if (response.success == true) {
+            $(wrapper).parents('.dz-preview').remove();
+
+            var totalAttachmentsIndicator = $('.dz-preview'+attachment_id);
+            var totalAttachments = totalAttachmentsIndicator.text().trim();
+
+            if(totalAttachments == 1) {
+              totalAttachmentsIndicator.remove();
+            } else {
+              totalAttachmentsIndicator.text(totalAttachments-1);
+            }
+            alert_float('success', "<?php echo _l('delete_commodity_file_success') ?>");
+
+          } else {
+            alert_float('danger', "<?php echo _l('delete_commodity_file_false') ?>");
+          }
+        }, 'json');
+      }
+      return false;
+    }
+
+    //add opening stock
+    function add_opening_stock_modal(id, parent_id) {
+      "use strict";
+
+      $("#modal_wrapper").load("<?php echo admin_url('warehouse/warehouse/add_opening_stock_modal'); ?>", {
+       slug: 'add',
+       id:id,
+       parent_id:parent_id,
+     }, function() {
+
+      $("body").find('#appointmentModal').modal({ show: true, backdrop: 'static' });
+
+    });
+
+      init_selectpicker();
+      $(".selectpicker").selectpicker('refresh');
+    }
 
 </script>

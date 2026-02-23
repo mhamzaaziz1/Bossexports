@@ -97,9 +97,11 @@ function prep_tags_input($tag_names)
 function render_tags($tags)
 {
     $tags_html = '';
+
     if (!is_array($tags)) {
-        $tags = explode(',', $tags);
+       $tags = empty($tags) ? [] : explode(',', $tags);
     }
+
     $tags = array_filter($tags, function ($value) {
         return $value !== '';
     });
@@ -125,7 +127,7 @@ function render_tags($tags)
                 $tag_id = is_object($tag_row) ? $tag_row->id : $tag_row;
             }
 
-            $tags_html .= '<span class="label label-tag tag-id-' . $tag_id . '"><span class="tag">' . $tag . '</span><span class="hide">' . ($i != $len - 1 ? ', ' : '') . '</span></span>';
+            $tags_html .= '<span class="label label-tag tag-id-' . $tag_id . '"><span class="tag">' . e($tag) . '</span><span class="hide">' . ($i != $len - 1 ? ', ' : '') . '</span></span>';
             $i++;
         }
         $tags_html .= '</div>';

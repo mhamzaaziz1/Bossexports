@@ -4,11 +4,12 @@
 			<div class="modal-header">
 				<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
 
-				<h4 class="modal-title"><?php echo html_entity_decode($title); ?></h4>
+				<h4 class="modal-title"><?php echo new_html_entity_decode($title); ?></h4>
 			</div>
 			<?php echo form_open(admin_url('warehouse/add_opening_stock'), array('id' => 'add_opening_stock', 'autocomplete'=>'off')); ?>
 			<div class="modal-body">
-				
+				<input type="hidden" name="parent_id" value="<?php echo new_html_entity_decode($parent_id); ?>">
+
 				<div class="row">
 					<div class="col-md-12">
 						<h5 class="add_opening_stock"><?php echo _l('add_opening_stock_required'); ?></h5>
@@ -23,7 +24,7 @@
 			</div>
 			<div class="modal-footer">
 				<button type="button" class="btn btn-default close_btn" data-dismiss="modal"><?php echo _l('close'); ?></button>
-				<?php if(has_permission('warehouse', '', 'create') || has_permission('warehouse', '', 'edit')){ ?>
+				<?php if(has_permission('warehouse_item', '', 'create') || has_permission('warehouse_item', '', 'edit')){ ?>
 					<a href="#"class="btn btn-info pull-right mright10 display-block btn_add_opening_stock" ><?php echo _l('submit'); ?></a>
 
 				<?php } ?>

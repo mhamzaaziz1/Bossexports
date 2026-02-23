@@ -23,8 +23,8 @@ abstract class CallOptions {
      * @param string $fallbackMethod HTTP Method to use with fallback_url
      * @param string $statusCallback The URL we should call to send status
      *                               information to your application
-     * @param string $statusCallbackEvent The call progress events that we send to
-     *                                    the `status_callback` URL.
+     * @param string[] $statusCallbackEvent The call progress events that we send
+     *                                      to the `status_callback` URL.
      * @param string $statusCallbackMethod HTTP Method to use with status_callback
      * @param string $sendDigits The digits to dial after connecting to the number
      * @param int $timeout Number of seconds to wait for an answer
@@ -44,10 +44,10 @@ abstract class CallOptions {
      *                                 detection
      * @param int $machineDetectionTimeout Number of seconds to wait for machine
      *                                     detection
-     * @param string $recordingStatusCallbackEvent The recording status events that
-     *                                             will trigger calls to the URL
-     *                                             specified in
-     *                                             `recording_status_callback`
+     * @param string[] $recordingStatusCallbackEvent The recording status events
+     *                                               that will trigger calls to the
+     *                                               URL specified in
+     *                                               `recording_status_callback`
      * @param string $trim Set this parameter to control trimming of silence on the
      *                     recording.
      * @param string $callerId The phone number, SIP address, or Client identifier
@@ -61,11 +61,21 @@ abstract class CallOptions {
      *                                                silence after speech activity
      * @param int $machineDetectionSilenceTimeout Number of milliseconds of initial
      *                                            silence
+     * @param string $asyncAmd Enable asynchronous AMD
+     * @param string $asyncAmdStatusCallback The URL we should call to send amd
+     *                                       status information to your application
+     * @param string $asyncAmdStatusCallbackMethod HTTP Method to use with
+     *                                             async_amd_status_callback
      * @param string $byoc BYOC trunk SID (Beta)
+     * @param string $callReason Reason for the call (Branded Calls Beta)
+     * @param string $callToken A token string needed to invoke a forwarded call
+     *                          with a CallerId recieved on a previous incoming call
+     * @param string $recordingTrack Which track(s) to record
+     * @param int $timeLimit The maximum duration of the call in seconds.
      * @return CreateCallOptions Options builder
      */
-    public static function create($url = Values::NONE, $twiml = Values::NONE, $applicationSid = Values::NONE, $method = Values::NONE, $fallbackUrl = Values::NONE, $fallbackMethod = Values::NONE, $statusCallback = Values::NONE, $statusCallbackEvent = Values::NONE, $statusCallbackMethod = Values::NONE, $sendDigits = Values::NONE, $timeout = Values::NONE, $record = Values::NONE, $recordingChannels = Values::NONE, $recordingStatusCallback = Values::NONE, $recordingStatusCallbackMethod = Values::NONE, $sipAuthUsername = Values::NONE, $sipAuthPassword = Values::NONE, $machineDetection = Values::NONE, $machineDetectionTimeout = Values::NONE, $recordingStatusCallbackEvent = Values::NONE, $trim = Values::NONE, $callerId = Values::NONE, $machineDetectionSpeechThreshold = Values::NONE, $machineDetectionSpeechEndThreshold = Values::NONE, $machineDetectionSilenceTimeout = Values::NONE, $byoc = Values::NONE) {
-        return new CreateCallOptions($url, $twiml, $applicationSid, $method, $fallbackUrl, $fallbackMethod, $statusCallback, $statusCallbackEvent, $statusCallbackMethod, $sendDigits, $timeout, $record, $recordingChannels, $recordingStatusCallback, $recordingStatusCallbackMethod, $sipAuthUsername, $sipAuthPassword, $machineDetection, $machineDetectionTimeout, $recordingStatusCallbackEvent, $trim, $callerId, $machineDetectionSpeechThreshold, $machineDetectionSpeechEndThreshold, $machineDetectionSilenceTimeout, $byoc);
+    public static function create(string $url = Values::NONE, string $twiml = Values::NONE, string $applicationSid = Values::NONE, string $method = Values::NONE, string $fallbackUrl = Values::NONE, string $fallbackMethod = Values::NONE, string $statusCallback = Values::NONE, array $statusCallbackEvent = Values::ARRAY_NONE, string $statusCallbackMethod = Values::NONE, string $sendDigits = Values::NONE, int $timeout = Values::NONE, bool $record = Values::NONE, string $recordingChannels = Values::NONE, string $recordingStatusCallback = Values::NONE, string $recordingStatusCallbackMethod = Values::NONE, string $sipAuthUsername = Values::NONE, string $sipAuthPassword = Values::NONE, string $machineDetection = Values::NONE, int $machineDetectionTimeout = Values::NONE, array $recordingStatusCallbackEvent = Values::ARRAY_NONE, string $trim = Values::NONE, string $callerId = Values::NONE, int $machineDetectionSpeechThreshold = Values::NONE, int $machineDetectionSpeechEndThreshold = Values::NONE, int $machineDetectionSilenceTimeout = Values::NONE, string $asyncAmd = Values::NONE, string $asyncAmdStatusCallback = Values::NONE, string $asyncAmdStatusCallbackMethod = Values::NONE, string $byoc = Values::NONE, string $callReason = Values::NONE, string $callToken = Values::NONE, string $recordingTrack = Values::NONE, int $timeLimit = Values::NONE): CreateCallOptions {
+        return new CreateCallOptions($url, $twiml, $applicationSid, $method, $fallbackUrl, $fallbackMethod, $statusCallback, $statusCallbackEvent, $statusCallbackMethod, $sendDigits, $timeout, $record, $recordingChannels, $recordingStatusCallback, $recordingStatusCallbackMethod, $sipAuthUsername, $sipAuthPassword, $machineDetection, $machineDetectionTimeout, $recordingStatusCallbackEvent, $trim, $callerId, $machineDetectionSpeechThreshold, $machineDetectionSpeechEndThreshold, $machineDetectionSilenceTimeout, $asyncAmd, $asyncAmdStatusCallback, $asyncAmdStatusCallbackMethod, $byoc, $callReason, $callToken, $recordingTrack, $timeLimit);
     }
 
     /**
@@ -81,7 +91,7 @@ abstract class CallOptions {
      * @param string $endTimeAfter Only include calls that ended on this date
      * @return ReadCallOptions Options builder
      */
-    public static function read($to = Values::NONE, $from = Values::NONE, $parentCallSid = Values::NONE, $status = Values::NONE, $startTimeBefore = Values::NONE, $startTime = Values::NONE, $startTimeAfter = Values::NONE, $endTimeBefore = Values::NONE, $endTime = Values::NONE, $endTimeAfter = Values::NONE) {
+    public static function read(string $to = Values::NONE, string $from = Values::NONE, string $parentCallSid = Values::NONE, string $status = Values::NONE, string $startTimeBefore = Values::NONE, string $startTime = Values::NONE, string $startTimeAfter = Values::NONE, string $endTimeBefore = Values::NONE, string $endTime = Values::NONE, string $endTimeAfter = Values::NONE): ReadCallOptions {
         return new ReadCallOptions($to, $from, $parentCallSid, $status, $startTimeBefore, $startTime, $startTimeAfter, $endTimeBefore, $endTime, $endTimeAfter);
     }
 
@@ -96,10 +106,11 @@ abstract class CallOptions {
      * @param string $statusCallbackMethod HTTP Method to use to call
      *                                     status_callback
      * @param string $twiml TwiML instructions for the call
+     * @param int $timeLimit The maximum duration of the call in seconds.
      * @return UpdateCallOptions Options builder
      */
-    public static function update($url = Values::NONE, $method = Values::NONE, $status = Values::NONE, $fallbackUrl = Values::NONE, $fallbackMethod = Values::NONE, $statusCallback = Values::NONE, $statusCallbackMethod = Values::NONE, $twiml = Values::NONE) {
-        return new UpdateCallOptions($url, $method, $status, $fallbackUrl, $fallbackMethod, $statusCallback, $statusCallbackMethod, $twiml);
+    public static function update(string $url = Values::NONE, string $method = Values::NONE, string $status = Values::NONE, string $fallbackUrl = Values::NONE, string $fallbackMethod = Values::NONE, string $statusCallback = Values::NONE, string $statusCallbackMethod = Values::NONE, string $twiml = Values::NONE, int $timeLimit = Values::NONE): UpdateCallOptions {
+        return new UpdateCallOptions($url, $method, $status, $fallbackUrl, $fallbackMethod, $statusCallback, $statusCallbackMethod, $twiml, $timeLimit);
     }
 }
 
@@ -114,8 +125,8 @@ class CreateCallOptions extends Options {
      * @param string $fallbackMethod HTTP Method to use with fallback_url
      * @param string $statusCallback The URL we should call to send status
      *                               information to your application
-     * @param string $statusCallbackEvent The call progress events that we send to
-     *                                    the `status_callback` URL.
+     * @param string[] $statusCallbackEvent The call progress events that we send
+     *                                      to the `status_callback` URL.
      * @param string $statusCallbackMethod HTTP Method to use with status_callback
      * @param string $sendDigits The digits to dial after connecting to the number
      * @param int $timeout Number of seconds to wait for an answer
@@ -135,10 +146,10 @@ class CreateCallOptions extends Options {
      *                                 detection
      * @param int $machineDetectionTimeout Number of seconds to wait for machine
      *                                     detection
-     * @param string $recordingStatusCallbackEvent The recording status events that
-     *                                             will trigger calls to the URL
-     *                                             specified in
-     *                                             `recording_status_callback`
+     * @param string[] $recordingStatusCallbackEvent The recording status events
+     *                                               that will trigger calls to the
+     *                                               URL specified in
+     *                                               `recording_status_callback`
      * @param string $trim Set this parameter to control trimming of silence on the
      *                     recording.
      * @param string $callerId The phone number, SIP address, or Client identifier
@@ -152,9 +163,19 @@ class CreateCallOptions extends Options {
      *                                                silence after speech activity
      * @param int $machineDetectionSilenceTimeout Number of milliseconds of initial
      *                                            silence
+     * @param string $asyncAmd Enable asynchronous AMD
+     * @param string $asyncAmdStatusCallback The URL we should call to send amd
+     *                                       status information to your application
+     * @param string $asyncAmdStatusCallbackMethod HTTP Method to use with
+     *                                             async_amd_status_callback
      * @param string $byoc BYOC trunk SID (Beta)
+     * @param string $callReason Reason for the call (Branded Calls Beta)
+     * @param string $callToken A token string needed to invoke a forwarded call
+     *                          with a CallerId recieved on a previous incoming call
+     * @param string $recordingTrack Which track(s) to record
+     * @param int $timeLimit The maximum duration of the call in seconds.
      */
-    public function __construct($url = Values::NONE, $twiml = Values::NONE, $applicationSid = Values::NONE, $method = Values::NONE, $fallbackUrl = Values::NONE, $fallbackMethod = Values::NONE, $statusCallback = Values::NONE, $statusCallbackEvent = Values::NONE, $statusCallbackMethod = Values::NONE, $sendDigits = Values::NONE, $timeout = Values::NONE, $record = Values::NONE, $recordingChannels = Values::NONE, $recordingStatusCallback = Values::NONE, $recordingStatusCallbackMethod = Values::NONE, $sipAuthUsername = Values::NONE, $sipAuthPassword = Values::NONE, $machineDetection = Values::NONE, $machineDetectionTimeout = Values::NONE, $recordingStatusCallbackEvent = Values::NONE, $trim = Values::NONE, $callerId = Values::NONE, $machineDetectionSpeechThreshold = Values::NONE, $machineDetectionSpeechEndThreshold = Values::NONE, $machineDetectionSilenceTimeout = Values::NONE, $byoc = Values::NONE) {
+    public function __construct(string $url = Values::NONE, string $twiml = Values::NONE, string $applicationSid = Values::NONE, string $method = Values::NONE, string $fallbackUrl = Values::NONE, string $fallbackMethod = Values::NONE, string $statusCallback = Values::NONE, array $statusCallbackEvent = Values::ARRAY_NONE, string $statusCallbackMethod = Values::NONE, string $sendDigits = Values::NONE, int $timeout = Values::NONE, bool $record = Values::NONE, string $recordingChannels = Values::NONE, string $recordingStatusCallback = Values::NONE, string $recordingStatusCallbackMethod = Values::NONE, string $sipAuthUsername = Values::NONE, string $sipAuthPassword = Values::NONE, string $machineDetection = Values::NONE, int $machineDetectionTimeout = Values::NONE, array $recordingStatusCallbackEvent = Values::ARRAY_NONE, string $trim = Values::NONE, string $callerId = Values::NONE, int $machineDetectionSpeechThreshold = Values::NONE, int $machineDetectionSpeechEndThreshold = Values::NONE, int $machineDetectionSilenceTimeout = Values::NONE, string $asyncAmd = Values::NONE, string $asyncAmdStatusCallback = Values::NONE, string $asyncAmdStatusCallbackMethod = Values::NONE, string $byoc = Values::NONE, string $callReason = Values::NONE, string $callToken = Values::NONE, string $recordingTrack = Values::NONE, int $timeLimit = Values::NONE) {
         $this->options['url'] = $url;
         $this->options['twiml'] = $twiml;
         $this->options['applicationSid'] = $applicationSid;
@@ -180,7 +201,14 @@ class CreateCallOptions extends Options {
         $this->options['machineDetectionSpeechThreshold'] = $machineDetectionSpeechThreshold;
         $this->options['machineDetectionSpeechEndThreshold'] = $machineDetectionSpeechEndThreshold;
         $this->options['machineDetectionSilenceTimeout'] = $machineDetectionSilenceTimeout;
+        $this->options['asyncAmd'] = $asyncAmd;
+        $this->options['asyncAmdStatusCallback'] = $asyncAmdStatusCallback;
+        $this->options['asyncAmdStatusCallbackMethod'] = $asyncAmdStatusCallbackMethod;
         $this->options['byoc'] = $byoc;
+        $this->options['callReason'] = $callReason;
+        $this->options['callToken'] = $callToken;
+        $this->options['recordingTrack'] = $recordingTrack;
+        $this->options['timeLimit'] = $timeLimit;
     }
 
     /**
@@ -189,18 +217,18 @@ class CreateCallOptions extends Options {
      * @param string $url The absolute URL that returns TwiML for this call
      * @return $this Fluent Builder
      */
-    public function setUrl($url) {
+    public function setUrl(string $url): self {
         $this->options['url'] = $url;
         return $this;
     }
 
     /**
-     * TwiML instructions for the call Twilio will use without fetching Twiml from url parameter. If both `twiml` and `url` are provided then `twiml` parameter will be ignored.
+     * TwiML instructions for the call Twilio will use without fetching Twiml from url parameter. If both `twiml` and `url` are provided then `twiml` parameter will be ignored. Max 4000 characters.
      *
      * @param string $twiml TwiML instructions for the call
      * @return $this Fluent Builder
      */
-    public function setTwiml($twiml) {
+    public function setTwiml(string $twiml): self {
         $this->options['twiml'] = $twiml;
         return $this;
     }
@@ -212,7 +240,7 @@ class CreateCallOptions extends Options {
      *                               handle the call
      * @return $this Fluent Builder
      */
-    public function setApplicationSid($applicationSid) {
+    public function setApplicationSid(string $applicationSid): self {
         $this->options['applicationSid'] = $applicationSid;
         return $this;
     }
@@ -223,7 +251,7 @@ class CreateCallOptions extends Options {
      * @param string $method HTTP method to use to fetch TwiML
      * @return $this Fluent Builder
      */
-    public function setMethod($method) {
+    public function setMethod(string $method): self {
         $this->options['method'] = $method;
         return $this;
     }
@@ -234,7 +262,7 @@ class CreateCallOptions extends Options {
      * @param string $fallbackUrl Fallback URL in case of error
      * @return $this Fluent Builder
      */
-    public function setFallbackUrl($fallbackUrl) {
+    public function setFallbackUrl(string $fallbackUrl): self {
         $this->options['fallbackUrl'] = $fallbackUrl;
         return $this;
     }
@@ -245,7 +273,7 @@ class CreateCallOptions extends Options {
      * @param string $fallbackMethod HTTP Method to use with fallback_url
      * @return $this Fluent Builder
      */
-    public function setFallbackMethod($fallbackMethod) {
+    public function setFallbackMethod(string $fallbackMethod): self {
         $this->options['fallbackMethod'] = $fallbackMethod;
         return $this;
     }
@@ -257,7 +285,7 @@ class CreateCallOptions extends Options {
      *                               information to your application
      * @return $this Fluent Builder
      */
-    public function setStatusCallback($statusCallback) {
+    public function setStatusCallback(string $statusCallback): self {
         $this->options['statusCallback'] = $statusCallback;
         return $this;
     }
@@ -265,11 +293,11 @@ class CreateCallOptions extends Options {
     /**
      * The call progress events that we will send to the `status_callback` URL. Can be: `initiated`, `ringing`, `answered`, and `completed`. If no event is specified, we send the `completed` status. If you want to receive multiple events, specify each one in a separate `status_callback_event` parameter. See the code sample for [monitoring call progress](https://www.twilio.com/docs/voice/api/call-resource?code-sample=code-create-a-call-resource-and-specify-a-statuscallbackevent&code-sdk-version=json). If an `application_sid` is present, this parameter is ignored.
      *
-     * @param string $statusCallbackEvent The call progress events that we send to
-     *                                    the `status_callback` URL.
+     * @param string[] $statusCallbackEvent The call progress events that we send
+     *                                      to the `status_callback` URL.
      * @return $this Fluent Builder
      */
-    public function setStatusCallbackEvent($statusCallbackEvent) {
+    public function setStatusCallbackEvent(array $statusCallbackEvent): self {
         $this->options['statusCallbackEvent'] = $statusCallbackEvent;
         return $this;
     }
@@ -280,7 +308,7 @@ class CreateCallOptions extends Options {
      * @param string $statusCallbackMethod HTTP Method to use with status_callback
      * @return $this Fluent Builder
      */
-    public function setStatusCallbackMethod($statusCallbackMethod) {
+    public function setStatusCallbackMethod(string $statusCallbackMethod): self {
         $this->options['statusCallbackMethod'] = $statusCallbackMethod;
         return $this;
     }
@@ -291,7 +319,7 @@ class CreateCallOptions extends Options {
      * @param string $sendDigits The digits to dial after connecting to the number
      * @return $this Fluent Builder
      */
-    public function setSendDigits($sendDigits) {
+    public function setSendDigits(string $sendDigits): self {
         $this->options['sendDigits'] = $sendDigits;
         return $this;
     }
@@ -302,7 +330,7 @@ class CreateCallOptions extends Options {
      * @param int $timeout Number of seconds to wait for an answer
      * @return $this Fluent Builder
      */
-    public function setTimeout($timeout) {
+    public function setTimeout(int $timeout): self {
         $this->options['timeout'] = $timeout;
         return $this;
     }
@@ -313,7 +341,7 @@ class CreateCallOptions extends Options {
      * @param bool $record Whether to record the call
      * @return $this Fluent Builder
      */
-    public function setRecord($record) {
+    public function setRecord(bool $record): self {
         $this->options['record'] = $record;
         return $this;
     }
@@ -325,7 +353,7 @@ class CreateCallOptions extends Options {
      *                                  recording
      * @return $this Fluent Builder
      */
-    public function setRecordingChannels($recordingChannels) {
+    public function setRecordingChannels(string $recordingChannels): self {
         $this->options['recordingChannels'] = $recordingChannels;
         return $this;
     }
@@ -337,7 +365,7 @@ class CreateCallOptions extends Options {
      *                                        recording is available to be accessed
      * @return $this Fluent Builder
      */
-    public function setRecordingStatusCallback($recordingStatusCallback) {
+    public function setRecordingStatusCallback(string $recordingStatusCallback): self {
         $this->options['recordingStatusCallback'] = $recordingStatusCallback;
         return $this;
     }
@@ -350,7 +378,7 @@ class CreateCallOptions extends Options {
      *                                              `recording_status_callback` URL
      * @return $this Fluent Builder
      */
-    public function setRecordingStatusCallbackMethod($recordingStatusCallbackMethod) {
+    public function setRecordingStatusCallbackMethod(string $recordingStatusCallbackMethod): self {
         $this->options['recordingStatusCallbackMethod'] = $recordingStatusCallbackMethod;
         return $this;
     }
@@ -362,7 +390,7 @@ class CreateCallOptions extends Options {
      *                                making a SIP call
      * @return $this Fluent Builder
      */
-    public function setSipAuthUsername($sipAuthUsername) {
+    public function setSipAuthUsername(string $sipAuthUsername): self {
         $this->options['sipAuthUsername'] = $sipAuthUsername;
         return $this;
     }
@@ -374,7 +402,7 @@ class CreateCallOptions extends Options {
      *                                user account specified in `sip_auth_username`.
      * @return $this Fluent Builder
      */
-    public function setSipAuthPassword($sipAuthPassword) {
+    public function setSipAuthPassword(string $sipAuthPassword): self {
         $this->options['sipAuthPassword'] = $sipAuthPassword;
         return $this;
     }
@@ -386,7 +414,7 @@ class CreateCallOptions extends Options {
      *                                 detection
      * @return $this Fluent Builder
      */
-    public function setMachineDetection($machineDetection) {
+    public function setMachineDetection(string $machineDetection): self {
         $this->options['machineDetection'] = $machineDetection;
         return $this;
     }
@@ -398,7 +426,7 @@ class CreateCallOptions extends Options {
      *                                     detection
      * @return $this Fluent Builder
      */
-    public function setMachineDetectionTimeout($machineDetectionTimeout) {
+    public function setMachineDetectionTimeout(int $machineDetectionTimeout): self {
         $this->options['machineDetectionTimeout'] = $machineDetectionTimeout;
         return $this;
     }
@@ -406,13 +434,13 @@ class CreateCallOptions extends Options {
     /**
      * The recording status events that will trigger calls to the URL specified in `recording_status_callback`. Can be: `in-progress`, `completed` and `absent`. Defaults to `completed`. Separate  multiple values with a space.
      *
-     * @param string $recordingStatusCallbackEvent The recording status events that
-     *                                             will trigger calls to the URL
-     *                                             specified in
-     *                                             `recording_status_callback`
+     * @param string[] $recordingStatusCallbackEvent The recording status events
+     *                                               that will trigger calls to the
+     *                                               URL specified in
+     *                                               `recording_status_callback`
      * @return $this Fluent Builder
      */
-    public function setRecordingStatusCallbackEvent($recordingStatusCallbackEvent) {
+    public function setRecordingStatusCallbackEvent(array $recordingStatusCallbackEvent): self {
         $this->options['recordingStatusCallbackEvent'] = $recordingStatusCallbackEvent;
         return $this;
     }
@@ -424,7 +452,7 @@ class CreateCallOptions extends Options {
      *                     recording.
      * @return $this Fluent Builder
      */
-    public function setTrim($trim) {
+    public function setTrim(string $trim): self {
         $this->options['trim'] = $trim;
         return $this;
     }
@@ -438,7 +466,7 @@ class CreateCallOptions extends Options {
      *                         formatted as `name@company.com`.
      * @return $this Fluent Builder
      */
-    public function setCallerId($callerId) {
+    public function setCallerId(string $callerId): self {
         $this->options['callerId'] = $callerId;
         return $this;
     }
@@ -451,7 +479,7 @@ class CreateCallOptions extends Options {
      *                                             of the speech activity
      * @return $this Fluent Builder
      */
-    public function setMachineDetectionSpeechThreshold($machineDetectionSpeechThreshold) {
+    public function setMachineDetectionSpeechThreshold(int $machineDetectionSpeechThreshold): self {
         $this->options['machineDetectionSpeechThreshold'] = $machineDetectionSpeechThreshold;
         return $this;
     }
@@ -463,7 +491,7 @@ class CreateCallOptions extends Options {
      *                                                silence after speech activity
      * @return $this Fluent Builder
      */
-    public function setMachineDetectionSpeechEndThreshold($machineDetectionSpeechEndThreshold) {
+    public function setMachineDetectionSpeechEndThreshold(int $machineDetectionSpeechEndThreshold): self {
         $this->options['machineDetectionSpeechEndThreshold'] = $machineDetectionSpeechEndThreshold;
         return $this;
     }
@@ -475,8 +503,43 @@ class CreateCallOptions extends Options {
      *                                            silence
      * @return $this Fluent Builder
      */
-    public function setMachineDetectionSilenceTimeout($machineDetectionSilenceTimeout) {
+    public function setMachineDetectionSilenceTimeout(int $machineDetectionSilenceTimeout): self {
         $this->options['machineDetectionSilenceTimeout'] = $machineDetectionSilenceTimeout;
+        return $this;
+    }
+
+    /**
+     * Select whether to perform answering machine detection in the background. Default, blocks the execution of the call until Answering Machine Detection is completed. Can be: `true` or `false`.
+     *
+     * @param string $asyncAmd Enable asynchronous AMD
+     * @return $this Fluent Builder
+     */
+    public function setAsyncAmd(string $asyncAmd): self {
+        $this->options['asyncAmd'] = $asyncAmd;
+        return $this;
+    }
+
+    /**
+     * The URL that we should call using the `async_amd_status_callback_method` to notify customer application whether the call was answered by human, machine or fax.
+     *
+     * @param string $asyncAmdStatusCallback The URL we should call to send amd
+     *                                       status information to your application
+     * @return $this Fluent Builder
+     */
+    public function setAsyncAmdStatusCallback(string $asyncAmdStatusCallback): self {
+        $this->options['asyncAmdStatusCallback'] = $asyncAmdStatusCallback;
+        return $this;
+    }
+
+    /**
+     * The HTTP method we should use when calling the `async_amd_status_callback` URL. Can be: `GET` or `POST` and the default is `POST`.
+     *
+     * @param string $asyncAmdStatusCallbackMethod HTTP Method to use with
+     *                                             async_amd_status_callback
+     * @return $this Fluent Builder
+     */
+    public function setAsyncAmdStatusCallbackMethod(string $asyncAmdStatusCallbackMethod): self {
+        $this->options['asyncAmdStatusCallbackMethod'] = $asyncAmdStatusCallbackMethod;
         return $this;
     }
 
@@ -486,8 +549,53 @@ class CreateCallOptions extends Options {
      * @param string $byoc BYOC trunk SID (Beta)
      * @return $this Fluent Builder
      */
-    public function setByoc($byoc) {
+    public function setByoc(string $byoc): self {
         $this->options['byoc'] = $byoc;
+        return $this;
+    }
+
+    /**
+     * The Reason for the outgoing call. Use it to specify the purpose of the call that is presented on the called party's phone. (Branded Calls Beta)
+     *
+     * @param string $callReason Reason for the call (Branded Calls Beta)
+     * @return $this Fluent Builder
+     */
+    public function setCallReason(string $callReason): self {
+        $this->options['callReason'] = $callReason;
+        return $this;
+    }
+
+    /**
+     * A token string needed to invoke a forwarded call. A call_token is generated when an incoming call is received on a Twilio number. Pass an incoming call's call_token value to a forwarded call via the call_token parameter when creating a new call. A forwarded call should bear the same CallerID of the original incoming call.
+     *
+     * @param string $callToken A token string needed to invoke a forwarded call
+     *                          with a CallerId recieved on a previous incoming call
+     * @return $this Fluent Builder
+     */
+    public function setCallToken(string $callToken): self {
+        $this->options['callToken'] = $callToken;
+        return $this;
+    }
+
+    /**
+     * The audio track to record for the call. Can be: `inbound`, `outbound` or `both`. The default is `both`. `inbound` records the audio that is received by Twilio. `outbound` records the audio that is generated from Twilio. `both` records the audio that is received and generated by Twilio.
+     *
+     * @param string $recordingTrack Which track(s) to record
+     * @return $this Fluent Builder
+     */
+    public function setRecordingTrack(string $recordingTrack): self {
+        $this->options['recordingTrack'] = $recordingTrack;
+        return $this;
+    }
+
+    /**
+     * The maximum duration of the call in seconds. Constraints depend on account and configuration.
+     *
+     * @param int $timeLimit The maximum duration of the call in seconds.
+     * @return $this Fluent Builder
+     */
+    public function setTimeLimit(int $timeLimit): self {
+        $this->options['timeLimit'] = $timeLimit;
         return $this;
     }
 
@@ -496,14 +604,9 @@ class CreateCallOptions extends Options {
      *
      * @return string Machine friendly representation
      */
-    public function __toString() {
-        $options = array();
-        foreach ($this->options as $key => $value) {
-            if ($value != Values::NONE) {
-                $options[] = "$key=$value";
-            }
-        }
-        return '[Twilio.Api.V2010.CreateCallOptions ' . \implode(' ', $options) . ']';
+    public function __toString(): string {
+        $options = \http_build_query(Values::of($this->options), '', ' ');
+        return '[Twilio.Api.V2010.CreateCallOptions ' . $options . ']';
     }
 }
 
@@ -520,7 +623,7 @@ class ReadCallOptions extends Options {
      * @param string $endTime Only include calls that ended on this date
      * @param string $endTimeAfter Only include calls that ended on this date
      */
-    public function __construct($to = Values::NONE, $from = Values::NONE, $parentCallSid = Values::NONE, $status = Values::NONE, $startTimeBefore = Values::NONE, $startTime = Values::NONE, $startTimeAfter = Values::NONE, $endTimeBefore = Values::NONE, $endTime = Values::NONE, $endTimeAfter = Values::NONE) {
+    public function __construct(string $to = Values::NONE, string $from = Values::NONE, string $parentCallSid = Values::NONE, string $status = Values::NONE, string $startTimeBefore = Values::NONE, string $startTime = Values::NONE, string $startTimeAfter = Values::NONE, string $endTimeBefore = Values::NONE, string $endTime = Values::NONE, string $endTimeAfter = Values::NONE) {
         $this->options['to'] = $to;
         $this->options['from'] = $from;
         $this->options['parentCallSid'] = $parentCallSid;
@@ -539,7 +642,7 @@ class ReadCallOptions extends Options {
      * @param string $to Phone number or Client identifier of calls to include
      * @return $this Fluent Builder
      */
-    public function setTo($to) {
+    public function setTo(string $to): self {
         $this->options['to'] = $to;
         return $this;
     }
@@ -550,7 +653,7 @@ class ReadCallOptions extends Options {
      * @param string $from Phone number or Client identifier to filter `from` on
      * @return $this Fluent Builder
      */
-    public function setFrom($from) {
+    public function setFrom(string $from): self {
         $this->options['from'] = $from;
         return $this;
     }
@@ -561,7 +664,7 @@ class ReadCallOptions extends Options {
      * @param string $parentCallSid Parent call SID to filter on
      * @return $this Fluent Builder
      */
-    public function setParentCallSid($parentCallSid) {
+    public function setParentCallSid(string $parentCallSid): self {
         $this->options['parentCallSid'] = $parentCallSid;
         return $this;
     }
@@ -572,7 +675,7 @@ class ReadCallOptions extends Options {
      * @param string $status The status of the resources to read
      * @return $this Fluent Builder
      */
-    public function setStatus($status) {
+    public function setStatus(string $status): self {
         $this->options['status'] = $status;
         return $this;
     }
@@ -583,7 +686,7 @@ class ReadCallOptions extends Options {
      * @param string $startTimeBefore Only include calls that started on this date
      * @return $this Fluent Builder
      */
-    public function setStartTimeBefore($startTimeBefore) {
+    public function setStartTimeBefore(string $startTimeBefore): self {
         $this->options['startTimeBefore'] = $startTimeBefore;
         return $this;
     }
@@ -594,7 +697,7 @@ class ReadCallOptions extends Options {
      * @param string $startTime Only include calls that started on this date
      * @return $this Fluent Builder
      */
-    public function setStartTime($startTime) {
+    public function setStartTime(string $startTime): self {
         $this->options['startTime'] = $startTime;
         return $this;
     }
@@ -605,7 +708,7 @@ class ReadCallOptions extends Options {
      * @param string $startTimeAfter Only include calls that started on this date
      * @return $this Fluent Builder
      */
-    public function setStartTimeAfter($startTimeAfter) {
+    public function setStartTimeAfter(string $startTimeAfter): self {
         $this->options['startTimeAfter'] = $startTimeAfter;
         return $this;
     }
@@ -616,7 +719,7 @@ class ReadCallOptions extends Options {
      * @param string $endTimeBefore Only include calls that ended on this date
      * @return $this Fluent Builder
      */
-    public function setEndTimeBefore($endTimeBefore) {
+    public function setEndTimeBefore(string $endTimeBefore): self {
         $this->options['endTimeBefore'] = $endTimeBefore;
         return $this;
     }
@@ -627,7 +730,7 @@ class ReadCallOptions extends Options {
      * @param string $endTime Only include calls that ended on this date
      * @return $this Fluent Builder
      */
-    public function setEndTime($endTime) {
+    public function setEndTime(string $endTime): self {
         $this->options['endTime'] = $endTime;
         return $this;
     }
@@ -638,7 +741,7 @@ class ReadCallOptions extends Options {
      * @param string $endTimeAfter Only include calls that ended on this date
      * @return $this Fluent Builder
      */
-    public function setEndTimeAfter($endTimeAfter) {
+    public function setEndTimeAfter(string $endTimeAfter): self {
         $this->options['endTimeAfter'] = $endTimeAfter;
         return $this;
     }
@@ -648,14 +751,9 @@ class ReadCallOptions extends Options {
      *
      * @return string Machine friendly representation
      */
-    public function __toString() {
-        $options = array();
-        foreach ($this->options as $key => $value) {
-            if ($value != Values::NONE) {
-                $options[] = "$key=$value";
-            }
-        }
-        return '[Twilio.Api.V2010.ReadCallOptions ' . \implode(' ', $options) . ']';
+    public function __toString(): string {
+        $options = \http_build_query(Values::of($this->options), '', ' ');
+        return '[Twilio.Api.V2010.ReadCallOptions ' . $options . ']';
     }
 }
 
@@ -671,8 +769,9 @@ class UpdateCallOptions extends Options {
      * @param string $statusCallbackMethod HTTP Method to use to call
      *                                     status_callback
      * @param string $twiml TwiML instructions for the call
+     * @param int $timeLimit The maximum duration of the call in seconds.
      */
-    public function __construct($url = Values::NONE, $method = Values::NONE, $status = Values::NONE, $fallbackUrl = Values::NONE, $fallbackMethod = Values::NONE, $statusCallback = Values::NONE, $statusCallbackMethod = Values::NONE, $twiml = Values::NONE) {
+    public function __construct(string $url = Values::NONE, string $method = Values::NONE, string $status = Values::NONE, string $fallbackUrl = Values::NONE, string $fallbackMethod = Values::NONE, string $statusCallback = Values::NONE, string $statusCallbackMethod = Values::NONE, string $twiml = Values::NONE, int $timeLimit = Values::NONE) {
         $this->options['url'] = $url;
         $this->options['method'] = $method;
         $this->options['status'] = $status;
@@ -681,6 +780,7 @@ class UpdateCallOptions extends Options {
         $this->options['statusCallback'] = $statusCallback;
         $this->options['statusCallbackMethod'] = $statusCallbackMethod;
         $this->options['twiml'] = $twiml;
+        $this->options['timeLimit'] = $timeLimit;
     }
 
     /**
@@ -689,7 +789,7 @@ class UpdateCallOptions extends Options {
      * @param string $url The absolute URL that returns TwiML for this call
      * @return $this Fluent Builder
      */
-    public function setUrl($url) {
+    public function setUrl(string $url): self {
         $this->options['url'] = $url;
         return $this;
     }
@@ -700,7 +800,7 @@ class UpdateCallOptions extends Options {
      * @param string $method HTTP method to use to fetch TwiML
      * @return $this Fluent Builder
      */
-    public function setMethod($method) {
+    public function setMethod(string $method): self {
         $this->options['method'] = $method;
         return $this;
     }
@@ -711,7 +811,7 @@ class UpdateCallOptions extends Options {
      * @param string $status The new status to update the call with.
      * @return $this Fluent Builder
      */
-    public function setStatus($status) {
+    public function setStatus(string $status): self {
         $this->options['status'] = $status;
         return $this;
     }
@@ -722,7 +822,7 @@ class UpdateCallOptions extends Options {
      * @param string $fallbackUrl Fallback URL in case of error
      * @return $this Fluent Builder
      */
-    public function setFallbackUrl($fallbackUrl) {
+    public function setFallbackUrl(string $fallbackUrl): self {
         $this->options['fallbackUrl'] = $fallbackUrl;
         return $this;
     }
@@ -733,7 +833,7 @@ class UpdateCallOptions extends Options {
      * @param string $fallbackMethod HTTP Method to use with fallback_url
      * @return $this Fluent Builder
      */
-    public function setFallbackMethod($fallbackMethod) {
+    public function setFallbackMethod(string $fallbackMethod): self {
         $this->options['fallbackMethod'] = $fallbackMethod;
         return $this;
     }
@@ -745,7 +845,7 @@ class UpdateCallOptions extends Options {
      *                               information to your application
      * @return $this Fluent Builder
      */
-    public function setStatusCallback($statusCallback) {
+    public function setStatusCallback(string $statusCallback): self {
         $this->options['statusCallback'] = $statusCallback;
         return $this;
     }
@@ -757,7 +857,7 @@ class UpdateCallOptions extends Options {
      *                                     status_callback
      * @return $this Fluent Builder
      */
-    public function setStatusCallbackMethod($statusCallbackMethod) {
+    public function setStatusCallbackMethod(string $statusCallbackMethod): self {
         $this->options['statusCallbackMethod'] = $statusCallbackMethod;
         return $this;
     }
@@ -768,8 +868,19 @@ class UpdateCallOptions extends Options {
      * @param string $twiml TwiML instructions for the call
      * @return $this Fluent Builder
      */
-    public function setTwiml($twiml) {
+    public function setTwiml(string $twiml): self {
         $this->options['twiml'] = $twiml;
+        return $this;
+    }
+
+    /**
+     * The maximum duration of the call in seconds. Constraints depend on account and configuration.
+     *
+     * @param int $timeLimit The maximum duration of the call in seconds.
+     * @return $this Fluent Builder
+     */
+    public function setTimeLimit(int $timeLimit): self {
+        $this->options['timeLimit'] = $timeLimit;
         return $this;
     }
 
@@ -778,13 +889,8 @@ class UpdateCallOptions extends Options {
      *
      * @return string Machine friendly representation
      */
-    public function __toString() {
-        $options = array();
-        foreach ($this->options as $key => $value) {
-            if ($value != Values::NONE) {
-                $options[] = "$key=$value";
-            }
-        }
-        return '[Twilio.Api.V2010.UpdateCallOptions ' . \implode(' ', $options) . ']';
+    public function __toString(): string {
+        $options = \http_build_query(Values::of($this->options), '', ' ');
+        return '[Twilio.Api.V2010.UpdateCallOptions ' . $options . ']';
     }
 }

@@ -15,18 +15,25 @@ use Twilio\Rest\Verify\V2;
 
 /**
  * @property \Twilio\Rest\Verify\V2 $v2
+ * @property \Twilio\Rest\Verify\V2\FormList $forms
+ * @property \Twilio\Rest\Verify\V2\SafelistList $safelist
  * @property \Twilio\Rest\Verify\V2\ServiceList $services
+ * @property \Twilio\Rest\Verify\V2\VerificationAttemptList $verificationAttempts
+ * @property \Twilio\Rest\Verify\V2\VerificationAttemptsSummaryList $verificationAttemptsSummary
+ * @property \Twilio\Rest\Verify\V2\TemplateList $templates
+ * @method \Twilio\Rest\Verify\V2\FormContext forms(string $formType)
+ * @method \Twilio\Rest\Verify\V2\SafelistContext safelist(string $phoneNumber)
  * @method \Twilio\Rest\Verify\V2\ServiceContext services(string $sid)
+ * @method \Twilio\Rest\Verify\V2\VerificationAttemptContext verificationAttempts(string $sid)
+ * @method \Twilio\Rest\Verify\V2\VerificationAttemptsSummaryContext verificationAttemptsSummary()
  */
 class Verify extends Domain {
-    protected $_v2 = null;
+    protected $_v2;
 
     /**
      * Construct the Verify Domain
      *
-     * @param \Twilio\Rest\Client $client Twilio\Rest\Client to communicate with
-     *                                    Twilio
-     * @return \Twilio\Rest\Verify Domain for Verify
+     * @param Client $client Client to communicate with Twilio
      */
     public function __construct(Client $client) {
         parent::__construct($client);
@@ -35,9 +42,9 @@ class Verify extends Domain {
     }
 
     /**
-     * @return \Twilio\Rest\Verify\V2 Version v2 of verify
+     * @return V2 Version v2 of verify
      */
-    protected function getV2() {
+    protected function getV2(): V2 {
         if (!$this->_v2) {
             $this->_v2 = new V2($this);
         }
@@ -51,7 +58,7 @@ class Verify extends Domain {
      * @return \Twilio\Version The requested version
      * @throws TwilioException For unknown versions
      */
-    public function __get($name) {
+    public function __get(string $name) {
         $method = 'get' . \ucfirst($name);
         if (\method_exists($this, $method)) {
             return $this->$method();
@@ -68,28 +75,69 @@ class Verify extends Domain {
      * @return \Twilio\InstanceContext The requested resource context
      * @throws TwilioException For unknown resource
      */
-    public function __call($name, $arguments) {
+    public function __call(string $name, array $arguments) {
         $method = 'context' . \ucfirst($name);
         if (\method_exists($this, $method)) {
-            return \call_user_func_array(array($this, $method), $arguments);
+            return \call_user_func_array([$this, $method], $arguments);
         }
 
         throw new TwilioException('Unknown context ' . $name);
     }
 
+    protected function getForms(): \Twilio\Rest\Verify\V2\FormList {
+        return $this->v2->forms;
+    }
+
     /**
-     * @return \Twilio\Rest\Verify\V2\ServiceList
+     * @param string $formType The Type of this Form
      */
-    protected function getServices() {
+    protected function contextForms(string $formType): \Twilio\Rest\Verify\V2\FormContext {
+        return $this->v2->forms($formType);
+    }
+
+    protected function getSafelist(): \Twilio\Rest\Verify\V2\SafelistList {
+        return $this->v2->safelist;
+    }
+
+    /**
+     * @param string $phoneNumber The phone number to be fetched from SafeList.
+     */
+    protected function contextSafelist(string $phoneNumber): \Twilio\Rest\Verify\V2\SafelistContext {
+        return $this->v2->safelist($phoneNumber);
+    }
+
+    protected function getServices(): \Twilio\Rest\Verify\V2\ServiceList {
         return $this->v2->services;
     }
 
     /**
      * @param string $sid The unique string that identifies the resource
-     * @return \Twilio\Rest\Verify\V2\ServiceContext
      */
-    protected function contextServices($sid) {
+    protected function contextServices(string $sid): \Twilio\Rest\Verify\V2\ServiceContext {
         return $this->v2->services($sid);
+    }
+
+    protected function getVerificationAttempts(): \Twilio\Rest\Verify\V2\VerificationAttemptList {
+        return $this->v2->verificationAttempts;
+    }
+
+    /**
+     * @param string $sid Verification Attempt Sid.
+     */
+    protected function contextVerificationAttempts(string $sid): \Twilio\Rest\Verify\V2\VerificationAttemptContext {
+        return $this->v2->verificationAttempts($sid);
+    }
+
+    protected function getVerificationAttemptsSummary(): \Twilio\Rest\Verify\V2\VerificationAttemptsSummaryList {
+        return $this->v2->verificationAttemptsSummary;
+    }
+
+    protected function contextVerificationAttemptsSummary(): \Twilio\Rest\Verify\V2\VerificationAttemptsSummaryContext {
+        return $this->v2->verificationAttemptsSummary();
+    }
+
+    protected function getTemplates(): \Twilio\Rest\Verify\V2\TemplateList {
+        return $this->v2->templates;
     }
 
     /**
@@ -97,7 +145,7 @@ class Verify extends Domain {
      *
      * @return string Machine friendly representation
      */
-    public function __toString() {
+    public function __toString(): string {
         return '[Twilio.Verify]';
     }
 }

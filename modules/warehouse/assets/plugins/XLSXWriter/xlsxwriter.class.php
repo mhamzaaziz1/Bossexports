@@ -364,7 +364,7 @@ class XLSXWriter
 		$sheet->file_writer->write('</worksheet>');
 
 		$max_cell_tag = '<dimension ref="A1:' . $max_cell . '"/>';
-		$padding_length = $sheet->max_cell_tag_end - $sheet->max_cell_tag_start - strlen($max_cell_tag);
+		$padding_length = $sheet->max_cell_tag_end - $sheet->max_cell_tag_start - new_strlen($max_cell_tag);
 		$sheet->file_writer->fseek($sheet->max_cell_tag_start);
 		$sheet->file_writer->write($max_cell_tag.str_repeat(" ", $padding_length));
 		$sheet->file_writer->close();
@@ -445,7 +445,7 @@ class XLSXWriter
 			$style_indexes[$i] = array('num_fmt_idx'=>$number_format_idx);//initialize entry
 			if (isset($style['border']) && is_string($style['border']))//border is a comma delimited str
 			{
-				$border_value['side'] = array_intersect(explode(",", $style['border']), $border_allowed);
+				$border_value['side'] = array_intersect(new_explode(",", $style['border']), $border_allowed);
 				if (isset($style['border-style']) && in_array($style['border-style'],$border_style_allowed))
 				{
 					$border_value['style'] = $style['border-style'];
@@ -453,7 +453,7 @@ class XLSXWriter
 				if (isset($style['border-color']) && is_string($style['border-color']) && $style['border-color'][0]=='#')
 				{
 					$v = substr($style['border-color'],1,6);
-					$v = strlen($v)==3 ? $v[0].$v[0].$v[1].$v[1].$v[2].$v[2] : $v;// expand cf0 => ccff00
+					$v = new_strlen($v)==3 ? $v[0].$v[0].$v[1].$v[1].$v[2].$v[2] : $v;// expand cf0 => ccff00
 					$border_value['color'] = "FF".strtoupper($v);
 				}
 				$style_indexes[$i]['border_idx'] = self::add_to_list_get_index($borders, json_encode($border_value));
@@ -461,7 +461,7 @@ class XLSXWriter
 			if (isset($style['fill']) && is_string($style['fill']) && $style['fill'][0]=='#')
 			{
 				$v = substr($style['fill'],1,6);
-				$v = strlen($v)==3 ? $v[0].$v[0].$v[1].$v[1].$v[2].$v[2] : $v;// expand cf0 => ccff00
+				$v = new_strlen($v)==3 ? $v[0].$v[0].$v[1].$v[1].$v[2].$v[2] : $v;// expand cf0 => ccff00
 				$style_indexes[$i]['fill_idx'] = self::add_to_list_get_index($fills, "FF".strtoupper($v) );
 			}
 			if (isset($style['halign']) && in_array($style['halign'],$horizontal_allowed))
@@ -502,7 +502,7 @@ class XLSXWriter
 			if (isset($style['color']) && is_string($style['color']) && $style['color'][0]=='#' )
 			{
 				$v = substr($style['color'],1,6);
-				$v = strlen($v)==3 ? $v[0].$v[0].$v[1].$v[1].$v[2].$v[2] : $v;// expand cf0 => ccff00
+				$v = new_strlen($v)==3 ? $v[0].$v[0].$v[1].$v[1].$v[2].$v[2] : $v;// expand cf0 => ccff00
 				$font['color'] = "FF".strtoupper($v);
 			}
 			if ($font!=$default_font)
@@ -545,7 +545,7 @@ class XLSXWriter
 			if (!empty($font)) { //fonts have 4 empty placeholders in array to offset the 4 static xml entries above
 				$f = json_decode($font,true);
 				$file->write('<font>');
-				$file->write(	'<name val="'.htmlspecialchars($f['name']).'"/><charset val="1"/><family val="'.intval($f['family']).'"/>');
+				$file->write(	'<name val="'.htmlspecialchars($f['name'] ?? '').'"/><charset val="1"/><family val="'.intval($f['family']).'"/>');
 				$file->write(	'<sz val="'.intval($f['size']).'"/>');
 				if (!empty($f['color'])) { $file->write('<color rgb="'.strval($f['color']).'"/>'); }
 				if (!empty($f['bold'])) { $file->write('<b val="true"/>'); }
@@ -783,7 +783,7 @@ class XLSXWriter
 		$nonprinting = array_map('chr', range(0,31));
 		$invalid_chars = array('<', '>', '?', '"', ':', '|', '\\', '/', '*', '&');
 		$all_invalids = array_merge($nonprinting,$invalid_chars);
-		return str_replace($all_invalids, "", $filename);
+		return new_str_replace($all_invalids, "", $filename);
 	}
 	//------------------------------------------------------------------
 	public static function sanitize_sheetname($sheetname) 
@@ -801,7 +801,7 @@ class XLSXWriter
 		//note, badchars does not include \t\n\r (\x09\x0a\x0d)
 		static $badchars = "\x00\x01\x02\x03\x04\x05\x06\x07\x08\x0b\x0c\x0e\x0f\x10\x11\x12\x13\x14\x15\x16\x17\x18\x19\x1a\x1b\x1c\x1d\x1e\x1f\x7f";
 		static $goodchars = "                              ";
-		return strtr(htmlspecialchars($val, ENT_QUOTES | ENT_XML1), $badchars, $goodchars);//strtr appears to be faster than str_replace
+		return strtr(htmlspecialchars($val ?? '', ENT_QUOTES | ENT_XML1), $badchars, $goodchars);//strtr appears to be faster than str_replace
 	}
 	//------------------------------------------------------------------
 	public static function array_first_key(array $arr)
@@ -843,7 +843,7 @@ class XLSXWriter
 		else if ($num_format=='euro')     $num_format='#,##0.00 [$€-407];[RED]-#,##0.00 [$€-407]';
 		$ignore_until='';
 		$escaped = '';
-		for($i=0,$ix=strlen($num_format); $i<$ix; $i++)
+		for($i=0,$ix=new_strlen($num_format); $i<$ix; $i++)
 		{
 			$c = $num_format[$i];
 			if ($ignore_until=='' && $c=='[')

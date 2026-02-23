@@ -143,7 +143,7 @@ function purchase_module_init_menu_items()
         // ]);
 
         $CI->app_menu->add_sidebar_children_item('purchase', [
-            'slug'     => 'settings',
+            'slug'     => 'purchase_settings',
             'name'     => _l('setting'),
             'icon'     => 'fa fa-gears',
             'href'     => admin_url('purchase/setting'),

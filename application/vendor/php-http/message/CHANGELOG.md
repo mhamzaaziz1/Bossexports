@@ -1,10 +1,64 @@
-# Change Log
+# Changelog
 
 
 All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
+
+## [1.16.1] - 2024-03-07
+
+- Adjust phpdoc to avoid warnings about return types.
+
+## [1.16.0] - 2023-05-17
+
+- Remove direct dependency on `php-http/message-factory` as it is only needed for the deprecated Httplug factories.
+  Upgrade to PSR-17 message factories provided by your HTTP client implementation.
+  If you need the Httplug factories for the time being, you can `composer require php-http/message-factory` in your application.
+
+## [1.15.0] - 2023-05-10
+
+**If you use the decorator classes, you might need to adjust your code to the parameter and return type declarations added in PSR-7**
+
+- Actually make compatible with PSR-7 1.1 and 2.0
+- Drop support for PHP 7.1
+
+## [1.14.0] - 2023-04-14 (broken)
+
+**This release is not actually compatible with PSR-7 1.1 or 2.0**
+
+- Allow installation with http-message (PSR-7) version 2 in addition to version 1.
+- Support for PHP 8.2
+
+## [1.13.0] - 2022-02-11
+
+- Added `Formatter::formatResponseForRequest()` to allow the formatter to get context from the request to decide what of the response to output.
+- Deprecated `Formatter::formatResponse()` in favor of the new `formatResponseForRequest` method.
+
+## [1.12.0] - 2021-08-29
+
+- Added support for adjusting binary detection regex in FullHttpMessageFormatter.
+
+## [1.11.2] - 2021-08-03
+
+- Support GuzzleHttp/Psr7 version 2.0 in the (deprecated) GuzzleStreamFactory.
+
+## [1.11.1] - 2021-05-24
+
+- Support GuzzleHttp/Psr7 version 2.0 in the (deprecated) GuzzleUriFactory.
+
+## [1.11.0] - 2020-02-01
+
+- Migrated from `zendframework/zend-diactoros` to `laminas/laminas-diactoros`.
+   Users are encouraged to update their dependencies by simply replacing the Zend package with the Laminas package.
+   Due to the [laminas-zendframework-brige](https://github.com/laminas/laminas-zendframework-bridge), BC changes
+   are not expected and legacy code does not need to be refactored (though it is
+   [recommended and simple](https://docs.laminas.dev/migration/)).
+- The diactoros factories of `php-http/message` will return objects from the `Laminas\Diactoros\` namespace, if
+   the respective classes are available via autoloading, but continue to return objects from `Zend\Diactoros\`
+   namespace otherwise.
+
+- Allow to specify the hashing algorithm for WSSE authentication.
 
 ## [1.10.0] - 2020-11-11
 

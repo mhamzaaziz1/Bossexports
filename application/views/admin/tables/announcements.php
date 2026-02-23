@@ -8,7 +8,7 @@ $aColumns = [
     ];
 
 $sIndexColumn = 'announcementid';
-$sTable       = db_prefix().'announcements';
+$sTable       = db_prefix() . 'announcements';
 $where        = [];
 $is_admin     = is_admin();
 
@@ -19,7 +19,7 @@ if (!is_admin()) {
 $result = data_tables_init($aColumns, $sIndexColumn, $sTable, [], $where, [
     'announcementid',
     'showtostaff',
-    '(SELECT COUNT(*) FROM '.db_prefix().'dismissed_announcements WHERE announcementid='.db_prefix().'announcements.announcementid AND staff=1 AND userid='.get_staff_user_id().') as is_dismissed'
+    '(SELECT COUNT(*) FROM ' . db_prefix() . 'dismissed_announcements WHERE announcementid=' . db_prefix() . 'announcements.announcementid AND staff=1 AND userid=' . get_staff_user_id() . ') as is_dismissed',
     ]);
 
 $output   = $result['output'];
@@ -31,9 +31,9 @@ foreach ($rResult as $aRow) {
         $_data = $aRow[$aColumns[$i]];
         if ($aColumns[$i] == 'name') {
             if ($is_admin) {
-                $_data = '<a href="' . admin_url('announcements/announcement/' . $aRow['announcementid']) . '">' . $_data . '</a>';
+                $_data = '<a href="' . admin_url('announcements/announcement/' . $aRow['announcementid']) . '" class="tw-font-medium">' .e( $_data) . '</a>';
             } else {
-                $_data = '<a href="' . admin_url('announcements/view/' . $aRow['announcementid']) . '">' . $_data . '</a>';
+                $_data = '<a href="' . admin_url('announcements/view/' . $aRow['announcementid']) . '" class="tw-font-medium">' . e($_data) . '</a>';
             }
             $_data .= '<div class="row-options">';
             $_data .= '<a href="' . admin_url('announcements/view/' . $aRow['announcementid']) . '">' . _l('view') . '</a>';
@@ -44,20 +44,20 @@ foreach ($rResult as $aRow) {
 
             if (is_admin()) {
                 $_data .= ' | <a href="' . admin_url('announcements/announcement/' . $aRow['announcementid']) . '">' . _l('edit') . '</a>';
-                $_data .= ' | <a href="' . admin_url('announcements/delete/' . $aRow['announcementid']) . '" class="text-danger _delete">' . _l('delete') . '</a>';
+                $_data .= ' | <a href="' . admin_url('announcements/delete/' . $aRow['announcementid']) . '" class="_delete">' . _l('delete') . '</a>';
             }
 
             $_data .= '</div>';
         } elseif ($aColumns[$i] == 'dateadded') {
-            $_data = _d($_data);
+            $_data = e(_d($_data));
         }
         $row[] = $_data;
     }
 
-    $row['DT_RowClass'] = 'has-row-options';
+    $row['DT_RowClass'] = 'has-row-options has-border-left';
 
     if (!$aRow['is_dismissed'] && $aRow['showtostaff'] == '1') {
-        $row['DT_RowClass'] .= ' alert-info';
+        $row['DT_RowClass'] .= ' row-border-info';
     }
 
     $output['aaData'][] = $row;

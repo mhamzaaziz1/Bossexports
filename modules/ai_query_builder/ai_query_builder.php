@@ -41,7 +41,7 @@ function ai_query_builder_module_activation_hook()
 function ai_query_builder_add_settings_tab()
 {
     $CI = &get_instance();
-    $CI->app_tabs->add_settings_tab('ai_query_builder', [
+    $CI->app->add_settings_section('ai_query_builder', [
         'name'     => _l('ai_query_builder'),
         'view'     => AI_QUERY_BUILDER_MODULE_NAME . '/settings',
         'position' => 101,

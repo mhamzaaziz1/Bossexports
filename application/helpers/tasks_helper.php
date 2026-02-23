@@ -16,7 +16,7 @@ function format_task_status($status, $text = false, $clean = false)
 
     $status_name = $status['name'];
 
-    $status_name = hooks()->apply_filters('task_status_name', $status_name, $status);
+    $status_name = e(hooks()->apply_filters('task_status_name', $status_name, $status));
 
     if ($clean == true) {
         return $status_name;
@@ -25,7 +25,7 @@ function format_task_status($status, $text = false, $clean = false)
     $style = '';
     $class = '';
     if ($text == false) {
-        $style = 'border: 1px solid ' . $status['color'] . ';color:' . $status['color'] . ';';
+        $style = 'color:' . $status['color'] . ';border:1px solid ' . adjust_hex_brightness($status['color'], 0.4) . ';background: ' . adjust_hex_brightness($status['color'], 0.04) . ';';
         $class = 'label';
     } else {
         $style = 'color:' . $status['color'] . ';';
@@ -149,14 +149,21 @@ function task_priority_color($id)
 /**
  * Format html task assignees
  * This function is used to save up on query
+ *
  * @param  string $ids   string coma separated assignee staff id
  * @param  string $names compa separated in the same order like assignee ids
+ * @param string $size
+ *
  * @return string
  */
-function format_members_by_ids_and_names($ids, $names, $hidden_export_table = true, $image_class = 'staff-profile-image-small')
+function format_members_by_ids_and_names($ids, $names, $size = 'md')
 {
-    $outputAssignees = '';
+    if (!$ids) {
+        return '';
+    }
+
     $exportAssignees = '';
+    $outputAssignees = '<div class="tw-flex -tw-space-x-1">';
 
     $assignees   = explode(',', $names);
     $assigneeIds = explode(',', $ids);
@@ -166,18 +173,19 @@ function format_members_by_ids_and_names($ids, $names, $hidden_export_table = tr
         if ($assigned != '') {
             $outputAssignees .= '<a href="' . admin_url('profile/' . $assignee_id) . '">' .
                 staff_profile_image($assignee_id, [
-                    $image_class . ' mright5',
+                    ($size == 'md' ? 'tw-h-7 tw-w-7' : 'tw-h-5 tw-w-5') . ' tw-inline-block tw-rounded-full tw-ring-2 tw-ring-white',
                 ], 'small', [
                     'data-toggle' => 'tooltip',
-                    'data-title'  => $assigned,
+                    'data-title'  => e($assigned),
                 ]) . '</a>';
-            $exportAssignees .= $assigned . ', ';
+            $exportAssignees .= e($assigned) . ', ';
         }
     }
 
     if ($exportAssignees != '') {
         $outputAssignees .= '<span class="hide">' . mb_substr($exportAssignees, 0, -2) . '</span>';
     }
+    $outputAssignees .= '</div>';
 
     return $outputAssignees;
 }
@@ -233,53 +241,7 @@ function task_rel_link($rel_id, $rel_type)
 
     return $link;
 }
-/**
- * Prepares task array gantt data to be used in the gantt chart
- * @param  array $task task array
- * @return array
- */
-function get_task_array_gantt_data($task, $dep_id = null, $defaultEnd = null)
-{
-    $data = [];
 
-    $data['id']   = $task['id'];
-    $data['desc'] = $task['name'];
-
-    $data['start'] = strftime('%Y-%m-%d', strtotime($task['startdate']));
-
-    if ($task['duedate']) {
-        $data['end'] = strftime('%Y-%m-%d', strtotime($task['duedate']));
-    } else {
-        $data['end'] = $defaultEnd;
-    }
-
-    $data['desc']  = $task['name'] . ' - ' . _l('task_total_logged_time') . ' ' . seconds_to_time_format($task['total_logged_time']);
-    $data['label'] = $task['name'];
-    if ($task['duedate'] && date('Y-m-d') > $task['duedate'] && $task['status'] != Tasks_model::STATUS_COMPLETE) {
-        $data['custom_class'] = 'ganttRed';
-    } elseif ($task['status'] == Tasks_model::STATUS_COMPLETE) {
-        $data['custom_class'] = 'ganttGreen';
-    }
-
-    $data['name']     = $task['name'];
-    $data['task_id']  = $task['id'];
-    $data['progress'] = 0;
-
-    //for task in single project gantt
-    if ($dep_id) {
-        $data['dependencies'] = $dep_id;
-    }
-
-    if (!staff_can('edit', 'tasks') || is_client_logged_in()) {
-        if (isset($data['custom_class'])) {
-            $data['custom_class'] .= ' noDrag';
-        } else {
-            $data['custom_class'] = 'noDrag';
-        }
-    }
-
-    return $data;
-}
 /**
  * Common function used to select task relation name
  * @return string
@@ -308,7 +270,7 @@ function tasks_rel_name_select_query()
  * @param  array  $table_attributes
  * @return string
  */
-function init_relation_tasks_table($table_attributes = [])
+function init_relation_tasks_table($table_attributes = [], $filtersWrapperId = 'vueApp', $filtersDetached = false)
 {
     $table_data = [
         _l('the_number_sign'),
@@ -352,7 +314,10 @@ function init_relation_tasks_table($table_attributes = [])
     ]);
 
     foreach ($custom_fields as $field) {
-        array_push($table_data, $field['name']);
+        array_push($table_data, [
+           'name'     => $field['name'],
+           'th_attrs' => ['data-type' => $field['type'], 'data-custom-field' => 1],
+       ]);
     }
 
     $table_data = hooks()->apply_filters('tasks_related_table_columns', $table_data);
@@ -362,13 +327,19 @@ function init_relation_tasks_table($table_attributes = [])
         $name = 'rel-tasks-leads';
     }
 
+    $tasks_table = App_table::find('related_tasks');
+
     $table      = '';
     $CI         = &get_instance();
     $table_name = '.table-' . $name;
-    $CI->load->view('admin/tasks/tasks_filter_by', [
-        'view_table_name' => $table_name,
+
+    $CI->load->view('admin/tasks/filters', [
+        'tasks_table'=>$tasks_table,
+        'filters_wrapper_id'=>$filtersWrapperId,
+        'detached'=>$filtersDetached,
     ]);
-    if (has_permission('tasks', '', 'create')) {
+
+    if (staff_can('create',  'tasks')) {
         $disabled   = '';
         $table_name = addslashes($table_name);
         if ($table_attributes['data-new-rel-type'] == 'customer' && is_numeric($table_attributes['data-new-rel-id'])) {
@@ -381,62 +352,66 @@ function init_relation_tasks_table($table_attributes = [])
         }
         // projects have button on top
         if ($table_attributes['data-new-rel-type'] != 'project') {
-            echo "<a href='#' class='btn btn-info pull-left mbot25 mright5 new-task-relation" . $disabled . "' onclick=\"new_task_from_relation('$table_name'); return false;\" data-rel-id='" . $table_attributes['data-new-rel-id'] . "' data-rel-type='" . $table_attributes['data-new-rel-type'] . "'>" . _l('new_task') . '</a>';
+            echo "<a href='#' class='btn btn-primary pull-left mright5 new-task-relation" . $disabled . "' onclick=\"new_task_from_relation('$table_name'); return false;\" data-rel-id='" . $table_attributes['data-new-rel-id'] . "' data-rel-type='" . $table_attributes['data-new-rel-type'] . "'><i class=\"fa-regular fa-plus tw-mr-1\"></i>" . _l('new_task') . '</a>';
         }
     }
 
     if ($table_attributes['data-new-rel-type'] == 'project') {
-        echo "<a href='" . admin_url('tasks/detailed_overview?project_id=' . $table_attributes['data-new-rel-id']) . "' class='btn btn-success pull-right mbot25'>" . _l('detailed_overview') . '</a>';
-        echo "<a href='" . admin_url('tasks/list_tasks?project_id=' . $table_attributes['data-new-rel-id'] . '&kanban=true') . "' class='btn btn-default pull-right mbot25 mright5 hidden-xs'>" . _l('view_kanban') . '</a>';
+        echo "<div class='tw-mb-4 tw-space-x-1 rtl:tw-space-x-reverse'>";
+        echo "<a href='" . admin_url('tasks/detailed_overview?project_id=' . $table_attributes['data-new-rel-id']) . "' class='btn btn-primary'>" . _l('detailed_overview') . '</a>';
+        echo "<a href='" . admin_url('tasks/list_tasks?project_id=' . $table_attributes['data-new-rel-id'] . '&kanban=true') . "' class='btn btn-default hidden-xs !tw-px-3' data-toggle='tooltip' data-title='" . _l('view_kanban') . "' data-placement='top'><i class='fa-solid fa-grip-vertical'></i></a>";
+        echo '</div>';
         echo '<div class="clearfix"></div>';
         echo $CI->load->view('admin/tasks/_bulk_actions', ['table' => '.table-rel-tasks'], true);
+        echo '<div class="tw-mb-4">';
         echo $CI->load->view('admin/tasks/_summary', ['rel_id' => $table_attributes['data-new-rel-id'], 'rel_type' => 'project', 'table' => $table_name], true);
+        echo '</div>';
         echo '<a href="#" data-toggle="modal" data-target="#tasks_bulk_actions" class="hide bulk-actions-btn table-btn" data-table=".table-rel-tasks">' . _l('bulk_actions') . '</a>';
     } elseif ($table_attributes['data-new-rel-type'] == 'customer') {
         echo '<div class="clearfix"></div>';
-        echo '<div id="tasks_related_filter">';
+        echo '<div id="tasks_related_filter" class="mtop15">';
         echo '<p class="bold">' . _l('task_related_to') . ': </p>';
 
-        echo '<div class="checkbox checkbox-inline mbot25">
+        echo '<div class="checkbox checkbox-inline">
         <input type="checkbox" checked value="customer" disabled id="ts_rel_to_customer" name="tasks_related_to[]">
         <label for="ts_rel_to_customer">' . _l('client') . '</label>
         </div>
 
-        <div class="checkbox checkbox-inline mbot25">
+        <div class="checkbox checkbox-inline">
         <input type="checkbox" value="project" id="ts_rel_to_project" name="tasks_related_to[]">
         <label for="ts_rel_to_project">' . _l('projects') . '</label>
         </div>
 
-        <div class="checkbox checkbox-inline mbot25">
+        <div class="checkbox checkbox-inline">
         <input type="checkbox" value="invoice" id="ts_rel_to_invoice" name="tasks_related_to[]">
         <label for="ts_rel_to_invoice">' . _l('invoices') . '</label>
         </div>
 
-        <div class="checkbox checkbox-inline mbot25">
+        <div class="checkbox checkbox-inline">
         <input type="checkbox" value="estimate" id="ts_rel_to_estimate" name="tasks_related_to[]">
         <label for="ts_rel_to_estimate">' . _l('estimates') . '</label>
         </div>
 
-        <div class="checkbox checkbox-inline mbot25">
+        <div class="checkbox checkbox-inline">
         <input type="checkbox" value="contract" id="ts_rel_to_contract" name="tasks_related_to[]">
         <label for="ts_rel_to_contract">' . _l('contracts') . '</label>
         </div>
 
-        <div class="checkbox checkbox-inline mbot25">
+        <div class="checkbox checkbox-inline">
         <input type="checkbox" value="ticket" id="ts_rel_to_ticket" name="tasks_related_to[]">
         <label for="ts_rel_to_ticket">' . _l('tickets') . '</label>
         </div>
 
-        <div class="checkbox checkbox-inline mbot25">
+        <div class="checkbox checkbox-inline">
         <input type="checkbox" value="expense" id="ts_rel_to_expense" name="tasks_related_to[]">
         <label for="ts_rel_to_expense">' . _l('expenses') . '</label>
         </div>
 
-        <div class="checkbox checkbox-inline mbot25">
+        <div class="checkbox checkbox-inline">
         <input type="checkbox" value="proposal" id="ts_rel_to_proposal" name="tasks_related_to[]">
         <label for="ts_rel_to_proposal">' . _l('proposals') . '</label>
         </div>';
-
+        echo form_hidden('tasks_related_to');
         echo '</div>';
     }
     echo "<div class='clearfix'></div>";
@@ -445,8 +420,12 @@ function init_relation_tasks_table($table_attributes = [])
     // In this case we need to add new identifier eq task-relation
     $table_attributes['data-last-order-identifier'] = 'tasks';
     $table_attributes['data-default-order']         = get_table_last_order('tasks');
+    if ($table_attributes['data-new-rel-type'] != 'project') {
+        echo '<hr />';
+    }
+    $table_attributes['id'] = 'related_tasks';
 
-    $table .= render_datatable($table_data, $name, [], $table_attributes);
+    $table .= render_datatable($table_data, $name, ['number-index-1'], $table_attributes);
 
     return $table;
 }
@@ -463,7 +442,7 @@ function tasks_summary_data($rel_id = null, $rel_type = null)
     $statuses      = $CI->tasks_model->get_statuses();
     foreach ($statuses as $status) {
         $tasks_where = 'status = ' . $CI->db->escape_str($status['id']);
-        if (!has_permission('tasks', '', 'view')) {
+        if (staff_cant('view', 'tasks')) {
             $tasks_where .= ' ' . get_tasks_where_string();
         }
         $tasks_my_where = 'id IN(SELECT taskid FROM ' . db_prefix() . 'task_assigned WHERE staffid=' . get_staff_user_id() . ') AND status=' . $CI->db->escape_str($status['id']);
@@ -507,12 +486,12 @@ function get_sql_calc_task_logged_time($task_id)
 
 function get_sql_select_task_assignees_ids()
 {
-    return '(SELECT GROUP_CONCAT(staffid SEPARATOR ",") FROM ' . db_prefix() . 'task_assigned WHERE taskid=' . db_prefix() . 'tasks.id ORDER BY ' . db_prefix() . 'task_assigned.staffid)';
+    return '(SELECT GROUP_CONCAT(staffid ORDER BY ' . db_prefix() . 'task_assigned.id ASC SEPARATOR ",") FROM ' . db_prefix() . 'task_assigned WHERE taskid=' . db_prefix() . 'tasks.id)';
 }
 
 function get_sql_select_task_asignees_full_names()
 {
-    return '(SELECT GROUP_CONCAT(CONCAT(firstname, \' \', lastname) SEPARATOR ",") FROM ' . db_prefix() . 'task_assigned JOIN ' . db_prefix() . 'staff ON ' . db_prefix() . 'staff.staffid = ' . db_prefix() . 'task_assigned.staffid WHERE taskid=' . db_prefix() . 'tasks.id ORDER BY ' . db_prefix() . 'task_assigned.staffid)';
+    return '(SELECT GROUP_CONCAT(CONCAT(firstname, \' \', lastname) ORDER BY ' . db_prefix() . 'task_assigned.id ASC SEPARATOR ",") FROM ' . db_prefix() . 'task_assigned JOIN ' . db_prefix() . 'staff ON ' . db_prefix() . 'staff.staffid = ' . db_prefix() . 'task_assigned.staffid WHERE taskid=' . db_prefix() . 'tasks.id)';
 }
 
 function get_sql_select_task_total_checklist_items()
@@ -647,5 +626,6 @@ function is_task_created_by_staff($taskId, $staffId = null)
         ->where('is_added_from_contact', 0)
         ->where('addedfrom', $staffId)
         ->where('id', $taskId);
+
     return $CI->db->count_all_results(db_prefix() . 'tasks') > 0 ? true : false;
 }

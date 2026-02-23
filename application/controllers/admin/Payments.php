@@ -13,7 +13,7 @@ class Payments extends AdminController
     /* In case if user go only on /payments */
     public function index()
     {
-        $this->list_payments();
+        $this->all_payment();
     }
     
     public function all_payment()
@@ -324,5 +324,262 @@ class Payments extends AdminController
             set_alert('warning', _l('problem_deleting', _l('payment_lowercase')));
         }
         redirect(admin_url('payments'));
+    }
+    /* Attach invoice to payment */
+    public function attach_invoice($id)
+    {
+        if (!has_permission('payments', '', 'edit')) {
+            ajax_access_denied();
+        }
+        
+        if (!$id) {
+            echo json_encode(['success' => false, 'message' => _l('payment_not_found')]);
+            die;
+        }
+
+        $invoiceid = $this->input->post('invoiceid');
+        if (!$invoiceid) {
+             echo json_encode(['success' => false, 'message' => _l('invoice_not_found')]);
+             die;
+        }
+
+        // Verify invoice exists and is unpaid/not cancelled is done via UI mostly but good to verify
+        // For now, trust the UI selection filtering, just update the relationship.
+        
+        $this->db->where('id', $id);
+        $this->db->update(db_prefix() . 'invoicepaymentrecords', [
+            'invoiceid' => $invoiceid
+        ]);
+
+        if ($this->db->affected_rows() > 0) {
+             echo json_encode(['success' => true, 'message' => _l('updated_successfully', _l('payment'))]);
+        } else {
+             echo json_encode(['success' => false, 'message' => _l('payment_updated_nothing_changed')]);
+        }
+    }
+
+    public function get_grouped_payments()
+    {
+        if (!has_permission('payments', '', 'view') 
+            && !has_permission('invoices', '', 'view_own') 
+            && get_option('allow_staff_view_invoices_assigned') == '0') {
+            ajax_access_denied();
+        }
+
+        $transactionid = $this->input->post('transactionid');
+        $date = $this->input->post('date');
+
+        if (!$transactionid) {
+             echo json_encode([]);
+             die;
+        }
+
+        $this->db->select(db_prefix() . 'invoicepaymentrecords.*, ' . db_prefix() . 'invoices.number as invoice_number, ' . db_prefix() . 'payment_modes.name as mode_name');
+        $this->db->from(db_prefix() . 'invoicepaymentrecords');
+        $this->db->join(db_prefix() . 'invoices', db_prefix() . 'invoices.id = ' . db_prefix() . 'invoicepaymentrecords.invoiceid', 'left');
+        $this->db->join(db_prefix() . 'payment_modes', db_prefix() . 'payment_modes.id = ' . db_prefix() . 'invoicepaymentrecords.paymentmode', 'left');
+        $this->db->where('transactionid', $transactionid);
+        if ($date) {
+            $this->db->where('DATE(' . db_prefix() . 'invoicepaymentrecords.date)', $date);
+        }
+        
+        $payments = $this->db->get()->result_array();
+        
+        foreach ($payments as &$payment) {
+            $payment['amount_formatted'] = app_format_money($payment['amount'], get_base_currency());
+            $payment['date'] = _d($payment['date']);
+            $payment['invoice_link'] = admin_url('invoices/list_invoices/' . $payment['invoiceid']);
+            $payment['payment_link'] = admin_url('payments/payment/' . $payment['id']);
+        }
+
+        echo json_encode($payments);
+    }
+
+    public function get_payment_receipt_html($id)
+    {
+        if (!has_permission('payments', '', 'view') 
+            && !has_permission('invoices', '', 'view_own') 
+            && get_option('allow_staff_view_invoices_assigned') == '0') {
+            ajax_access_denied();
+        }
+        
+        $payment = $this->payments_model->get($id);
+        if (!$payment) {
+            echo 'Payment not found';
+            return;
+        }
+
+        $this->load->model('invoices_model');
+        if ($payment->invoiceid != 0) {
+            $payment->invoice = $this->invoices_model->get($payment->invoiceid);
+        } else {
+            $payment->invoice = null;
+            // Fetch client details if no invoice
+            if ($payment->client_id) {
+                $this->load->model('clients_model');
+                $payment->client = $this->clients_model->get($payment->client_id);
+            }
+        }
+        
+        $data['payment'] = $payment;
+        $this->load->view('admin/payments/payment_receipt_partial', $data);
+    }
+
+    public function get_payment_edit_html($id)
+    {
+        if (!has_permission('payments', '', 'edit')) {
+            access_denied('Edit Payment');
+        }
+
+        $payment = $this->payments_model->get($id);
+        if (!$payment) {
+            echo 'Payment not found';
+            return;
+        }
+
+        $this->load->model('payment_modes_model');
+        $data['payment_modes'] = $this->payment_modes_model->get('', [
+            'expenses_only !=' => 1,
+        ]);
+        $data['payment'] = $payment;
+        
+        $this->load->view('admin/payments/payment_edit_partial', $data);
+    }
+
+    public function update_payment_ajax($id)
+    {
+        if (!has_permission('payments', '', 'edit')) {
+            echo json_encode([
+                'success' => false,
+                'message' => _l('access_denied'),
+            ]);
+            die;
+        }
+
+        if ($this->input->post()) {
+            $this->load->model('payments_model');
+            $success = $this->payments_model->update($this->input->post(), $id);
+            if ($success) {
+                echo json_encode([
+                    'success' => true,
+                    'message' => _l('updated_successfully', _l('payment')),
+                ]);
+            } else {
+                echo json_encode([
+                    'success' => false,
+                    'message' => _l('could_not_update', _l('payment')),
+                ]);
+            }
+            die;
+        }
+    }
+
+    public function get_payment_add_html()
+    {
+        if (!has_permission('payments', '', 'create')) {
+            access_denied('Create Payment');
+        }
+
+        $this->load->model('payment_modes_model');
+        $data['payment_modes'] = $this->payment_modes_model->get('', [
+            'expenses_only !=' => 1,
+        ]);
+
+        $this->load->view('admin/payments/payment_add_partial', $data);
+    }
+
+    public function add_payment_ajax()
+    {
+        if (!has_permission('payments', '', 'create')) {
+            echo json_encode([
+                'success' => false,
+                'message' => _l('access_denied'),
+            ]);
+            die;
+        }
+
+        if ($this->input->post()) {
+            $data = $this->input->post();
+            // Handle date format if necessary, though to_sql_date is usually used in Perfex
+            if(isset($data['date'])) {
+                $data["date"] = to_sql_date($data['date']);
+            }
+            $amount = isset($data["amount"]) ? $data["amount"] : 0;
+
+            if (!empty($this->input->post('pur_order'))) {
+                foreach ($this->input->post('pur_order') as $inv) {
+                    $invoice_amount_left = get_invoice_total_left_to_pay($inv);
+                    if ($amount > 0 && $invoice_amount_left != 0) {
+                        $payment_data = [
+                            'invoiceid'     => $inv,
+                            'amount'        => ($invoice_amount_left <= $amount) ? $invoice_amount_left : $amount,
+                            'date'          => $data['date'],
+                            'paymentmode'   => $data['paymentmode'],
+                            'paymentmethod' => $data['paymentmethod'],
+                            'transactionid' => $data['transactionid'],
+                            'note'          => $data['note'],
+                            'client_id'     => '',
+                        ];
+                        $amount -= $payment_data['amount'];
+                        $this->load->model('payments_model');
+                        $this->payments_model->process_payment($payment_data, '');
+                    }
+                }
+                // If there's remaining amount, record it as a payment without invoice
+                if ($amount > 0) {
+                    $extra_data = [
+                        'amount'        => $amount,
+                        'client_id'     => $data['client_id'],
+                        'invoiceid'     => 0,
+                        'date'          => $data['date'],
+                        'paymentmode'   => $data['paymentmode'],
+                        'paymentmethod' => $data['paymentmethod'],
+                        'transactionid' => $data['transactionid'],
+                        'note'          => $data['note'],
+                    ];
+                    $this->db->insert(db_prefix() . 'invoicepaymentrecords', $extra_data);
+                }
+                echo json_encode([
+                    'success' => true,
+                    'message' => _l('added_successfully', _l('payment')),
+                ]);
+            } else {
+                $payment_data = [
+                    'amount'        => $amount,
+                    'client_id'     => $data['client_id'],
+                    'invoiceid'     => 0,
+                    'date'          => $data['date'],
+                    'paymentmode'   => $data['paymentmode'],
+                    'paymentmethod' => $data['paymentmethod'],
+                    'transactionid' => $data['transactionid'],
+                    'note'          => $data['note'],
+                ];
+                $this->db->insert(db_prefix() . 'invoicepaymentrecords', $payment_data);
+                echo json_encode([
+                    'success' => true,
+                    'message' => _l('added_successfully', _l('payment')),
+                ]);
+            }
+            die;
+        }
+    }
+
+    public function get_send_to_client_modal($id)
+    {
+        if (!has_permission('payments', '', 'view')) {
+            ajax_access_denied();
+        }
+
+        $payment = $this->payments_model->get($id);
+        if (!$payment) {
+            echo 'Payment not found';
+            return;
+        }
+
+        $this->load->model('invoices_model');
+        $payment->invoice_data = $this->invoices_model->get($payment->invoiceid);
+        
+        $data['payment'] = $payment;
+        $this->load->view('admin/payments/send_to_client', $data);
     }
 }

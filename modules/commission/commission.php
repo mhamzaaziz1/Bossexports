@@ -305,7 +305,7 @@ function commission_client_add_footer_components(){
 
 function add_tab_commission_in_client($client){
     $CI = &get_instance();
-    if(check_applicable_client($client->userid)){
+    if($client && is_object($client) && check_applicable_client($client->userid)){
 	    $menu = '';
         $menu .= '<li role="presentation">
                   <a href="#customer_commission" aria-controls="customer_commission" role="tab" data-toggle="tab">
@@ -319,7 +319,7 @@ function add_tab_commission_in_client($client){
 
 function add_content_commission_in_client($client){
     $CI = &get_instance();
-	if(check_applicable_client($client->userid)){
+	if($client && is_object($client) && check_applicable_client($client->userid)){
 		require 'modules/commission/views/client/commission_tab.php';
     }
 }

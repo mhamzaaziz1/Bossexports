@@ -27,9 +27,9 @@
 									?>
 
 									<tr>
-										<td ><a href="<?php echo admin_url('warehouse/manage_packing_list/' . $packing_list['id'] ) ?>" ><?php echo html_entity_decode($packing_list['packing_list_number'] .' - '.$packing_list['packing_list_name']) ?></a></td>
+										<td ><a href="<?php echo admin_url('warehouse/manage_packing_list/' . $packing_list['id'] ) ?>" ><?php echo new_html_entity_decode($packing_list['packing_list_number'] .' - '.$packing_list['packing_list_name']) ?></a></td>
 										<td ><?php echo get_company_name($packing_list['clientid']) ?></td>
-										<td class="text-right"><?php echo html_entity_decode($packing_list['width'].' x '.$packing_list['height'].' x '.$packing_list['lenght']) ?></td>
+										<td class="text-right"><?php echo new_html_entity_decode($packing_list['width'].' x '.$packing_list['height'].' x '.$packing_list['lenght']) ?></td>
 										<td class="text-right"><?php echo app_format_money($packing_list['volume'], '') ?></td>
 										<td class="text-right"><?php echo app_format_money($packing_list['total_amount'], '') ?></td>
 										<td class="text-right"><?php echo app_format_money($packing_list['discount_total']+$packing_list['additional_discount'], '') ?></td>
@@ -45,7 +45,7 @@
 											$approve_data = '<span class="label label-tag tag-id-1 label-tab3"><span class="tag">'._l('reject').'</span><span class="hide">, </span></span>&nbsp';
 										}
 										?>
-										<td class="text-right"><?php echo html_entity_decode($approve_data); ?></td>
+										<td class="text-right"><?php echo new_html_entity_decode($approve_data); ?></td>
 										<td class="text-right"><?php echo render_delivery_status_html($packing_list['id'], 'packing_list', $packing_list['delivery_status'], false) ?></td>
 									</tr>
 								<?php  } ?>

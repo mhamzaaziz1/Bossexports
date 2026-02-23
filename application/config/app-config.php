@@ -17,7 +17,7 @@ defined('BASEPATH') or exit('No direct script access allowed');
 * environments.
 *
 */
-define('APP_BASE_URL', 'http://localhost/coding/');
+define('APP_BASE_URL', 'http://localhost/perfex/');
 
 /*
 * --------------------------------------------------------------------------
@@ -32,21 +32,24 @@ define('APP_BASE_URL', 'http://localhost/coding/');
 *
 * Auto added on install
 */
-define('APP_ENC_KEY', 'c5fa763f0a27cfa5ec862caabc066285');
+define('APP_ENC_KEY', 'c57028dd5a42d828640a47c42eb16a7e');
 
 /**
  * Database Credentials
  * The hostname of your database server
  */
 define('APP_DB_HOSTNAME', 'localhost');
+
 /**
  * The username used to connect to the database
  */
 define('APP_DB_USERNAME', 'root');
+
 /**
  * The password used to connect to the database
  */
 define('APP_DB_PASSWORD', '');
+
 /**
  * The name of the database you want to connect to
  */
@@ -56,12 +59,13 @@ define('APP_DB_NAME', 'perfex');
  * @since  2.3.0
  * Database charset
  */
-define('APP_DB_CHARSET', 'utf8');
+define('APP_DB_CHARSET', 'utf8mb4');
+
 /**
  * @since  2.3.0
  * Database collation
  */
-define('APP_DB_COLLATION', 'utf8_general_ci');
+define('APP_DB_COLLATION', 'utf8mb4_unicode_ci');
 
 /**
  *
@@ -76,6 +80,7 @@ define('APP_DB_COLLATION', 'utf8_general_ci');
  */
 define('SESS_DRIVER', 'database');
 define('SESS_SAVE_PATH', 'sessions');
+define('APP_SESSION_COOKIE_SAME_SITE', 'Lax');
 
 /**
  * Enables CSRF Protection

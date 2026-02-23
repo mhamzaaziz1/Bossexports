@@ -34,7 +34,7 @@ foreach ($custom_fields as $key => $field) {
 
 $where = [];
 
-if (!has_permission('purchase', '', 'view')) {
+if (staff_cant('purchase', '', 'view')) {
     array_push($where, 'AND ' . db_prefix() . 'pur_contacts.userid IN (SELECT customer_id FROM ' . db_prefix() . 'customer_admins WHERE staff_id=' . get_staff_user_id() . ')');
 }
 

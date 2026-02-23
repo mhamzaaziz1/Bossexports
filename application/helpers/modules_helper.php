@@ -6,8 +6,8 @@ defined('BASEPATH') or exit('No direct script access allowed');
  * @since  2.3.0
  * Register module activation hook
  * @param  string $module   module system name
- * @param  mixed $function  function for the hook
- * @return mixed
+ * @param  callable|mixed $function  function for the hook
+ * @return void
  */
 function register_activation_hook($module, $function)
 {
@@ -19,7 +19,7 @@ function register_activation_hook($module, $function)
  * Register module deactivation hook
  * @param  string $module   module system name
  * @param  mixed $function  function for the hook
- * @return mixed
+ * @return void
  */
 function register_deactivation_hook($module, $function)
 {
@@ -31,7 +31,7 @@ function register_deactivation_hook($module, $function)
  * Register module uninstall hook
  * @param  string $module   module system name
  * @param  mixed $function  function for the hook
- * @return mixed
+ * @return void
  */
 function register_uninstall_hook($module, $function)
 {
@@ -44,7 +44,7 @@ function register_uninstall_hook($module, $function)
  * @param  mixed $for
  * The $for parameter should be array of loadeable libraries compatible for merge field e.q. in module_name/libraries create folder merge_fields
  * then create class Module_name_merge_fields.php, in this case, you pass like array('module_name/merge_fields/module_name_merge_fields')
- * @return null
+ * @return void
  */
 function register_merge_fields($for)
 {
@@ -58,7 +58,7 @@ function register_merge_fields($for)
  *
  * @param string $module_name    the module system name
  * @param string $feature        currently available features: my_prefixed_view_files
- * @return  null
+ * @return  void
  */
 function add_module_support($module_name, $feature)
 {
@@ -82,7 +82,7 @@ function module_supports($module_name, $feature)
  * @since  2.3.2
  * Register module cron task, the cron task is executed after the core cron tasks are finished
  * @param  mixed $function  function/class parameter for the hook
- * @return null
+ * @return void
  */
 function register_cron_task($function)
 {
@@ -112,13 +112,12 @@ function register_cron_task($function)
  *
  * NOTE: Do not provide a $name if you are injecting permissions into already existing feature.
  *
- * @return null
+ * @return void
  */
 
 function register_staff_capabilities($feature_id, $config, $name = null)
 {
     hooks()->add_filter('staff_permissions', function ($permissions) use ($feature_id, $config, $name) {
-
         if (!array_key_exists($feature_id, $permissions)) {
             $permissions[$feature_id] = [];
 
@@ -136,7 +135,6 @@ function register_staff_capabilities($feature_id, $config, $name = null)
         $permissions[$feature_id] = array_merge_recursive_distinct($permissions[$feature_id], $config);
 
         return $permissions;
-
     });
 }
 
@@ -155,7 +153,7 @@ function modules_list_url()
  * Register payment gateway
  * @param  string $id     the ID of the payment gateway
  * @param  string $module module system name
- * @return null
+ * @return void
  */
 function register_payment_gateway($id, $module)
 {
@@ -240,7 +238,7 @@ function module_dir_url($module, $segment = '')
  * Register module language files to support custom_lang.php file
  * @param  string $module    module system name
  * @param  array  $languages array of language file names without the _lang.php
- * @return null
+ * @return void
  */
 function register_language_files($module, $languages = [])
 {
@@ -284,7 +282,7 @@ function register_language_files($module, $languages = [])
  */
 function uninstallable_modules()
 {
-    return ['theme_style', 'menu_setup', 'backup', 'surveys', 'goals'];
+    return ['theme_style', 'menu_setup', 'backup', 'surveys', 'goals', 'exports', 'openai', 'einvoice'];
 }
 
 /**

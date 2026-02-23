@@ -40,7 +40,7 @@
 				autoWrapRow: true,
 				rowHeights: 30,
 				defaultRowHeight: 100,
-				minRows: <?php echo html_entity_decode($min_row); ?>,
+				minRows: <?php echo new_html_entity_decode($min_row); ?>,
 				width: '100%',
 				height: '350px',
 				licenseKey: 'non-commercial-and-evaluation',
@@ -117,12 +117,12 @@
 
 				colHeaders: [
 
-				'<?php echo _l('id'); ?>',
-				'<?php echo _l('commodity_name'); ?>',
-				'<?php echo _l('warehouse_name'); ?>',
-				'<?php echo _l('lot_number'); ?>',
-				'<?php echo _l('expiry_date'); ?>',
-				'<?php echo _l('inventory_number'); ?>',
+				"<?php echo _l('id'); ?>",
+				"<?php echo _l('commodity_name'); ?>",
+				"<?php echo _l('warehouse_name'); ?>",
+				"<?php echo _l('lot_number'); ?>",
+				"<?php echo _l('expiry_date'); ?>",
+				"<?php echo _l('inventory_number'); ?>",
 
 				],
 

@@ -8,6 +8,7 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
 return [
     'year' => ':count voros|:count vorsam',
     'y' => ':countv',
@@ -52,11 +53,9 @@ return [
     'weekdays_short' => ['Ait.', 'Som.', 'Mon.', 'Bud.', 'Bre.', 'Suk.', 'Son.'],
     'weekdays_min' => ['Ai', 'Sm', 'Mo', 'Bu', 'Br', 'Su', 'Sn'],
 
-    'ordinal' => function ($number, $period) {
-        return $number.($period === 'D' ? 'er' : '');
-    },
+    'ordinal' => static fn ($number, $period) => $number.($period === 'D' ? 'er' : ''),
 
-    'meridiem' => function ($hour) {
+    'meridiem' => static function ($hour) {
         if ($hour < 4) {
             return 'rati';
         }

@@ -17,13 +17,13 @@ use Twilio\Values;
 use Twilio\Version;
 
 /**
- * PLEASE NOTE that this class contains preview products that are subject to change. Use them with caution. If you currently do not have developer preview access, please contact help@twilio.com.
- *
  * @property string $accountSid
  * @property string $callSid
  * @property string $callType
  * @property string $callState
+ * @property string $answeredBy
  * @property string $processingState
+ * @property \DateTime $createdTime
  * @property \DateTime $startTime
  * @property \DateTime $endTime
  * @property int $duration
@@ -34,30 +34,33 @@ use Twilio\Version;
  * @property array $clientEdge
  * @property array $sdkEdge
  * @property array $sipEdge
- * @property string $tags
+ * @property string[] $tags
  * @property string $url
  * @property array $attributes
  * @property array $properties
+ * @property array $trust
+ * @property array $annotation
  */
 class CallSummaryInstance extends InstanceResource {
     /**
      * Initialize the CallSummaryInstance
      *
-     * @param \Twilio\Version $version Version that contains the resource
+     * @param Version $version Version that contains the resource
      * @param mixed[] $payload The response payload
      * @param string $callSid The call_sid
-     * @return \Twilio\Rest\Insights\V1\Call\CallSummaryInstance
      */
-    public function __construct(Version $version, array $payload, $callSid) {
+    public function __construct(Version $version, array $payload, string $callSid) {
         parent::__construct($version);
 
         // Marshaled Properties
-        $this->properties = array(
+        $this->properties = [
             'accountSid' => Values::array_get($payload, 'account_sid'),
             'callSid' => Values::array_get($payload, 'call_sid'),
             'callType' => Values::array_get($payload, 'call_type'),
             'callState' => Values::array_get($payload, 'call_state'),
+            'answeredBy' => Values::array_get($payload, 'answered_by'),
             'processingState' => Values::array_get($payload, 'processing_state'),
+            'createdTime' => Deserialize::dateTime(Values::array_get($payload, 'created_time')),
             'startTime' => Deserialize::dateTime(Values::array_get($payload, 'start_time')),
             'endTime' => Deserialize::dateTime(Values::array_get($payload, 'end_time')),
             'duration' => Values::array_get($payload, 'duration'),
@@ -72,19 +75,20 @@ class CallSummaryInstance extends InstanceResource {
             'url' => Values::array_get($payload, 'url'),
             'attributes' => Values::array_get($payload, 'attributes'),
             'properties' => Values::array_get($payload, 'properties'),
-        );
+            'trust' => Values::array_get($payload, 'trust'),
+            'annotation' => Values::array_get($payload, 'annotation'),
+        ];
 
-        $this->solution = array('callSid' => $callSid, );
+        $this->solution = ['callSid' => $callSid, ];
     }
 
     /**
      * Generate an instance context for the instance, the context is capable of
      * performing various actions.  All instance actions are proxied to the context
      *
-     * @return \Twilio\Rest\Insights\V1\Call\CallSummaryContext Context for this
-     *                                                          CallSummaryInstance
+     * @return CallSummaryContext Context for this CallSummaryInstance
      */
-    protected function proxy() {
+    protected function proxy(): CallSummaryContext {
         if (!$this->context) {
             $this->context = new CallSummaryContext($this->version, $this->solution['callSid']);
         }
@@ -93,13 +97,13 @@ class CallSummaryInstance extends InstanceResource {
     }
 
     /**
-     * Fetch a CallSummaryInstance
+     * Fetch the CallSummaryInstance
      *
      * @param array|Options $options Optional Arguments
      * @return CallSummaryInstance Fetched CallSummaryInstance
      * @throws TwilioException When an HTTP error occurs.
      */
-    public function fetch($options = array()) {
+    public function fetch(array $options = []): CallSummaryInstance {
         return $this->proxy()->fetch($options);
     }
 
@@ -110,7 +114,7 @@ class CallSummaryInstance extends InstanceResource {
      * @return mixed The requested property
      * @throws TwilioException For unknown properties
      */
-    public function __get($name) {
+    public function __get(string $name) {
         if (\array_key_exists($name, $this->properties)) {
             return $this->properties[$name];
         }
@@ -128,8 +132,8 @@ class CallSummaryInstance extends InstanceResource {
      *
      * @return string Machine friendly representation
      */
-    public function __toString() {
-        $context = array();
+    public function __toString(): string {
+        $context = [];
         foreach ($this->solution as $key => $value) {
             $context[] = "$key=$value";
         }

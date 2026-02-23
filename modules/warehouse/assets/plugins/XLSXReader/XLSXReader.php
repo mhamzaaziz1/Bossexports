@@ -73,7 +73,7 @@ class XLSXReader_fin {
 				//var_dump($rel['Target']);
 				//var_export($this->getEntryData($rel['Target']));
 				$xml_target = $this->getEntryData($rel['Target']);
-				$xml_target = str_replace('</x:', '</',str_replace('<x:', '<', $xml_target));				
+				$xml_target = new_str_replace('</x:', '</',new_str_replace('<x:', '<', $xml_target));				
 				//$workbookXML = simplexml_load_string($this->getEntryData($rel['Target']));
 				$workbookXML = simplexml_load_string($xml_target);
 				//var_dump($workbookXML);
@@ -94,7 +94,7 @@ class XLSXReader_fin {
 							break;
 						case self::SCHEMA_SHAREDSTRINGS:
 							$xml_target_ss = $this->getEntryData($workbookDir . (string)$wrel['Target']);
-							$xml_target_ss = str_replace('</x:', '</',str_replace('<x:', '<', $xml_target_ss));
+							$xml_target_ss = new_str_replace('</x:', '</',new_str_replace('<x:', '<', $xml_target_ss));
 							$sharedStringsXML = simplexml_load_string($xml_target_ss);
 							foreach($sharedStringsXML->si as $val) {
 								if(isset($val->t)) {
@@ -163,7 +163,7 @@ class XLSXReader_fin {
 
 	protected function getSheetXML($name) {
 		$xml_path = $this->getEntryData($this->sheetInfo[$name]['path']);
-		$xml_path = str_replace('</x:', '</',str_replace('<x:', '<', $xml_path));
+		$xml_path = new_str_replace('</x:', '</',new_str_replace('<x:', '<', $xml_path));
 		return simplexml_load_string($xml_path);
 	}
 
@@ -207,7 +207,7 @@ class XLSXWorksheet_fin {
 
 	protected function parseDimensions($dimensions) {
 		$range = (string) $dimensions['ref'];
-		$cells = explode(':', $range);
+		$cells = new_explode(':', $range);
 		$maxValues = $this->getColumnIndex($cells[0]);
 		$this->colCount = $maxValues[0] + 1;
 		$this->rowCount = $maxValues[1] + 1;
@@ -260,7 +260,7 @@ class XLSXWorksheet_fin {
 			
 			$col = $matches[1];
 			$row = $matches[2];
-			$colLen = strlen($col);
+			$colLen = new_strlen($col);
 			$index = 0;
 
 			for ($i = $colLen-1; $i >= 0; $i--) {

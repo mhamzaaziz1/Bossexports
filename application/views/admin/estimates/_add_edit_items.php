@@ -226,6 +226,7 @@
                </td>
                <td class="discount-total"></td>
             </tr>
+            <?php if (get_option('show_shipping_on_sales') == 1) { ?>
             <tr>
                <td>
                   <div class="row">
@@ -244,11 +245,13 @@
                      </div>
                   </div>
                </td>
-               <td class="adjustment"><?php echo app_format_money($estimate->adjustment, $estimate->currency_name); ?></td>
+               <td class="adjustment"><?php echo isset($estimate) ? app_format_money($estimate->adjustment, $estimate->currency_name) : 0; ?></td>
             </tr>
+            <?php } ?>
             
             
             
+            <?php if (get_option('show_shipping_on_sales') == 1) { ?>
             <tr>
                <td>
                   <div class="row">
@@ -258,7 +261,7 @@
                   </div>
                </td>
                
-               <td> <input type="number" id="ship_expense"  value="<?php echo isset($proposal) ? $proposal->ship_expense : $estimate->ship_expense; ?>" class="form-control pull-left" name="ship_expense" required oninput="calculateTotal()"></td>
+               <td> <input type="number" id="ship_expense"  value="<?php echo isset($proposal) ? $proposal->ship_expense : (isset($estimate) ? $estimate->ship_expense : ''); ?>" class="form-control pull-left" name="ship_expense" required oninput="calculateTotal()"></td>
             </tr>
             <tr>
                <td>
@@ -268,8 +271,9 @@
                      </div>
                   </div>
                </td>
-               <td> <input type="number" id="other_expense"  value="<?php echo isset($proposal) ? $proposal->other_expense : $estimate->other_expense; ?>" class="form-control pull-left" name="other_expense" required oninput="calculateTotal()"> </td>
+               <td> <input type="number" id="other_expense"  value="<?php echo isset($proposal) ? $proposal->other_expense : (isset($estimate) ? $estimate->other_expense : ''); ?>" class="form-control pull-left" name="other_expense" required oninput="calculateTotal()"> </td>
             </tr>
+            <?php } ?>
             
             
             
@@ -279,12 +283,14 @@
                <td class="total">
                </td>
             </tr>
+            <?php if (get_option('show_shipping_on_sales') == 1) { ?>
             <tr>
                <td><span class="bold"><?php echo _l('All total'); ?> :<br>  <br>     <br> </span><button type="button" onclick="calculateTotal()" class="btn pull-right btn-info">Re-calculate total</button>
                </td>
                <td class="total_all">R<span id="all_total">0.00</span>
                </td>
             </tr>
+            <?php } ?>
          </tbody>
       </table>
    </div>

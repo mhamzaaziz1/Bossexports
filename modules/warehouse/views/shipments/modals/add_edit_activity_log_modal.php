@@ -25,9 +25,9 @@
 					}
 
 					?>
-					<input type="hidden" name="id" value="<?php echo html_entity_decode($id); ?>">  
-					<input type="hidden" name="rel_id" value="<?php echo html_entity_decode($shipment_id); ?>">  
-					<input type="hidden" name="cart_id" value="<?php echo html_entity_decode($cart_id); ?>">  
+					<input type="hidden" name="id" value="<?php echo new_html_entity_decode($id); ?>">  
+					<input type="hidden" name="rel_id" value="<?php echo new_html_entity_decode($shipment_id); ?>">  
+					<input type="hidden" name="cart_id" value="<?php echo new_html_entity_decode($cart_id); ?>">  
 
 					<div class="col-md-12">
 						<div class="form-group">
@@ -38,6 +38,22 @@
 					<div class="col-md-12">
 						<?php echo render_textarea('description','wh_shipment_log', $description); ?>
 					</div>
+						<div class="col-md-12">
+							<?php if($allow_attachment){ ?>
+								<div id="dropzoneDragArea" class="dz-default dz-message">
+									<span><?php echo _l('attach_images'); ?></span>
+								</div>
+								<div class="dropzone-previews"></div>
+							<?php } ?>
+
+							<div id="images_old_preview">
+								<?php 
+								if(isset($images_old_value)){
+									echo new_html_entity_decode($images_old_value);
+								}
+								?>
+							</div>
+						</div>
 
 				</div>
 			</div>
@@ -52,3 +68,5 @@
 </div><!-- /.modal -->
 
 <!-- status modal end -->
+<?php require 'modules/warehouse/assets/js/shipments/activity_log_modal_js.php';?>
+

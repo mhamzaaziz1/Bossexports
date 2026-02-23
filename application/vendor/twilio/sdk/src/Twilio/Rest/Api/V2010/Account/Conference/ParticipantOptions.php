@@ -16,14 +16,16 @@ abstract class ParticipantOptions {
     /**
      * @param bool $muted Whether the participant should be muted
      * @param bool $hold Whether the participant should be on hold
-     * @param string $holdUrl The URL we call using the `hold_method` for  music
+     * @param string $holdUrl The URL we call using the `hold_method` for music
      *                        that plays when the participant is on hold
      * @param string $holdMethod The HTTP method we should use to call hold_url
      * @param string $announceUrl The URL we call using the `announce_method` for
      *                            an announcement to the participant
      * @param string $announceMethod The HTTP method we should use to call
      *                               announce_url
-     * @param string $waitUrl URL that hosts pre-conference hold music
+     * @param string $waitUrl The URL we call using the `wait_method` for the music
+     *                        to play while participants are waiting for the
+     *                        conference to start
      * @param string $waitMethod The HTTP method we should use to call `wait_url`
      * @param bool $beepOnExit Whether to play a notification beep to the
      *                         conference when the participant exit
@@ -34,7 +36,7 @@ abstract class ParticipantOptions {
      *                               `coached`
      * @return UpdateParticipantOptions Options builder
      */
-    public static function update($muted = Values::NONE, $hold = Values::NONE, $holdUrl = Values::NONE, $holdMethod = Values::NONE, $announceUrl = Values::NONE, $announceMethod = Values::NONE, $waitUrl = Values::NONE, $waitMethod = Values::NONE, $beepOnExit = Values::NONE, $endConferenceOnExit = Values::NONE, $coaching = Values::NONE, $callSidToCoach = Values::NONE) {
+    public static function update(bool $muted = Values::NONE, bool $hold = Values::NONE, string $holdUrl = Values::NONE, string $holdMethod = Values::NONE, string $announceUrl = Values::NONE, string $announceMethod = Values::NONE, string $waitUrl = Values::NONE, string $waitMethod = Values::NONE, bool $beepOnExit = Values::NONE, bool $endConferenceOnExit = Values::NONE, bool $coaching = Values::NONE, string $callSidToCoach = Values::NONE): UpdateParticipantOptions {
         return new UpdateParticipantOptions($muted, $hold, $holdUrl, $holdMethod, $announceUrl, $announceMethod, $waitUrl, $waitMethod, $beepOnExit, $endConferenceOnExit, $coaching, $callSidToCoach);
     }
 
@@ -43,8 +45,9 @@ abstract class ParticipantOptions {
      *                               information to your application
      * @param string $statusCallbackMethod The HTTP method we should use to call
      *                                     `status_callback`
-     * @param string $statusCallbackEvent Set state change events that will trigger
-     *                                    a callback
+     * @param string[] $statusCallbackEvent Set state change events that will
+     *                                      trigger a callback
+     * @param string $label The label of this participant
      * @param int $timeout he number of seconds that we should wait for an answer
      * @param bool $record Whether to record the participant and their conferences
      * @param bool $muted Whether to mute the agent
@@ -69,9 +72,10 @@ abstract class ParticipantOptions {
      * @param string $conferenceStatusCallbackMethod HTTP method for requesting
      *                                               `conference_status_callback`
      *                                               URL
-     * @param string $conferenceStatusCallbackEvent The conference state changes
-     *                                              that should generate a call to
-     *                                              `conference_status_callback`
+     * @param string[] $conferenceStatusCallbackEvent The conference state changes
+     *                                                that should generate a call
+     *                                                to
+     *                                                `conference_status_callback`
      * @param string $recordingChannels Specify `mono` or `dual` recording channels
      * @param string $recordingStatusCallback The URL that we should call using the
      *                                        `recording_status_callback_method`
@@ -88,21 +92,44 @@ abstract class ParticipantOptions {
      * @param string $conferenceRecordingStatusCallbackMethod The HTTP method we
      *                                                        should use to call
      *                                                        `conference_recording_status_callback`
-     * @param string $recordingStatusCallbackEvent The recording state changes that
-     *                                             should generate a call to
-     *                                             `recording_status_callback`
-     * @param string $conferenceRecordingStatusCallbackEvent The conference
-     *                                                       recording state
-     *                                                       changes that should
-     *                                                       generate a call to
-     *                                                       `conference_recording_status_callback`
+     * @param string[] $recordingStatusCallbackEvent The recording state changes
+     *                                               that should generate a call to
+     *                                               `recording_status_callback`
+     * @param string[] $conferenceRecordingStatusCallbackEvent The conference
+     *                                                         recording state
+     *                                                         changes that should
+     *                                                         generate a call to
+     *                                                         `conference_recording_status_callback`
      * @param bool $coaching Indicates if the participant changed to coach
      * @param string $callSidToCoach The SID of the participant who is being
      *                               `coached`
+     * @param string $jitterBufferSize Jitter Buffer size for the connecting
+     *                                 participant
+     * @param string $byoc BYOC trunk SID (Beta)
+     * @param string $callerId The phone number, Client identifier, or username
+     *                         portion of SIP address that made this call.
+     * @param string $callReason Reason for the call (Branded Calls Beta)
+     * @param string $recordingTrack The track(s) to record
+     * @param int $timeLimit The maximum duration of the call in seconds.
+     * @param string $machineDetection Enable machine detection or end of greeting
+     *                                 detection
+     * @param int $machineDetectionTimeout Number of seconds to wait for machine
+     *                                     detection
+     * @param int $machineDetectionSpeechThreshold Number of milliseconds for
+     *                                             measuring stick for the length
+     *                                             of the speech activity
+     * @param int $machineDetectionSpeechEndThreshold Number of milliseconds of
+     *                                                silence after speech activity
+     * @param int $machineDetectionSilenceTimeout Number of milliseconds of initial
+     *                                            silence
+     * @param string $amdStatusCallback The URL we should call to send amd status
+     *                                  information to your application
+     * @param string $amdStatusCallbackMethod HTTP Method to use with
+     *                                        amd_status_callback
      * @return CreateParticipantOptions Options builder
      */
-    public static function create($statusCallback = Values::NONE, $statusCallbackMethod = Values::NONE, $statusCallbackEvent = Values::NONE, $timeout = Values::NONE, $record = Values::NONE, $muted = Values::NONE, $beep = Values::NONE, $startConferenceOnEnter = Values::NONE, $endConferenceOnExit = Values::NONE, $waitUrl = Values::NONE, $waitMethod = Values::NONE, $earlyMedia = Values::NONE, $maxParticipants = Values::NONE, $conferenceRecord = Values::NONE, $conferenceTrim = Values::NONE, $conferenceStatusCallback = Values::NONE, $conferenceStatusCallbackMethod = Values::NONE, $conferenceStatusCallbackEvent = Values::NONE, $recordingChannels = Values::NONE, $recordingStatusCallback = Values::NONE, $recordingStatusCallbackMethod = Values::NONE, $sipAuthUsername = Values::NONE, $sipAuthPassword = Values::NONE, $region = Values::NONE, $conferenceRecordingStatusCallback = Values::NONE, $conferenceRecordingStatusCallbackMethod = Values::NONE, $recordingStatusCallbackEvent = Values::NONE, $conferenceRecordingStatusCallbackEvent = Values::NONE, $coaching = Values::NONE, $callSidToCoach = Values::NONE) {
-        return new CreateParticipantOptions($statusCallback, $statusCallbackMethod, $statusCallbackEvent, $timeout, $record, $muted, $beep, $startConferenceOnEnter, $endConferenceOnExit, $waitUrl, $waitMethod, $earlyMedia, $maxParticipants, $conferenceRecord, $conferenceTrim, $conferenceStatusCallback, $conferenceStatusCallbackMethod, $conferenceStatusCallbackEvent, $recordingChannels, $recordingStatusCallback, $recordingStatusCallbackMethod, $sipAuthUsername, $sipAuthPassword, $region, $conferenceRecordingStatusCallback, $conferenceRecordingStatusCallbackMethod, $recordingStatusCallbackEvent, $conferenceRecordingStatusCallbackEvent, $coaching, $callSidToCoach);
+    public static function create(string $statusCallback = Values::NONE, string $statusCallbackMethod = Values::NONE, array $statusCallbackEvent = Values::ARRAY_NONE, string $label = Values::NONE, int $timeout = Values::NONE, bool $record = Values::NONE, bool $muted = Values::NONE, string $beep = Values::NONE, bool $startConferenceOnEnter = Values::NONE, bool $endConferenceOnExit = Values::NONE, string $waitUrl = Values::NONE, string $waitMethod = Values::NONE, bool $earlyMedia = Values::NONE, int $maxParticipants = Values::NONE, string $conferenceRecord = Values::NONE, string $conferenceTrim = Values::NONE, string $conferenceStatusCallback = Values::NONE, string $conferenceStatusCallbackMethod = Values::NONE, array $conferenceStatusCallbackEvent = Values::ARRAY_NONE, string $recordingChannels = Values::NONE, string $recordingStatusCallback = Values::NONE, string $recordingStatusCallbackMethod = Values::NONE, string $sipAuthUsername = Values::NONE, string $sipAuthPassword = Values::NONE, string $region = Values::NONE, string $conferenceRecordingStatusCallback = Values::NONE, string $conferenceRecordingStatusCallbackMethod = Values::NONE, array $recordingStatusCallbackEvent = Values::ARRAY_NONE, array $conferenceRecordingStatusCallbackEvent = Values::ARRAY_NONE, bool $coaching = Values::NONE, string $callSidToCoach = Values::NONE, string $jitterBufferSize = Values::NONE, string $byoc = Values::NONE, string $callerId = Values::NONE, string $callReason = Values::NONE, string $recordingTrack = Values::NONE, int $timeLimit = Values::NONE, string $machineDetection = Values::NONE, int $machineDetectionTimeout = Values::NONE, int $machineDetectionSpeechThreshold = Values::NONE, int $machineDetectionSpeechEndThreshold = Values::NONE, int $machineDetectionSilenceTimeout = Values::NONE, string $amdStatusCallback = Values::NONE, string $amdStatusCallbackMethod = Values::NONE): CreateParticipantOptions {
+        return new CreateParticipantOptions($statusCallback, $statusCallbackMethod, $statusCallbackEvent, $label, $timeout, $record, $muted, $beep, $startConferenceOnEnter, $endConferenceOnExit, $waitUrl, $waitMethod, $earlyMedia, $maxParticipants, $conferenceRecord, $conferenceTrim, $conferenceStatusCallback, $conferenceStatusCallbackMethod, $conferenceStatusCallbackEvent, $recordingChannels, $recordingStatusCallback, $recordingStatusCallbackMethod, $sipAuthUsername, $sipAuthPassword, $region, $conferenceRecordingStatusCallback, $conferenceRecordingStatusCallbackMethod, $recordingStatusCallbackEvent, $conferenceRecordingStatusCallbackEvent, $coaching, $callSidToCoach, $jitterBufferSize, $byoc, $callerId, $callReason, $recordingTrack, $timeLimit, $machineDetection, $machineDetectionTimeout, $machineDetectionSpeechThreshold, $machineDetectionSpeechEndThreshold, $machineDetectionSilenceTimeout, $amdStatusCallback, $amdStatusCallbackMethod);
     }
 
     /**
@@ -112,7 +139,7 @@ abstract class ParticipantOptions {
      *                       another call
      * @return ReadParticipantOptions Options builder
      */
-    public static function read($muted = Values::NONE, $hold = Values::NONE, $coaching = Values::NONE) {
+    public static function read(bool $muted = Values::NONE, bool $hold = Values::NONE, bool $coaching = Values::NONE): ReadParticipantOptions {
         return new ReadParticipantOptions($muted, $hold, $coaching);
     }
 }
@@ -121,14 +148,16 @@ class UpdateParticipantOptions extends Options {
     /**
      * @param bool $muted Whether the participant should be muted
      * @param bool $hold Whether the participant should be on hold
-     * @param string $holdUrl The URL we call using the `hold_method` for  music
+     * @param string $holdUrl The URL we call using the `hold_method` for music
      *                        that plays when the participant is on hold
      * @param string $holdMethod The HTTP method we should use to call hold_url
      * @param string $announceUrl The URL we call using the `announce_method` for
      *                            an announcement to the participant
      * @param string $announceMethod The HTTP method we should use to call
      *                               announce_url
-     * @param string $waitUrl URL that hosts pre-conference hold music
+     * @param string $waitUrl The URL we call using the `wait_method` for the music
+     *                        to play while participants are waiting for the
+     *                        conference to start
      * @param string $waitMethod The HTTP method we should use to call `wait_url`
      * @param bool $beepOnExit Whether to play a notification beep to the
      *                         conference when the participant exit
@@ -138,7 +167,7 @@ class UpdateParticipantOptions extends Options {
      * @param string $callSidToCoach The SID of the participant who is being
      *                               `coached`
      */
-    public function __construct($muted = Values::NONE, $hold = Values::NONE, $holdUrl = Values::NONE, $holdMethod = Values::NONE, $announceUrl = Values::NONE, $announceMethod = Values::NONE, $waitUrl = Values::NONE, $waitMethod = Values::NONE, $beepOnExit = Values::NONE, $endConferenceOnExit = Values::NONE, $coaching = Values::NONE, $callSidToCoach = Values::NONE) {
+    public function __construct(bool $muted = Values::NONE, bool $hold = Values::NONE, string $holdUrl = Values::NONE, string $holdMethod = Values::NONE, string $announceUrl = Values::NONE, string $announceMethod = Values::NONE, string $waitUrl = Values::NONE, string $waitMethod = Values::NONE, bool $beepOnExit = Values::NONE, bool $endConferenceOnExit = Values::NONE, bool $coaching = Values::NONE, string $callSidToCoach = Values::NONE) {
         $this->options['muted'] = $muted;
         $this->options['hold'] = $hold;
         $this->options['holdUrl'] = $holdUrl;
@@ -159,7 +188,7 @@ class UpdateParticipantOptions extends Options {
      * @param bool $muted Whether the participant should be muted
      * @return $this Fluent Builder
      */
-    public function setMuted($muted) {
+    public function setMuted(bool $muted): self {
         $this->options['muted'] = $muted;
         return $this;
     }
@@ -170,19 +199,19 @@ class UpdateParticipantOptions extends Options {
      * @param bool $hold Whether the participant should be on hold
      * @return $this Fluent Builder
      */
-    public function setHold($hold) {
+    public function setHold(bool $hold): self {
         $this->options['hold'] = $hold;
         return $this;
     }
 
     /**
-     * The URL we call using the `hold_method` for  music that plays when the participant is on hold. The URL may return an MP3 file, a WAV file, or a TwiML document that contains the `<Play>`, `<Say>` or `<Redirect>` commands.
+     * The URL we call using the `hold_method` for music that plays when the participant is on hold. The URL may return an MP3 file, a WAV file, or a TwiML document that contains `<Play>`, `<Say>`, `<Pause>`, or `<Redirect>` verbs.
      *
-     * @param string $holdUrl The URL we call using the `hold_method` for  music
+     * @param string $holdUrl The URL we call using the `hold_method` for music
      *                        that plays when the participant is on hold
      * @return $this Fluent Builder
      */
-    public function setHoldUrl($holdUrl) {
+    public function setHoldUrl(string $holdUrl): self {
         $this->options['holdUrl'] = $holdUrl;
         return $this;
     }
@@ -193,19 +222,19 @@ class UpdateParticipantOptions extends Options {
      * @param string $holdMethod The HTTP method we should use to call hold_url
      * @return $this Fluent Builder
      */
-    public function setHoldMethod($holdMethod) {
+    public function setHoldMethod(string $holdMethod): self {
         $this->options['holdMethod'] = $holdMethod;
         return $this;
     }
 
     /**
-     * The URL we call using the `announce_method` for an announcement to the participant. The URL must return an MP3 file, a WAV file, or a TwiML document that contains `<Play>` or `<Say>` commands.
+     * The URL we call using the `announce_method` for an announcement to the participant. The URL may return an MP3 file, a WAV file, or a TwiML document that contains `<Play>`, `<Say>`, `<Pause>`, or `<Redirect>` verbs.
      *
      * @param string $announceUrl The URL we call using the `announce_method` for
      *                            an announcement to the participant
      * @return $this Fluent Builder
      */
-    public function setAnnounceUrl($announceUrl) {
+    public function setAnnounceUrl(string $announceUrl): self {
         $this->options['announceUrl'] = $announceUrl;
         return $this;
     }
@@ -217,18 +246,20 @@ class UpdateParticipantOptions extends Options {
      *                               announce_url
      * @return $this Fluent Builder
      */
-    public function setAnnounceMethod($announceMethod) {
+    public function setAnnounceMethod(string $announceMethod): self {
         $this->options['announceMethod'] = $announceMethod;
         return $this;
     }
 
     /**
-     * The URL we should call using the `wait_method` for the music to play while participants are waiting for the conference to start. The default value is the URL of our standard hold music. [Learn more about hold music](https://www.twilio.com/labs/twimlets/holdmusic).
+     * The URL we call using the `wait_method` for the music to play while participants are waiting for the conference to start. The URL may return an MP3 file, a WAV file, or a TwiML document that contains `<Play>`, `<Say>`, `<Pause>`, or `<Redirect>` verbs. The default value is the URL of our standard hold music. [Learn more about hold music](https://www.twilio.com/labs/twimlets/holdmusic).
      *
-     * @param string $waitUrl URL that hosts pre-conference hold music
+     * @param string $waitUrl The URL we call using the `wait_method` for the music
+     *                        to play while participants are waiting for the
+     *                        conference to start
      * @return $this Fluent Builder
      */
-    public function setWaitUrl($waitUrl) {
+    public function setWaitUrl(string $waitUrl): self {
         $this->options['waitUrl'] = $waitUrl;
         return $this;
     }
@@ -239,7 +270,7 @@ class UpdateParticipantOptions extends Options {
      * @param string $waitMethod The HTTP method we should use to call `wait_url`
      * @return $this Fluent Builder
      */
-    public function setWaitMethod($waitMethod) {
+    public function setWaitMethod(string $waitMethod): self {
         $this->options['waitMethod'] = $waitMethod;
         return $this;
     }
@@ -251,7 +282,7 @@ class UpdateParticipantOptions extends Options {
      *                         conference when the participant exit
      * @return $this Fluent Builder
      */
-    public function setBeepOnExit($beepOnExit) {
+    public function setBeepOnExit(bool $beepOnExit): self {
         $this->options['beepOnExit'] = $beepOnExit;
         return $this;
     }
@@ -263,7 +294,7 @@ class UpdateParticipantOptions extends Options {
      *                                  participant leaves
      * @return $this Fluent Builder
      */
-    public function setEndConferenceOnExit($endConferenceOnExit) {
+    public function setEndConferenceOnExit(bool $endConferenceOnExit): self {
         $this->options['endConferenceOnExit'] = $endConferenceOnExit;
         return $this;
     }
@@ -274,7 +305,7 @@ class UpdateParticipantOptions extends Options {
      * @param bool $coaching Indicates if the participant changed to coach
      * @return $this Fluent Builder
      */
-    public function setCoaching($coaching) {
+    public function setCoaching(bool $coaching): self {
         $this->options['coaching'] = $coaching;
         return $this;
     }
@@ -286,7 +317,7 @@ class UpdateParticipantOptions extends Options {
      *                               `coached`
      * @return $this Fluent Builder
      */
-    public function setCallSidToCoach($callSidToCoach) {
+    public function setCallSidToCoach(string $callSidToCoach): self {
         $this->options['callSidToCoach'] = $callSidToCoach;
         return $this;
     }
@@ -296,14 +327,9 @@ class UpdateParticipantOptions extends Options {
      *
      * @return string Machine friendly representation
      */
-    public function __toString() {
-        $options = array();
-        foreach ($this->options as $key => $value) {
-            if ($value != Values::NONE) {
-                $options[] = "$key=$value";
-            }
-        }
-        return '[Twilio.Api.V2010.UpdateParticipantOptions ' . \implode(' ', $options) . ']';
+    public function __toString(): string {
+        $options = \http_build_query(Values::of($this->options), '', ' ');
+        return '[Twilio.Api.V2010.UpdateParticipantOptions ' . $options . ']';
     }
 }
 
@@ -313,8 +339,9 @@ class CreateParticipantOptions extends Options {
      *                               information to your application
      * @param string $statusCallbackMethod The HTTP method we should use to call
      *                                     `status_callback`
-     * @param string $statusCallbackEvent Set state change events that will trigger
-     *                                    a callback
+     * @param string[] $statusCallbackEvent Set state change events that will
+     *                                      trigger a callback
+     * @param string $label The label of this participant
      * @param int $timeout he number of seconds that we should wait for an answer
      * @param bool $record Whether to record the participant and their conferences
      * @param bool $muted Whether to mute the agent
@@ -339,9 +366,10 @@ class CreateParticipantOptions extends Options {
      * @param string $conferenceStatusCallbackMethod HTTP method for requesting
      *                                               `conference_status_callback`
      *                                               URL
-     * @param string $conferenceStatusCallbackEvent The conference state changes
-     *                                              that should generate a call to
-     *                                              `conference_status_callback`
+     * @param string[] $conferenceStatusCallbackEvent The conference state changes
+     *                                                that should generate a call
+     *                                                to
+     *                                                `conference_status_callback`
      * @param string $recordingChannels Specify `mono` or `dual` recording channels
      * @param string $recordingStatusCallback The URL that we should call using the
      *                                        `recording_status_callback_method`
@@ -358,22 +386,46 @@ class CreateParticipantOptions extends Options {
      * @param string $conferenceRecordingStatusCallbackMethod The HTTP method we
      *                                                        should use to call
      *                                                        `conference_recording_status_callback`
-     * @param string $recordingStatusCallbackEvent The recording state changes that
-     *                                             should generate a call to
-     *                                             `recording_status_callback`
-     * @param string $conferenceRecordingStatusCallbackEvent The conference
-     *                                                       recording state
-     *                                                       changes that should
-     *                                                       generate a call to
-     *                                                       `conference_recording_status_callback`
+     * @param string[] $recordingStatusCallbackEvent The recording state changes
+     *                                               that should generate a call to
+     *                                               `recording_status_callback`
+     * @param string[] $conferenceRecordingStatusCallbackEvent The conference
+     *                                                         recording state
+     *                                                         changes that should
+     *                                                         generate a call to
+     *                                                         `conference_recording_status_callback`
      * @param bool $coaching Indicates if the participant changed to coach
      * @param string $callSidToCoach The SID of the participant who is being
      *                               `coached`
+     * @param string $jitterBufferSize Jitter Buffer size for the connecting
+     *                                 participant
+     * @param string $byoc BYOC trunk SID (Beta)
+     * @param string $callerId The phone number, Client identifier, or username
+     *                         portion of SIP address that made this call.
+     * @param string $callReason Reason for the call (Branded Calls Beta)
+     * @param string $recordingTrack The track(s) to record
+     * @param int $timeLimit The maximum duration of the call in seconds.
+     * @param string $machineDetection Enable machine detection or end of greeting
+     *                                 detection
+     * @param int $machineDetectionTimeout Number of seconds to wait for machine
+     *                                     detection
+     * @param int $machineDetectionSpeechThreshold Number of milliseconds for
+     *                                             measuring stick for the length
+     *                                             of the speech activity
+     * @param int $machineDetectionSpeechEndThreshold Number of milliseconds of
+     *                                                silence after speech activity
+     * @param int $machineDetectionSilenceTimeout Number of milliseconds of initial
+     *                                            silence
+     * @param string $amdStatusCallback The URL we should call to send amd status
+     *                                  information to your application
+     * @param string $amdStatusCallbackMethod HTTP Method to use with
+     *                                        amd_status_callback
      */
-    public function __construct($statusCallback = Values::NONE, $statusCallbackMethod = Values::NONE, $statusCallbackEvent = Values::NONE, $timeout = Values::NONE, $record = Values::NONE, $muted = Values::NONE, $beep = Values::NONE, $startConferenceOnEnter = Values::NONE, $endConferenceOnExit = Values::NONE, $waitUrl = Values::NONE, $waitMethod = Values::NONE, $earlyMedia = Values::NONE, $maxParticipants = Values::NONE, $conferenceRecord = Values::NONE, $conferenceTrim = Values::NONE, $conferenceStatusCallback = Values::NONE, $conferenceStatusCallbackMethod = Values::NONE, $conferenceStatusCallbackEvent = Values::NONE, $recordingChannels = Values::NONE, $recordingStatusCallback = Values::NONE, $recordingStatusCallbackMethod = Values::NONE, $sipAuthUsername = Values::NONE, $sipAuthPassword = Values::NONE, $region = Values::NONE, $conferenceRecordingStatusCallback = Values::NONE, $conferenceRecordingStatusCallbackMethod = Values::NONE, $recordingStatusCallbackEvent = Values::NONE, $conferenceRecordingStatusCallbackEvent = Values::NONE, $coaching = Values::NONE, $callSidToCoach = Values::NONE) {
+    public function __construct(string $statusCallback = Values::NONE, string $statusCallbackMethod = Values::NONE, array $statusCallbackEvent = Values::ARRAY_NONE, string $label = Values::NONE, int $timeout = Values::NONE, bool $record = Values::NONE, bool $muted = Values::NONE, string $beep = Values::NONE, bool $startConferenceOnEnter = Values::NONE, bool $endConferenceOnExit = Values::NONE, string $waitUrl = Values::NONE, string $waitMethod = Values::NONE, bool $earlyMedia = Values::NONE, int $maxParticipants = Values::NONE, string $conferenceRecord = Values::NONE, string $conferenceTrim = Values::NONE, string $conferenceStatusCallback = Values::NONE, string $conferenceStatusCallbackMethod = Values::NONE, array $conferenceStatusCallbackEvent = Values::ARRAY_NONE, string $recordingChannels = Values::NONE, string $recordingStatusCallback = Values::NONE, string $recordingStatusCallbackMethod = Values::NONE, string $sipAuthUsername = Values::NONE, string $sipAuthPassword = Values::NONE, string $region = Values::NONE, string $conferenceRecordingStatusCallback = Values::NONE, string $conferenceRecordingStatusCallbackMethod = Values::NONE, array $recordingStatusCallbackEvent = Values::ARRAY_NONE, array $conferenceRecordingStatusCallbackEvent = Values::ARRAY_NONE, bool $coaching = Values::NONE, string $callSidToCoach = Values::NONE, string $jitterBufferSize = Values::NONE, string $byoc = Values::NONE, string $callerId = Values::NONE, string $callReason = Values::NONE, string $recordingTrack = Values::NONE, int $timeLimit = Values::NONE, string $machineDetection = Values::NONE, int $machineDetectionTimeout = Values::NONE, int $machineDetectionSpeechThreshold = Values::NONE, int $machineDetectionSpeechEndThreshold = Values::NONE, int $machineDetectionSilenceTimeout = Values::NONE, string $amdStatusCallback = Values::NONE, string $amdStatusCallbackMethod = Values::NONE) {
         $this->options['statusCallback'] = $statusCallback;
         $this->options['statusCallbackMethod'] = $statusCallbackMethod;
         $this->options['statusCallbackEvent'] = $statusCallbackEvent;
+        $this->options['label'] = $label;
         $this->options['timeout'] = $timeout;
         $this->options['record'] = $record;
         $this->options['muted'] = $muted;
@@ -401,6 +453,19 @@ class CreateParticipantOptions extends Options {
         $this->options['conferenceRecordingStatusCallbackEvent'] = $conferenceRecordingStatusCallbackEvent;
         $this->options['coaching'] = $coaching;
         $this->options['callSidToCoach'] = $callSidToCoach;
+        $this->options['jitterBufferSize'] = $jitterBufferSize;
+        $this->options['byoc'] = $byoc;
+        $this->options['callerId'] = $callerId;
+        $this->options['callReason'] = $callReason;
+        $this->options['recordingTrack'] = $recordingTrack;
+        $this->options['timeLimit'] = $timeLimit;
+        $this->options['machineDetection'] = $machineDetection;
+        $this->options['machineDetectionTimeout'] = $machineDetectionTimeout;
+        $this->options['machineDetectionSpeechThreshold'] = $machineDetectionSpeechThreshold;
+        $this->options['machineDetectionSpeechEndThreshold'] = $machineDetectionSpeechEndThreshold;
+        $this->options['machineDetectionSilenceTimeout'] = $machineDetectionSilenceTimeout;
+        $this->options['amdStatusCallback'] = $amdStatusCallback;
+        $this->options['amdStatusCallbackMethod'] = $amdStatusCallbackMethod;
     }
 
     /**
@@ -410,7 +475,7 @@ class CreateParticipantOptions extends Options {
      *                               information to your application
      * @return $this Fluent Builder
      */
-    public function setStatusCallback($statusCallback) {
+    public function setStatusCallback(string $statusCallback): self {
         $this->options['statusCallback'] = $statusCallback;
         return $this;
     }
@@ -422,7 +487,7 @@ class CreateParticipantOptions extends Options {
      *                                     `status_callback`
      * @return $this Fluent Builder
      */
-    public function setStatusCallbackMethod($statusCallbackMethod) {
+    public function setStatusCallbackMethod(string $statusCallbackMethod): self {
         $this->options['statusCallbackMethod'] = $statusCallbackMethod;
         return $this;
     }
@@ -430,12 +495,23 @@ class CreateParticipantOptions extends Options {
     /**
      * The conference state changes that should generate a call to `status_callback`. Can be: `initiated`, `ringing`, `answered`, and `completed`. Separate multiple values with a space. The default value is `completed`.
      *
-     * @param string $statusCallbackEvent Set state change events that will trigger
-     *                                    a callback
+     * @param string[] $statusCallbackEvent Set state change events that will
+     *                                      trigger a callback
      * @return $this Fluent Builder
      */
-    public function setStatusCallbackEvent($statusCallbackEvent) {
+    public function setStatusCallbackEvent(array $statusCallbackEvent): self {
         $this->options['statusCallbackEvent'] = $statusCallbackEvent;
+        return $this;
+    }
+
+    /**
+     * A label for this participant. If one is supplied, it may subsequently be used to fetch, update or delete the participant.
+     *
+     * @param string $label The label of this participant
+     * @return $this Fluent Builder
+     */
+    public function setLabel(string $label): self {
+        $this->options['label'] = $label;
         return $this;
     }
 
@@ -445,7 +521,7 @@ class CreateParticipantOptions extends Options {
      * @param int $timeout he number of seconds that we should wait for an answer
      * @return $this Fluent Builder
      */
-    public function setTimeout($timeout) {
+    public function setTimeout(int $timeout): self {
         $this->options['timeout'] = $timeout;
         return $this;
     }
@@ -456,7 +532,7 @@ class CreateParticipantOptions extends Options {
      * @param bool $record Whether to record the participant and their conferences
      * @return $this Fluent Builder
      */
-    public function setRecord($record) {
+    public function setRecord(bool $record): self {
         $this->options['record'] = $record;
         return $this;
     }
@@ -467,7 +543,7 @@ class CreateParticipantOptions extends Options {
      * @param bool $muted Whether to mute the agent
      * @return $this Fluent Builder
      */
-    public function setMuted($muted) {
+    public function setMuted(bool $muted): self {
         $this->options['muted'] = $muted;
         return $this;
     }
@@ -479,7 +555,7 @@ class CreateParticipantOptions extends Options {
      *                     when the participant joins
      * @return $this Fluent Builder
      */
-    public function setBeep($beep) {
+    public function setBeep(string $beep): self {
         $this->options['beep'] = $beep;
         return $this;
     }
@@ -491,7 +567,7 @@ class CreateParticipantOptions extends Options {
      *                                     participant joins the conference
      * @return $this Fluent Builder
      */
-    public function setStartConferenceOnEnter($startConferenceOnEnter) {
+    public function setStartConferenceOnEnter(bool $startConferenceOnEnter): self {
         $this->options['startConferenceOnEnter'] = $startConferenceOnEnter;
         return $this;
     }
@@ -503,7 +579,7 @@ class CreateParticipantOptions extends Options {
      *                                  participant leaves
      * @return $this Fluent Builder
      */
-    public function setEndConferenceOnExit($endConferenceOnExit) {
+    public function setEndConferenceOnExit(bool $endConferenceOnExit): self {
         $this->options['endConferenceOnExit'] = $endConferenceOnExit;
         return $this;
     }
@@ -514,7 +590,7 @@ class CreateParticipantOptions extends Options {
      * @param string $waitUrl URL that hosts pre-conference hold music
      * @return $this Fluent Builder
      */
-    public function setWaitUrl($waitUrl) {
+    public function setWaitUrl(string $waitUrl): self {
         $this->options['waitUrl'] = $waitUrl;
         return $this;
     }
@@ -525,7 +601,7 @@ class CreateParticipantOptions extends Options {
      * @param string $waitMethod The HTTP method we should use to call `wait_url`
      * @return $this Fluent Builder
      */
-    public function setWaitMethod($waitMethod) {
+    public function setWaitMethod(string $waitMethod): self {
         $this->options['waitMethod'] = $waitMethod;
         return $this;
     }
@@ -537,7 +613,7 @@ class CreateParticipantOptions extends Options {
      *                         call
      * @return $this Fluent Builder
      */
-    public function setEarlyMedia($earlyMedia) {
+    public function setEarlyMedia(bool $earlyMedia): self {
         $this->options['earlyMedia'] = $earlyMedia;
         return $this;
     }
@@ -549,7 +625,7 @@ class CreateParticipantOptions extends Options {
      *                             participants
      * @return $this Fluent Builder
      */
-    public function setMaxParticipants($maxParticipants) {
+    public function setMaxParticipants(int $maxParticipants): self {
         $this->options['maxParticipants'] = $maxParticipants;
         return $this;
     }
@@ -561,7 +637,7 @@ class CreateParticipantOptions extends Options {
      *                                 participant is joining
      * @return $this Fluent Builder
      */
-    public function setConferenceRecord($conferenceRecord) {
+    public function setConferenceRecord(string $conferenceRecord): self {
         $this->options['conferenceRecord'] = $conferenceRecord;
         return $this;
     }
@@ -573,7 +649,7 @@ class CreateParticipantOptions extends Options {
      *                               from your recorded conference audio files
      * @return $this Fluent Builder
      */
-    public function setConferenceTrim($conferenceTrim) {
+    public function setConferenceTrim(string $conferenceTrim): self {
         $this->options['conferenceTrim'] = $conferenceTrim;
         return $this;
     }
@@ -585,7 +661,7 @@ class CreateParticipantOptions extends Options {
      *                                         events
      * @return $this Fluent Builder
      */
-    public function setConferenceStatusCallback($conferenceStatusCallback) {
+    public function setConferenceStatusCallback(string $conferenceStatusCallback): self {
         $this->options['conferenceStatusCallback'] = $conferenceStatusCallback;
         return $this;
     }
@@ -598,20 +674,21 @@ class CreateParticipantOptions extends Options {
      *                                               URL
      * @return $this Fluent Builder
      */
-    public function setConferenceStatusCallbackMethod($conferenceStatusCallbackMethod) {
+    public function setConferenceStatusCallbackMethod(string $conferenceStatusCallbackMethod): self {
         $this->options['conferenceStatusCallbackMethod'] = $conferenceStatusCallbackMethod;
         return $this;
     }
 
     /**
-     * The conference state changes that should generate a call to `conference_status_callback`. Can be: `start`, `end`, `join`, `leave`, `mute`, `hold`, and `speaker`. Separate multiple values with a space. Defaults to `start end`.
+     * The conference state changes that should generate a call to `conference_status_callback`. Can be: `start`, `end`, `join`, `leave`, `mute`, `hold`, `modify`, `speaker`, and `announcement`. Separate multiple values with a space. Defaults to `start end`.
      *
-     * @param string $conferenceStatusCallbackEvent The conference state changes
-     *                                              that should generate a call to
-     *                                              `conference_status_callback`
+     * @param string[] $conferenceStatusCallbackEvent The conference state changes
+     *                                                that should generate a call
+     *                                                to
+     *                                                `conference_status_callback`
      * @return $this Fluent Builder
      */
-    public function setConferenceStatusCallbackEvent($conferenceStatusCallbackEvent) {
+    public function setConferenceStatusCallbackEvent(array $conferenceStatusCallbackEvent): self {
         $this->options['conferenceStatusCallbackEvent'] = $conferenceStatusCallbackEvent;
         return $this;
     }
@@ -622,7 +699,7 @@ class CreateParticipantOptions extends Options {
      * @param string $recordingChannels Specify `mono` or `dual` recording channels
      * @return $this Fluent Builder
      */
-    public function setRecordingChannels($recordingChannels) {
+    public function setRecordingChannels(string $recordingChannels): self {
         $this->options['recordingChannels'] = $recordingChannels;
         return $this;
     }
@@ -635,7 +712,7 @@ class CreateParticipantOptions extends Options {
      *                                        when the recording status changes
      * @return $this Fluent Builder
      */
-    public function setRecordingStatusCallback($recordingStatusCallback) {
+    public function setRecordingStatusCallback(string $recordingStatusCallback): self {
         $this->options['recordingStatusCallback'] = $recordingStatusCallback;
         return $this;
     }
@@ -648,7 +725,7 @@ class CreateParticipantOptions extends Options {
      *                                              `recording_status_callback`
      * @return $this Fluent Builder
      */
-    public function setRecordingStatusCallbackMethod($recordingStatusCallbackMethod) {
+    public function setRecordingStatusCallbackMethod(string $recordingStatusCallbackMethod): self {
         $this->options['recordingStatusCallbackMethod'] = $recordingStatusCallbackMethod;
         return $this;
     }
@@ -659,7 +736,7 @@ class CreateParticipantOptions extends Options {
      * @param string $sipAuthUsername The SIP username used for authentication
      * @return $this Fluent Builder
      */
-    public function setSipAuthUsername($sipAuthUsername) {
+    public function setSipAuthUsername(string $sipAuthUsername): self {
         $this->options['sipAuthUsername'] = $sipAuthUsername;
         return $this;
     }
@@ -670,7 +747,7 @@ class CreateParticipantOptions extends Options {
      * @param string $sipAuthPassword The SIP password for authentication
      * @return $this Fluent Builder
      */
-    public function setSipAuthPassword($sipAuthPassword) {
+    public function setSipAuthPassword(string $sipAuthPassword): self {
         $this->options['sipAuthPassword'] = $sipAuthPassword;
         return $this;
     }
@@ -681,7 +758,7 @@ class CreateParticipantOptions extends Options {
      * @param string $region The region where we should mix the conference audio
      * @return $this Fluent Builder
      */
-    public function setRegion($region) {
+    public function setRegion(string $region): self {
         $this->options['region'] = $region;
         return $this;
     }
@@ -694,7 +771,7 @@ class CreateParticipantOptions extends Options {
      *                                                  `conference_recording_status_callback_method` when the conference recording is available
      * @return $this Fluent Builder
      */
-    public function setConferenceRecordingStatusCallback($conferenceRecordingStatusCallback) {
+    public function setConferenceRecordingStatusCallback(string $conferenceRecordingStatusCallback): self {
         $this->options['conferenceRecordingStatusCallback'] = $conferenceRecordingStatusCallback;
         return $this;
     }
@@ -707,35 +784,35 @@ class CreateParticipantOptions extends Options {
      *                                                        `conference_recording_status_callback`
      * @return $this Fluent Builder
      */
-    public function setConferenceRecordingStatusCallbackMethod($conferenceRecordingStatusCallbackMethod) {
+    public function setConferenceRecordingStatusCallbackMethod(string $conferenceRecordingStatusCallbackMethod): self {
         $this->options['conferenceRecordingStatusCallbackMethod'] = $conferenceRecordingStatusCallbackMethod;
         return $this;
     }
 
     /**
-     * The recording state changes that should generate a call to `recording_status_callback`. Can be: `in-progress`, `completed`, and `failed`. Separate multiple values with a space. The default value is `in-progress completed failed`.
+     * The recording state changes that should generate a call to `recording_status_callback`. Can be: `started`, `in-progress`, `paused`, `resumed`, `stopped`, `completed`, `failed`, and `absent`. Separate multiple values with a space, ex: `'in-progress completed failed'`.
      *
-     * @param string $recordingStatusCallbackEvent The recording state changes that
-     *                                             should generate a call to
-     *                                             `recording_status_callback`
+     * @param string[] $recordingStatusCallbackEvent The recording state changes
+     *                                               that should generate a call to
+     *                                               `recording_status_callback`
      * @return $this Fluent Builder
      */
-    public function setRecordingStatusCallbackEvent($recordingStatusCallbackEvent) {
+    public function setRecordingStatusCallbackEvent(array $recordingStatusCallbackEvent): self {
         $this->options['recordingStatusCallbackEvent'] = $recordingStatusCallbackEvent;
         return $this;
     }
 
     /**
-     * The conference recording state changes that generate a call to `conference_recording_status_callback`. Can be: `in-progress`, `completed`, and `failed`. Separate multiple values with a space. The default value is `in-progress completed failed`.
+     * The conference recording state changes that generate a call to `conference_recording_status_callback`. Can be: `in-progress`, `completed`, `failed`, and `absent`. Separate multiple values with a space, ex: `'in-progress completed failed'`
      *
-     * @param string $conferenceRecordingStatusCallbackEvent The conference
-     *                                                       recording state
-     *                                                       changes that should
-     *                                                       generate a call to
-     *                                                       `conference_recording_status_callback`
+     * @param string[] $conferenceRecordingStatusCallbackEvent The conference
+     *                                                         recording state
+     *                                                         changes that should
+     *                                                         generate a call to
+     *                                                         `conference_recording_status_callback`
      * @return $this Fluent Builder
      */
-    public function setConferenceRecordingStatusCallbackEvent($conferenceRecordingStatusCallbackEvent) {
+    public function setConferenceRecordingStatusCallbackEvent(array $conferenceRecordingStatusCallbackEvent): self {
         $this->options['conferenceRecordingStatusCallbackEvent'] = $conferenceRecordingStatusCallbackEvent;
         return $this;
     }
@@ -746,7 +823,7 @@ class CreateParticipantOptions extends Options {
      * @param bool $coaching Indicates if the participant changed to coach
      * @return $this Fluent Builder
      */
-    public function setCoaching($coaching) {
+    public function setCoaching(bool $coaching): self {
         $this->options['coaching'] = $coaching;
         return $this;
     }
@@ -758,8 +835,161 @@ class CreateParticipantOptions extends Options {
      *                               `coached`
      * @return $this Fluent Builder
      */
-    public function setCallSidToCoach($callSidToCoach) {
+    public function setCallSidToCoach(string $callSidToCoach): self {
         $this->options['callSidToCoach'] = $callSidToCoach;
+        return $this;
+    }
+
+    /**
+     * Jitter buffer size for the connecting participant. Twilio will use this setting to apply Jitter Buffer before participant's audio is mixed into the conference. Can be: `off`, `small`, `medium`, and `large`. Default to `large`.
+     *
+     * @param string $jitterBufferSize Jitter Buffer size for the connecting
+     *                                 participant
+     * @return $this Fluent Builder
+     */
+    public function setJitterBufferSize(string $jitterBufferSize): self {
+        $this->options['jitterBufferSize'] = $jitterBufferSize;
+        return $this;
+    }
+
+    /**
+     * The SID of a BYOC (Bring Your Own Carrier) trunk to route this call with. Note that `byoc` is only meaningful when `to` is a phone number; it will otherwise be ignored. (Beta)
+     *
+     * @param string $byoc BYOC trunk SID (Beta)
+     * @return $this Fluent Builder
+     */
+    public function setByoc(string $byoc): self {
+        $this->options['byoc'] = $byoc;
+        return $this;
+    }
+
+    /**
+     * The phone number, Client identifier, or username portion of SIP address that made this call. Phone numbers are in [E.164](https://www.twilio.com/docs/glossary/what-e164) format (e.g., +16175551212). Client identifiers are formatted `client:name`. If using a phone number, it must be a Twilio number or a Verified [outgoing caller id](https://www.twilio.com/docs/voice/api/outgoing-caller-ids) for your account. If the `to` parameter is a phone number, `callerId` must also be a phone number. If `to` is sip address, this value of `callerId` should be a username portion to be used to populate the From header that is passed to the SIP endpoint.
+     *
+     * @param string $callerId The phone number, Client identifier, or username
+     *                         portion of SIP address that made this call.
+     * @return $this Fluent Builder
+     */
+    public function setCallerId(string $callerId): self {
+        $this->options['callerId'] = $callerId;
+        return $this;
+    }
+
+    /**
+     * The Reason for the outgoing call. Use it to specify the purpose of the call that is presented on the called party's phone. (Branded Calls Beta)
+     *
+     * @param string $callReason Reason for the call (Branded Calls Beta)
+     * @return $this Fluent Builder
+     */
+    public function setCallReason(string $callReason): self {
+        $this->options['callReason'] = $callReason;
+        return $this;
+    }
+
+    /**
+     * The audio track to record for the call. Can be: `inbound`, `outbound` or `both`. The default is `both`. `inbound` records the audio that is received by Twilio. `outbound` records the audio that is sent from Twilio. `both` records the audio that is received and sent by Twilio.
+     *
+     * @param string $recordingTrack The track(s) to record
+     * @return $this Fluent Builder
+     */
+    public function setRecordingTrack(string $recordingTrack): self {
+        $this->options['recordingTrack'] = $recordingTrack;
+        return $this;
+    }
+
+    /**
+     * The maximum duration of the call in seconds. Constraints depend on account and configuration.
+     *
+     * @param int $timeLimit The maximum duration of the call in seconds.
+     * @return $this Fluent Builder
+     */
+    public function setTimeLimit(int $timeLimit): self {
+        $this->options['timeLimit'] = $timeLimit;
+        return $this;
+    }
+
+    /**
+     * Whether to detect if a human, answering machine, or fax has picked up the call. Can be: `Enable` or `DetectMessageEnd`. Use `Enable` if you would like us to return `AnsweredBy` as soon as the called party is identified. Use `DetectMessageEnd`, if you would like to leave a message on an answering machine. If `send_digits` is provided, this parameter is ignored. For more information, see [Answering Machine Detection](https://www.twilio.com/docs/voice/answering-machine-detection).
+     *
+     * @param string $machineDetection Enable machine detection or end of greeting
+     *                                 detection
+     * @return $this Fluent Builder
+     */
+    public function setMachineDetection(string $machineDetection): self {
+        $this->options['machineDetection'] = $machineDetection;
+        return $this;
+    }
+
+    /**
+     * The number of seconds that we should attempt to detect an answering machine before timing out and sending a voice request with `AnsweredBy` of `unknown`. The default timeout is 30 seconds.
+     *
+     * @param int $machineDetectionTimeout Number of seconds to wait for machine
+     *                                     detection
+     * @return $this Fluent Builder
+     */
+    public function setMachineDetectionTimeout(int $machineDetectionTimeout): self {
+        $this->options['machineDetectionTimeout'] = $machineDetectionTimeout;
+        return $this;
+    }
+
+    /**
+     * The number of milliseconds that is used as the measuring stick for the length of the speech activity, where durations lower than this value will be interpreted as a human and longer than this value as a machine. Possible Values: 1000-6000. Default: 2400.
+     *
+     * @param int $machineDetectionSpeechThreshold Number of milliseconds for
+     *                                             measuring stick for the length
+     *                                             of the speech activity
+     * @return $this Fluent Builder
+     */
+    public function setMachineDetectionSpeechThreshold(int $machineDetectionSpeechThreshold): self {
+        $this->options['machineDetectionSpeechThreshold'] = $machineDetectionSpeechThreshold;
+        return $this;
+    }
+
+    /**
+     * The number of milliseconds of silence after speech activity at which point the speech activity is considered complete. Possible Values: 500-5000. Default: 1200.
+     *
+     * @param int $machineDetectionSpeechEndThreshold Number of milliseconds of
+     *                                                silence after speech activity
+     * @return $this Fluent Builder
+     */
+    public function setMachineDetectionSpeechEndThreshold(int $machineDetectionSpeechEndThreshold): self {
+        $this->options['machineDetectionSpeechEndThreshold'] = $machineDetectionSpeechEndThreshold;
+        return $this;
+    }
+
+    /**
+     * The number of milliseconds of initial silence after which an `unknown` AnsweredBy result will be returned. Possible Values: 2000-10000. Default: 5000.
+     *
+     * @param int $machineDetectionSilenceTimeout Number of milliseconds of initial
+     *                                            silence
+     * @return $this Fluent Builder
+     */
+    public function setMachineDetectionSilenceTimeout(int $machineDetectionSilenceTimeout): self {
+        $this->options['machineDetectionSilenceTimeout'] = $machineDetectionSilenceTimeout;
+        return $this;
+    }
+
+    /**
+     * The URL that we should call using the `amd_status_callback_method` to notify customer application whether the call was answered by human, machine or fax.
+     *
+     * @param string $amdStatusCallback The URL we should call to send amd status
+     *                                  information to your application
+     * @return $this Fluent Builder
+     */
+    public function setAmdStatusCallback(string $amdStatusCallback): self {
+        $this->options['amdStatusCallback'] = $amdStatusCallback;
+        return $this;
+    }
+
+    /**
+     * The HTTP method we should use when calling the `amd_status_callback` URL. Can be: `GET` or `POST` and the default is `POST`.
+     *
+     * @param string $amdStatusCallbackMethod HTTP Method to use with
+     *                                        amd_status_callback
+     * @return $this Fluent Builder
+     */
+    public function setAmdStatusCallbackMethod(string $amdStatusCallbackMethod): self {
+        $this->options['amdStatusCallbackMethod'] = $amdStatusCallbackMethod;
         return $this;
     }
 
@@ -768,14 +998,9 @@ class CreateParticipantOptions extends Options {
      *
      * @return string Machine friendly representation
      */
-    public function __toString() {
-        $options = array();
-        foreach ($this->options as $key => $value) {
-            if ($value != Values::NONE) {
-                $options[] = "$key=$value";
-            }
-        }
-        return '[Twilio.Api.V2010.CreateParticipantOptions ' . \implode(' ', $options) . ']';
+    public function __toString(): string {
+        $options = \http_build_query(Values::of($this->options), '', ' ');
+        return '[Twilio.Api.V2010.CreateParticipantOptions ' . $options . ']';
     }
 }
 
@@ -786,7 +1011,7 @@ class ReadParticipantOptions extends Options {
      * @param bool $coaching Whether to return only participants who are coaching
      *                       another call
      */
-    public function __construct($muted = Values::NONE, $hold = Values::NONE, $coaching = Values::NONE) {
+    public function __construct(bool $muted = Values::NONE, bool $hold = Values::NONE, bool $coaching = Values::NONE) {
         $this->options['muted'] = $muted;
         $this->options['hold'] = $hold;
         $this->options['coaching'] = $coaching;
@@ -798,7 +1023,7 @@ class ReadParticipantOptions extends Options {
      * @param bool $muted Whether to return only participants that are muted
      * @return $this Fluent Builder
      */
-    public function setMuted($muted) {
+    public function setMuted(bool $muted): self {
         $this->options['muted'] = $muted;
         return $this;
     }
@@ -809,7 +1034,7 @@ class ReadParticipantOptions extends Options {
      * @param bool $hold Whether to return only participants that are on hold
      * @return $this Fluent Builder
      */
-    public function setHold($hold) {
+    public function setHold(bool $hold): self {
         $this->options['hold'] = $hold;
         return $this;
     }
@@ -821,7 +1046,7 @@ class ReadParticipantOptions extends Options {
      *                       another call
      * @return $this Fluent Builder
      */
-    public function setCoaching($coaching) {
+    public function setCoaching(bool $coaching): self {
         $this->options['coaching'] = $coaching;
         return $this;
     }
@@ -831,13 +1056,8 @@ class ReadParticipantOptions extends Options {
      *
      * @return string Machine friendly representation
      */
-    public function __toString() {
-        $options = array();
-        foreach ($this->options as $key => $value) {
-            if ($value != Values::NONE) {
-                $options[] = "$key=$value";
-            }
-        }
-        return '[Twilio.Api.V2010.ReadParticipantOptions ' . \implode(' ', $options) . ']';
+    public function __toString(): string {
+        $options = \http_build_query(Values::of($this->options), '', ' ');
+        return '[Twilio.Api.V2010.ReadParticipantOptions ' . $options . ']';
     }
 }

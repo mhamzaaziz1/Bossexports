@@ -1,5 +1,6 @@
 <?php
 
+$lang['num_word_0']        = 'Zero';
 $lang['num_word_1']        = 'Jeden';
 $lang['num_word_2']        = 'Dwa';
 $lang['num_word_3']        = 'Trzy';
@@ -31,7 +32,7 @@ $lang['num_word_28']       = 'Dwadzieścia osiem';
 $lang['num_word_29']       = 'Dwadzieścia dziewięć';
 $lang['num_word_30']       = 'Trzydzieści';
 $lang['num_word_31']       = 'Trzydzieści jeden';
-$lang['num_word_32']       = 'Trzydziestu dwa';
+$lang['num_word_32']       = 'Trzydzieści dwa';
 $lang['num_word_33']       = 'Trzydzieści trzy';
 $lang['num_word_34']       = 'Trzydzieści cztery';
 $lang['num_word_35']       = 'Trzydzieści pięć';

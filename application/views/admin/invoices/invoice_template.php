@@ -70,6 +70,47 @@
                   <a href="#" class="edit_shipping_billing_info" data-toggle="modal" data-target="#billing_and_shipping_details"><i class="fa fa-pencil-square-o"></i></a>
                   <?php include_once(APPPATH .'views/admin/invoices/billing_and_shipping_template.php'); ?>
                </div>
+               <?php
+               // Warehouse selector (for Warehouse module integration)
+               if (is_dir(APPPATH.'..'.DIRECTORY_SEPARATOR.'modules'.DIRECTORY_SEPARATOR.'warehouse')) {
+                   $CI =& get_instance();
+                   $CI->load->model('warehouse/warehouse_model');
+                   $warehouses = $CI->warehouse_model->get_warehouse();
+                   // Determine preselected warehouse: from existing invoice custom field if available
+                   $selected_warehouse_id = '';
+                   if (isset($invoice)) {
+                       // Try to get custom field value named 'warehouse'
+                       $CI->db->select('value');
+                       $CI->db->from(db_prefix().'customfieldsvalues');
+                       $CI->db->join(db_prefix().'customfields', db_prefix().'customfieldsvalues.fieldid = '.db_prefix().'customfields.id', 'left');
+                       $CI->db->where(db_prefix().'customfieldsvalues.relid', $invoice->id);
+                       $CI->db->where(db_prefix().'customfieldsvalues.fieldto', 'invoice');
+                       $CI->db->where(db_prefix().'customfields.name', 'warehouse');
+                       $cfrow = $CI->db->get()->row();
+                       if ($cfrow && is_numeric($cfrow->value)) {
+                           $selected_warehouse_id = $cfrow->value;
+                       }
+                   }
+                   echo '<div class="col-md-6">';
+                   echo '  <div class="form-group select-placeholder">';
+                   echo '    <label for="warehouse_id" class="control-label">'. _l('warehouse_name') .'</label>';
+                   echo '    <select id="warehouse_id" name="custom_fields[invoice][warehouse]" data-live-search="true" data-width="100%" class="selectpicker" data-none-selected-text="'. _l('dropdown_non_selected_tex') .'">';
+                   echo '      <option value="">'. _l('dropdown_non_selected_tex') .'</option>';
+                   if (!empty($warehouses)) {
+                       foreach ($warehouses as $wh) {
+                           $wh_id = isset($wh['warehouse_id']) ? $wh['warehouse_id'] : (isset($wh->warehouse_id) ? $wh->warehouse_id : '');
+                           $wh_name = isset($wh['warehouse_name']) ? $wh['warehouse_name'] : (isset($wh->warehouse_name) ? $wh->warehouse_name : '');
+                           $selected = ($selected_warehouse_id !== '' && (string)$selected_warehouse_id === (string)$wh_id) ? ' selected' : '';
+                           echo '<option value="'.html_entity_decode($wh_id).'"'.$selected.'>'.html_entity_decode($wh_name).'</option>';
+                       }
+                   }
+                   echo '    </select>';
+                   // Also send plain warehouse_id for potential consumers
+                   echo '    <input type="hidden" name="warehouse_id" value="'.htmlentities($selected_warehouse_id, ENT_QUOTES, 'UTF-8').'" />';
+                   echo '  </div>';
+                   echo '</div>';
+               }
+               ?>
                <div class="col-md-6">
                   <p class="bold"><?php echo _l('invoice_bill_to'); ?></p>
                   <address>
@@ -697,26 +738,28 @@
                   </td>
                   <td class="adjustment" hidden></td>
                </tr>
-               <tr>
-               <td>
-                  <div class="row">
-                     <div class="col-md-12 ">
-                        <span class="bold"><?php echo _l('Shipping Expense (will not effect Total)'); ?></span>
-                     </div>
-                  </div>
-               </td>
-               <td> <input type="number"  value="0" class="form-control pull-left" name="ship_expense"></td>
-            </tr>
-            <tr>
-               <td>
-                  <div class="row">
-                     <div class="col-md-12">
-                        <span class="bold"><?php echo _l('Other Expenses (will not effect Total)'); ?></span>
-                     </div>
-                  </div>
-               </td>
-               <td> <input type="number"  value="0" class="form-control pull-left" name="other_expense"> </td>
-            </tr>
+                <?php if (get_option('show_shipping_on_sales') == 1) { ?>
+                <tr>
+                <td>
+                   <div class="row">
+                      <div class="col-md-12 ">
+                         <span class="bold"><?php echo _l('Shipping Expense (will not effect Total)'); ?></span>
+                      </div>
+                   </div>
+                </td>
+                <td> <input type="number"  value="0" class="form-control pull-left" name="ship_expense"></td>
+             </tr>
+             <tr>
+                <td>
+                   <div class="row">
+                      <div class="col-md-12">
+                         <span class="bold"><?php echo _l('Other Expenses (will not effect Total)'); ?></span>
+                      </div>
+                   </div>
+                </td>
+                <td> <input type="number"  value="0" class="form-control pull-left" name="other_expense"> </td>
+             </tr>
+             <?php } ?>
                <tr>
                   <td><span class="bold"><?php echo _l('invoice_total'); ?> :</span>
                   </td>

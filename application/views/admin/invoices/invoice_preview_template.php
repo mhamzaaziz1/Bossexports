@@ -108,7 +108,7 @@
                   if(is_invoice_overdue($invoice)){
                        echo '<p class="text-danger mtop15 no-mbot">'._l('invoice_is_overdue', get_total_days_overdue($invoice->duedate)).'</p>';
                      }
-               ?>
+                  ?>
             </div>
             <div class="col-md-9 _buttons">
                <div class="visible-xs">
@@ -128,8 +128,8 @@
                   <div class="btn-group">
                      <a href="#" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="fa fa-file-pdf-o"></i><?php if(is_mobile()){echo ' PDF';} ?> <span class="caret"></span></a>
                      <ul class="dropdown-menu dropdown-menu-right">
-                         <li class="hidden-xs"><a href="<?php echo admin_url('invoices/pdf/'.$invoice->id.'?output_view=F&output_type=I'); ?>"><?php echo _l('View Full'); ?></a></li>
-                         <li class="hidden-xs"><a href="<?php echo admin_url('invoices/pdf/'.$invoice->id.'?output_view=F&output_type=I&n=1'); ?>"><?php echo _l('View Full with W&V'); ?></a></li>
+                        <li class="hidden-xs"><a href="<?php echo admin_url('invoices/pdf/'.$invoice->id.'?output_view=F&output_type=I'); ?>"><?php echo _l('View Full'); ?></a></li>
+                        <li class="hidden-xs"><a href="<?php echo admin_url('invoices/pdf/'.$invoice->id.'?output_view=F&output_type=I&n=1'); ?>"><?php echo _l('View Full with W&V'); ?></a></li>
                         <li class="hidden-xs"><a href="<?php echo admin_url('invoices/pdf/'.$invoice->id.'?output_type=I'); ?>"><?php echo _l('view_pdf'); ?></a></li>
                         <li class="hidden-xs"><a href="<?php echo admin_url('invoices/pdf/'.$invoice->id.'?output_type=I'); ?>" target="_blank"><?php echo _l('view_pdf_in_new_window'); ?></a></li>
                         <li><a href="<?php echo admin_url('invoices/pdf/'.$invoice->id); ?>"><?php echo _l('download'); ?></a></li>
@@ -145,7 +145,6 @@
                   <a href="#" class="invoice-send-to-client btn-with-tooltip btn btn-default<?php if($invoice->status == Invoices_model::STATUS_CANCELLED){echo ' disabled';} ?>" data-toggle="tooltip" title="<?php echo $_tooltip; ?>" data-placement="bottom"><span data-toggle="tooltip" data-title="<?php echo $_tooltip_already_send; ?>"><i class="fa fa-envelope"></i></span></a>
                   </span>
                   <?php } ?>
-                  <!-- Single button -->
                   <div class="btn-group">
                      <button type="button" class="btn btn-default pull-left dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                      <?php echo _l('more'); ?> <span class="caret"></span>
@@ -155,9 +154,9 @@
                         <li>
                            <?php hooks()->do_action('after_invoice_view_as_client_link', $invoice); ?>
                            <?php if(is_invoice_overdue($invoice) && is_invoices_overdue_reminders_enabled()){ ?>
-                              <a href="<?php echo admin_url('invoices/send_overdue_notice/'.$invoice->id); ?>">
-                                 <?php echo _l('send_overdue_notice_tooltip'); ?>
-                              </a>
+                           <a href="<?php echo admin_url('invoices/send_overdue_notice/'.$invoice->id); ?>">
+                           <?php echo _l('send_overdue_notice_tooltip'); ?>
+                           </a>
                            <?php } ?>
                         </li>
                         <li>
@@ -178,9 +177,9 @@
                            <a href="<?php echo admin_url('invoices/unmark_as_cancelled/'.$invoice->id); ?>"><?php echo _l('invoice_unmark_as',_l('invoice_status_cancelled')); ?></a>
                            <?php } ?>
                            <?php if ($invoice->status != Invoices_model::STATUS_CANCELLED
-                                && $invoice->status != Invoices_model::STATUS_PAID ) { ?>
-                                  <a href="<?php echo admin_url('invoices/mark_as_paid/' . $invoice->id); ?>"><?php echo _l('invoice_mark_as', _l('invoice_status_paid')); ?></a>
-                                  <?php } ?>
+                              && $invoice->status != Invoices_model::STATUS_PAID ) { ?>
+                           <a href="<?php echo admin_url('invoices/mark_as_paid/' . $invoice->id); ?>"><?php echo _l('invoice_mark_as', _l('invoice_status_paid')); ?></a>
+                           <?php } ?>
                         </li>
                         <?php } ?>
                         <?php if(!in_array($invoice->status, array(Invoices_model::STATUS_PAID, Invoices_model::STATUS_CANCELLED, Invoices_model::STATUS_DRAFT))
@@ -208,7 +207,7 @@
                   </div>
                   <?php if(has_permission('payments','','create') && abs($invoice->total) > 0){ ?>
                   <a href="#" onclick="record_payment(<?php echo $invoice->id; ?>); return false;"  class="mleft10 pull-right btn btn-success<?php if($invoice->status == Invoices_model::STATUS_PAID || $invoice->status == Invoices_model::STATUS_CANCELLED){echo ' disabled';} ?>">
-                     <i class="fa fa-plus-square"></i> <?php echo _l('payment'); ?></a>
+                  <i class="fa fa-plus-square"></i> <?php echo _l('payment'); ?></a>
                   <?php } ?>
                </div>
             </div>
@@ -222,7 +221,328 @@
                   Recurring invoice with status Cancelled <b>is still ongoing recurring invoice</b>. If you want to stop this recurring invoice you should update the invoice recurring field to <b>No</b>.
                </div>
                <?php } ?>
-               <?php $this->load->view('admin/invoices/invoice_preview_html'); ?>
+
+               <?php
+                  $CI =& get_instance();
+                  $linked_proposal = null;
+                  $linked_estimate = null;
+
+                  // 1. Fetch Linked Estimate
+                  $CI->db->where('invoiceid', $invoice->id);
+                  $estimate_short = $CI->db->get(db_prefix().'estimates')->row();
+                  
+                  if($estimate_short){
+                     $CI->load->model('estimates_model');
+                     $linked_estimate = $CI->estimates_model->get($estimate_short->id);
+                  }
+
+                  // 2. Fetch Linked Proposal
+                  if($linked_estimate){
+                      $CI->db->where('estimate_id', $linked_estimate->id);
+                      $proposal_short = $CI->db->get(db_prefix().'proposals')->row();
+                      if($proposal_short){
+                         $CI->load->model('proposals_model');
+                         $linked_proposal = $CI->proposals_model->get($proposal_short->id);
+                      }
+                  } else {
+                      // Check for direct conversion from proposal to invoice
+                      $CI->db->where('invoice_id', $invoice->id);
+                      $proposal_short = $CI->db->get(db_prefix().'proposals')->row();
+                      if($proposal_short){
+                         $CI->load->model('proposals_model');
+                         $linked_proposal = $CI->proposals_model->get($proposal_short->id);
+                      }
+                  }
+
+                  // Helper Functions
+                  if (!function_exists('get_recon_status_numeric')) {
+                      function get_recon_status_numeric($val1, $val2) {
+                          if (abs($val1 - $val2) < 0.01) {
+                              return '<i class="fa fa-check-circle text-success" data-toggle="tooltip" title="Match"></i>';
+                          } else {
+                              return '<i class="fa fa-times-circle text-danger" data-toggle="tooltip" title="Mismatch"></i>';
+                          }
+                      }
+                  }
+                  if (!function_exists('get_recon_status_strict')) {
+                      function get_recon_status_strict($val1, $val2) {
+                          if ($val1 == $val2) {
+                              return '<i class="fa fa-check-circle text-success" data-toggle="tooltip" title="Match"></i>';
+                          } else {
+                              return '<i class="fa fa-times-circle text-danger" data-toggle="tooltip" title="Mismatch"></i>';
+                          }
+                      }
+                  }
+               ?>
+
+               <div class="row">
+                  <div class="col-md-12">
+                     <div class="panel-group mtop15" id="invoice_accordion" role="tablist" aria-multiselectable="true">
+
+                        <div class="panel panel-default">
+                           <div class="panel-heading" role="tab" id="headingInvoiceDetail" style="background-color: #f9f9f9;">
+                              <h4 class="panel-title">
+                                 <a role="button" data-toggle="collapse" data-parent="#invoice_accordion" href="#collapseInvoiceDetail" aria-expanded="true" aria-controls="collapseInvoiceDetail" class="bold">
+                                 <i class="fa fa-file-text-o"></i> <?php echo _l('invoice_items'); ?>
+                                 </a>
+                              </h4>
+                           </div>
+                           <div id="collapseInvoiceDetail" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="headingInvoiceDetail">
+                              <div class="panel-body">
+                                 <?php $this->load->view('admin/invoices/invoice_preview_html'); ?>
+                              </div>
+                           </div>
+                        </div>
+
+                        <?php if($linked_proposal) { ?>
+                           <div class="panel panel-default">
+                              <div class="panel-heading" role="tab" id="headingProposal" style="background-color: #f9f9f9;">
+                                 <h4 class="panel-title">
+                                    <a class="collapsed bold" role="button" data-toggle="collapse" data-parent="#invoice_accordion" href="#collapseProposal" aria-expanded="false" aria-controls="collapseProposal">
+                                    <i class="fa fa-file-powerpoint-o"></i> Linked Proposal: <?php echo format_proposal_number($linked_proposal->id); ?> 
+                                    <?php echo format_proposal_status($linked_proposal->status,'',true); ?>
+                                    </a>
+                                    <a href="<?php echo admin_url('proposals/list_proposals/'.$linked_proposal->id); ?>" target="_blank" class="pull-right btn btn-info btn-xs" data-toggle="tooltip" title="Go to Proposal">
+                                    <i class="fa fa-arrow-right"></i>
+                                    </a>
+                                 </h4>
+                              </div>
+                              <div id="collapseProposal" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingProposal">
+                                 <div class="panel-body">
+                                    <div class="row">
+                                       <div class="col-md-6">
+                                          <p><b>Date:</b> <?php echo _d($linked_proposal->date); ?></p>
+                                          <p><b>Open Till:</b> <?php echo _d($linked_proposal->open_till); ?></p>
+                                       </div>
+                                       <div class="col-md-6 text-right">
+                                          <p><b>Total:</b> <?php echo app_format_money($linked_proposal->total, $linked_proposal->currency_name); ?></p>
+                                       </div>
+                                       <div class="col-md-12 mtop15">
+                                          <div class="table-responsive">
+                                             <table class="table items items-preview proposal-items-preview">
+                                                <thead>
+                                                   <tr>
+                                                      <th align="left">Item</th>
+                                                      <th align="right">Qty</th>
+                                                      <th align="right">Rate</th>
+                                                      <th align="right">Amount</th>
+                                                   </tr>
+                                                </thead>
+                                                <tbody>
+                                                   <?php foreach($linked_proposal->items as $item) { ?>
+                                                   <tr>
+                                                      <td><?php echo $item['description']; ?></td>
+                                                      <td align="right"><?php echo $item['qty']; ?></td>
+                                                      <td align="right"><?php echo app_format_money($item['rate'], $linked_proposal->currency_name); ?></td>
+                                                      <td align="right"><?php echo app_format_money($item['qty'] * $item['rate'], $linked_proposal->currency_name); ?></td>
+                                                   </tr>
+                                                   <?php } ?>
+                                                </tbody>
+                                             </table>
+                                          </div>
+                                       </div>
+                                    </div>
+                                 </div>
+                              </div>
+                           </div>
+                        <?php } ?>
+
+                        <?php if($linked_estimate) { ?>
+                           <div class="panel panel-default">
+                              <div class="panel-heading" role="tab" id="headingEstimate" style="background-color: #f9f9f9;">
+                                 <h4 class="panel-title">
+                                    <a class="collapsed bold" role="button" data-toggle="collapse" data-parent="#invoice_accordion" href="#collapseEstimate" aria-expanded="false" aria-controls="collapseEstimate">
+                                    <i class="fa fa-calculator"></i> Linked Estimate: <?php echo format_estimate_number($linked_estimate->id); ?> 
+                                    <?php echo format_estimate_status($linked_estimate->status,'',true); ?>
+                                    </a>
+                                    <a href="<?php echo admin_url('estimates/list_estimates/'.$linked_estimate->id); ?>" target="_blank" class="pull-right btn btn-info btn-xs" data-toggle="tooltip" title="Go to Estimate">
+                                    <i class="fa fa-arrow-right"></i>
+                                    </a>
+                                 </h4>
+                              </div>
+                              <div id="collapseEstimate" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingEstimate">
+                                 <div class="panel-body">
+                                    <div class="row">
+                                       <div class="col-md-6">
+                                          <p><b>Date:</b> <?php echo _d($linked_estimate->date); ?></p>
+                                          <p><b>Expiry:</b> <?php echo _d($linked_estimate->expirydate); ?></p>
+                                       </div>
+                                       <div class="col-md-6 text-right">
+                                          <p><b>Total:</b> <?php echo app_format_money($linked_estimate->total, $linked_estimate->currency_name); ?></p>
+                                       </div>
+                                       <div class="col-md-12 mtop15">
+                                          <div class="table-responsive">
+                                             <table class="table items items-preview estimate-items-preview">
+                                                <thead>
+                                                   <tr>
+                                                      <th align="left">Item</th>
+                                                      <th align="right">Qty</th>
+                                                      <th align="right">Rate</th>
+                                                      <th align="right">Amount</th>
+                                                   </tr>
+                                                </thead>
+                                                <tbody>
+                                                   <?php foreach($linked_estimate->items as $item) { ?>
+                                                   <tr>
+                                                      <td><?php echo $item['description']; ?></td>
+                                                      <td align="right"><?php echo $item['qty']; ?></td>
+                                                      <td align="right"><?php echo app_format_money($item['rate'], $linked_estimate->currency_name); ?></td>
+                                                      <td align="right"><?php echo app_format_money($item['qty'] * $item['rate'], $linked_estimate->currency_name); ?></td>
+                                                   </tr>
+                                                   <?php } ?>
+                                                </tbody>
+                                             </table>
+                                          </div>
+                                       </div>
+                                    </div>
+                                 </div>
+                              </div>
+                           </div>
+                        <?php } ?>
+
+                        <div class="panel panel-default">
+                           <div class="panel-heading" role="tab" id="headingReconciliation" style="background-color: #f9f9f9;">
+                              <h4 class="panel-title">
+                                 <a class="collapsed bold" role="button" data-toggle="collapse" data-parent="#invoice_accordion" href="#collapseReconciliation" aria-expanded="false" aria-controls="collapseReconciliation">
+                                 <i class="fa fa-balance-scale"></i> Invoice Reconciliation
+                                 </a>
+                              </h4>
+                           </div>
+                           <div id="collapseReconciliation" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingReconciliation">
+                              <div class="panel-body">
+                                 <?php if(!$linked_proposal && !$linked_estimate) { ?>
+                                    <p class="text-muted">No linked Proposal or Estimate found for reconciliation.</p>
+                                 <?php } else { ?>
+                                    <div class="table-responsive">
+                                       <table class="table table-bordered table-striped">
+                                          <thead>
+                                             <tr>
+                                                <th>Metric</th>
+                                                <?php if($linked_proposal){ ?> <th>Proposal Data</th> <?php } ?>
+                                                <?php if($linked_estimate){ ?> <th>Estimate Data</th> <?php } ?>
+                                                <th>Invoice Data (Current)</th>
+                                             </tr>
+                                          </thead>
+                                          <tbody>
+                                             <tr>
+                                                <td class="bold">Customer ID</td>
+                                                <?php if($linked_proposal){ ?> 
+                                                   <td>
+                                                      <?php 
+                                                         $p_client = ($linked_proposal->rel_type == 'customer') ? $linked_proposal->rel_id : 'Lead: '.$linked_proposal->rel_id;
+                                                         echo $p_client; 
+                                                      ?>
+                                                   </td> 
+                                                <?php } ?>
+                                                <?php if($linked_estimate){ ?> 
+                                                   <td>
+                                                      <?php echo $linked_estimate->clientid; ?>
+                                                      <?php if($linked_proposal) { ?>
+                                                         <span class="pull-right">
+                                                            <?php echo get_recon_status_strict($linked_estimate->clientid, $p_client); ?>
+                                                         </span>
+                                                      <?php } ?>
+                                                   </td> 
+                                                <?php } ?>
+                                                <td>
+                                                   <?php echo $invoice->clientid; ?>
+                                                   <?php 
+                                                      $target_comp = $linked_estimate ? $linked_estimate->clientid : ($linked_proposal ? $p_client : $invoice->clientid);
+                                                   ?>
+                                                   <span class="pull-right">
+                                                      <?php echo get_recon_status_strict($invoice->clientid, $target_comp); ?>
+                                                   </span>
+                                                </td>
+                                             </tr>
+
+                                             <tr>
+                                                <td class="bold">Item Count</td>
+                                                <?php if($linked_proposal){ ?> 
+                                                   <td><?php echo count($linked_proposal->items); ?> Items</td> 
+                                                <?php } ?>
+                                                <?php if($linked_estimate){ ?> 
+                                                   <td>
+                                                      <?php echo count($linked_estimate->items); ?> Items
+                                                      <?php if($linked_proposal) { ?>
+                                                         <span class="pull-right">
+                                                            <?php echo get_recon_status_strict(count($linked_estimate->items), count($linked_proposal->items)); ?>
+                                                         </span>
+                                                      <?php } ?>
+                                                   </td> 
+                                                <?php } ?>
+                                                <td>
+                                                   <?php echo count($invoice->items); ?> Items
+                                                   <?php 
+                                                      $target_count = $linked_estimate ? count($linked_estimate->items) : ($linked_proposal ? count($linked_proposal->items) : count($invoice->items));
+                                                   ?>
+                                                   <span class="pull-right">
+                                                      <?php echo get_recon_status_strict(count($invoice->items), $target_count); ?>
+                                                   </span>
+                                                </td>
+                                             </tr>
+
+                                             <tr>
+                                                <td class="bold">Subtotal</td>
+                                                <?php if($linked_proposal){ ?> 
+                                                   <td><?php echo app_format_money($linked_proposal->subtotal, $linked_proposal->currency_name); ?></td> 
+                                                <?php } ?>
+                                                <?php if($linked_estimate){ ?> 
+                                                   <td>
+                                                      <?php echo app_format_money($linked_estimate->subtotal, $linked_estimate->currency_name); ?>
+                                                      <?php if($linked_proposal) { ?>
+                                                         <span class="pull-right">
+                                                            <?php echo get_recon_status_numeric($linked_estimate->subtotal, $linked_proposal->subtotal); ?>
+                                                         </span>
+                                                      <?php } ?>
+                                                   </td> 
+                                                <?php } ?>
+                                                <td>
+                                                   <?php echo app_format_money($invoice->subtotal, $invoice->currency_name); ?>
+                                                   <?php 
+                                                      $target_sub = $linked_estimate ? $linked_estimate->subtotal : ($linked_proposal ? $linked_proposal->subtotal : $invoice->subtotal);
+                                                   ?>
+                                                   <span class="pull-right">
+                                                      <?php echo get_recon_status_numeric($invoice->subtotal, $target_sub); ?>
+                                                   </span>
+                                                </td>
+                                             </tr>
+
+                                             <tr>
+                                                <td class="bold">Grand Total</td>
+                                                <?php if($linked_proposal){ ?> 
+                                                   <td><?php echo app_format_money($linked_proposal->total, $linked_proposal->currency_name); ?></td> 
+                                                <?php } ?>
+                                                <?php if($linked_estimate){ ?> 
+                                                   <td>
+                                                      <?php echo app_format_money($linked_estimate->total, $linked_estimate->currency_name); ?>
+                                                      <?php if($linked_proposal) { ?>
+                                                         <span class="pull-right">
+                                                            <?php echo get_recon_status_numeric($linked_estimate->total, $linked_proposal->total); ?>
+                                                         </span>
+                                                      <?php } ?>
+                                                   </td> 
+                                                <?php } ?>
+                                                <td>
+                                                   <?php echo app_format_money($invoice->total, $invoice->currency_name); ?>
+                                                   <?php 
+                                                      $target_tot = $linked_estimate ? $linked_estimate->total : ($linked_proposal ? $linked_proposal->total : $invoice->total);
+                                                   ?>
+                                                   <span class="pull-right">
+                                                      <?php echo get_recon_status_numeric($invoice->total, $target_tot); ?>
+                                                   </span>
+                                                </td>
+                                             </tr>
+
+                                          </tbody>
+                                       </table>
+                                    </div>
+                                 <?php } ?>
+                              </div>
+                           </div>
+                        </div>
+                     </div>
+                  </div>
+               </div>
             </div>
             <?php if(count($invoice->payments) > 0) { ?>
             <div class="tab-pane" role="tabpanel" id="invoice_payments_received">
@@ -349,7 +669,7 @@
                                  }
                                  $_formatted_activity = _l($activity['description'],$additional_data);
                                  if($_custom_data !== false){
-                                  $_formatted_activity .= ' - ' .$_custom_data;
+                                 $_formatted_activity .= ' - ' .$_custom_data;
                                  }
                                  if(!empty($activity['full_name'])){
                                  $_formatted_activity = $activity['full_name'] . ' - ' . $_formatted_activity;

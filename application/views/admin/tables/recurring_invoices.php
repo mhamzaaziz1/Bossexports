@@ -2,21 +2,23 @@
 
 defined('BASEPATH') or exit('No direct script access allowed');
 
-$project_id = $this->ci->input->post('project_id');
-
 $aColumns = [
-    'number as number1',
-    'concat(number,"-",tblitemable.item_order) as number',
-    'date',
-    'tblitemable.qty*tblitemable.rate as total',
-    'total_tax',
+    'number',
+    'total',
     'YEAR(date) as year',
     get_sql_select_client_company(),
-    db_prefix() . 'projects.name as project_name',
-    '(SELECT GROUP_CONCAT(name SEPARATOR ",") FROM ' . db_prefix() . 'taggables JOIN ' . db_prefix() . 'tags ON ' . db_prefix() . 'taggables.tag_id = ' . db_prefix() . 'tags.id WHERE rel_id = ' . db_prefix() . 'invoices.id and rel_type="invoice") as tags',
-    'duedate',
-    db_prefix() . 'invoices.status',
-    ];
+    'recurring', // Frequncy
+    'CASE WHEN cycles != 0 THEN cycles - total_cycles ELSE null end as cycles_remaining', // Cycles Passed
+    '(SELECT date FROM ' . db_prefix() . 'invoices t WHERE is_recurring_from=' . db_prefix() . 'invoices.id ORDER BY id DESC LIMIT 1) as last_date', // Last Date
+    // Used only for filtering, in most case php and mysql timezone won't be the same and this may lead to incorect showing dates
+    // However, the correct date will be calculated with php when the row is added into the table, see below
+    'CASE WHEN (cycles > 0 AND cycles = total_cycles) THEN NULL
+        WHEN CASE WHEN custom_recurring = 0 THEN \'month\' ELSE recurring_type END = "month" THEN DATE_ADD(CASE WHEN last_recurring_date THEN last_recurring_date ELSE date END, INTERVAL CAST(recurring AS UNSIGNED) MONTH)
+        WHEN CASE WHEN custom_recurring = 0 THEN \'month\' ELSE recurring_type END = "day" THEN DATE_ADD(CASE WHEN last_recurring_date THEN last_recurring_date ELSE date END, INTERVAL CAST(recurring AS UNSIGNED) DAY)
+        WHEN CASE WHEN custom_recurring = 0 THEN \'month\' ELSE recurring_type END = "week" THEN DATE_ADD(CASE WHEN last_recurring_date THEN last_recurring_date ELSE date END, INTERVAL CAST(recurring AS UNSIGNED) WEEK)
+        WHEN CASE WHEN custom_recurring = 0 THEN \'month\' ELSE recurring_type END = "year" THEN DATE_ADD(CASE WHEN last_recurring_date THEN last_recurring_date ELSE date END, INTERVAL CAST(recurring AS UNSIGNED) YEAR)
+        END as next_date', // Next Date
+];
 
 $sIndexColumn = 'id';
 $sTable       = db_prefix() . 'invoices';
@@ -24,45 +26,10 @@ $sTable       = db_prefix() . 'invoices';
 $join = [
     'LEFT JOIN ' . db_prefix() . 'clients ON ' . db_prefix() . 'clients.userid = ' . db_prefix() . 'invoices.clientid',
     'LEFT JOIN ' . db_prefix() . 'currencies ON ' . db_prefix() . 'currencies.id = ' . db_prefix() . 'invoices.currency',
-    'LEFT JOIN ' . db_prefix() . 'projects ON ' . db_prefix() . 'projects.id = ' . db_prefix() . 'invoices.project_id',
-    'LEFT JOIN ' . db_prefix() . 'itemable ON ' . db_prefix() . 'itemable.rel_id = ' . db_prefix() . 'invoices.id',
 ];
 
-$custom_fields = get_table_custom_fields('invoice');
-
-foreach ($custom_fields as $key => $field) {
-    $selectAs = (is_cf_date($field) ? 'date_picker_cvalue_' . $key : 'cvalue_' . $key);
-
-    array_push($customFieldsColumns, $selectAs);
-    array_push($aColumns, 'ctable_' . $key . '.value as ' . $selectAs);
-    array_push($join, 'LEFT JOIN ' . db_prefix() . 'customfieldsvalues as ctable_' . $key . ' ON ' . db_prefix() . 'invoices.id = ctable_' . $key . '.relid AND ctable_' . $key . '.fieldto="' . $field['fieldto'] . '" AND ctable_' . $key . '.fieldid=' . $field['id']);
-}
-
-$where  = [];
+$where  = ['AND recurring != 0'];
 $filter = [];
-$where  = [' AND MONTH(date) = MONTH(CURDATE() - INTERVAL 1 MONTH)'];
-array_push($where, ' and '. db_prefix() . 'itemable.rel_type ="invoice"');
-
-if ($this->ci->input->post('not_sent')) {
-    array_push($filter, 'AND sent = 0 AND ' . db_prefix() . 'invoices.status NOT IN('.Invoices_model::STATUS_PAID.','.Invoices_model::STATUS_CANCELLED.')');
-}
-if ($this->ci->input->post('not_have_payment')) {
-    array_push($filter, 'AND ' . db_prefix() . 'invoices.id NOT IN(SELECT invoiceid FROM ' . db_prefix() . 'invoicepaymentrecords) AND ' . db_prefix() . 'invoices.status != '.Invoices_model::STATUS_CANCELLED);
-}
-if ($this->ci->input->post('recurring')) {
-    array_push($filter, 'AND MONTH(date) = MONTH(CURDATE() - INTERVAL 1 MONTH)');
-}
-
-$statuses  = $this->ci->invoices_model->get_statuses();
-$statusIds = [];
-foreach ($statuses as $status) {
-    if ($this->ci->input->post('invoices_' . $status)) {
-        array_push($statusIds, $status);
-    }
-}
-if (count($statusIds) > 0) {
-    array_push($filter, 'AND ' . db_prefix() . 'invoices.status IN (' . implode(', ', $statusIds) . ')');
-}
 
 $agents    = $this->ci->invoices_model->get_sale_agents();
 $agentsIds = [];
@@ -71,28 +38,21 @@ foreach ($agents as $agent) {
         array_push($agentsIds, $agent['sale_agent']);
     }
 }
+
 if (count($agentsIds) > 0) {
     array_push($filter, 'AND sale_agent IN (' . implode(', ', $agentsIds) . ')');
 }
 
-$modesIds = [];
-foreach ($data['payment_modes'] as $mode) {
-    if ($this->ci->input->post('invoice_payments_by_' . $mode['id'])) {
-        array_push($modesIds, $mode['id']);
-    }
-}
-if (count($modesIds) > 0) {
-    array_push($where, 'AND ' . db_prefix() . 'invoices.id IN (SELECT invoiceid FROM ' . db_prefix() . 'invoicepaymentrecords WHERE paymentmode IN ("' . implode('", "', $modesIds) . '"))');
-}
-array_push($where, 'AND ' . "tblinvoices.Date BETWEEN CURDATE() - INTERVAL 35 DAY AND CURDATE()");
 
 $years     = $this->ci->invoices_model->get_invoices_years();
 $yearArray = [];
+
 foreach ($years as $year) {
     if ($this->ci->input->post('year_' . $year['year'])) {
         array_push($yearArray, $year['year']);
     }
 }
+
 if (count($yearArray) > 0) {
     array_push($where, 'AND YEAR(date) IN (' . implode(', ', $yearArray) . ')');
 }
@@ -101,37 +61,25 @@ if (count($filter) > 0) {
     array_push($where, 'AND (' . prepare_dt_filter($filter) . ')');
 }
 
-
-
-if ($clientid != '') {
-    array_push($where, 'AND ' . db_prefix() . 'invoices.clientid=' . $this->ci->db->escape_str($clientid));
-}
-
-if ($project_id) {
-    array_push($where, 'AND project_id=' . $this->ci->db->escape_str($project_id));
-}
-
-if (!has_permission('invoices', '', 'view')) {
+if (staff_cant('view', 'invoices')) {
     $userWhere = 'AND ' . get_invoices_where_sql_for_staff(get_staff_user_id());
     array_push($where, $userWhere);
-}
-
-$aColumns = hooks()->apply_filters('invoices_table_sql_columns', $aColumns);
-
-// Fix for big queries. Some hosting have max_join_limit
-if (count($custom_fields) > 4) {
-    @$this->ci->db->query('SET SQL_BIG_SELECTS=1');
 }
 
 $result = data_tables_init($aColumns, $sIndexColumn, $sTable, $join, $where, [
     db_prefix() . 'invoices.id',
     db_prefix() . 'invoices.clientid',
-    db_prefix(). 'currencies.name as currency_name',
-    'project_id',
+    'custom_recurring',
+    'recurring_type',
+    'cycles',
+    'total_cycles',
+    db_prefix().'currencies.name as currency_name',
     'hash',
-    'recurring',
     'deleted_customer_name',
-    ]);
+    // next recurring date
+    'CASE WHEN last_recurring_date THEN last_recurring_date ELSE date end as helper_next_date',
+]);
+
 $output  = $result['output'];
 $rResult = $result['rResult'];
 
@@ -140,65 +88,65 @@ foreach ($rResult as $aRow) {
 
     $numberOutput = '';
 
-    // If is from client area table
-    if (is_numeric($clientid) || $project_id) {
-        $numberOutput = '<a href="' . admin_url('invoices/list_invoices/' . $aRow['id']) . '" target="_blank">' . format_invoice_number($aRow['id']).'-'.$aRow['id'] . '</a>';
-    } else {
-        if($aRow['number']==""){
-            $numberOutput = '<a href="' . admin_url('invoices/list_invoices/' . $aRow['id']) . '" onclick="init_invoice(' . $aRow['id'] . '); return false;">' . $aRow['number1'] . '</a>';
-        }
-        else{
-        $numberOutput = '<a href="' . admin_url('invoices/list_invoices/' . $aRow['id']) . '" onclick="init_invoice(' . $aRow['id'] . '); return false;">' . $aRow['number'] . '</a>';
-        }
-    }
-
-    if ($aRow['recurring'] > 0) {
-        $numberOutput .= '<br /><span class="label label-primary inline-block mtop4"> ' . _l('invoice_recurring_indicator') . '</span>';
-    }
+    $numberOutput = '<a href="' . admin_url('invoices/list_invoices/' . $aRow['id']) . '" onclick="init_invoice(' . $aRow['id'] . '); return false;">' . e(format_invoice_number($aRow['id'])) . '</a>';
 
     $numberOutput .= '<div class="row-options">';
 
     $numberOutput .= '<a href="' . site_url('invoice/' . $aRow['id'] . '/' . $aRow['hash']) . '" target="_blank">' . _l('view') . '</a>';
-    if (has_permission('invoices', '', 'edit')) {
+
+    if (staff_can('edit',  'invoices')) {
         $numberOutput .= ' | <a href="' . admin_url('invoices/invoice/' . $aRow['id']) . '">' . _l('edit') . '</a>';
     }
+
     $numberOutput .= '</div>';
 
     $row[] = $numberOutput;
-    
-    $row[] = _d($aRow['date']);
-    
-    $row[] = _d($aRow['duedate']);
+
+    $row[] = e(app_format_money($aRow['total'], $aRow['currency_name']));
+
+    $row[] = e($aRow['year']);
+
     if (empty($aRow['deleted_customer_name'])) {
-        $row[] = '<a href="' . admin_url('clients/client/' . $aRow['clientid']) . '">' . $aRow['company'] . '</a>';
+        $row[] = '<a href="' . admin_url('clients/client/' . $aRow['clientid']) . '">' . e($aRow['company']) . '</a>';
     } else {
-        $row[] = $aRow['deleted_customer_name'];
+        $row[] = e($aRow['deleted_customer_name']);
     }
 
-    $row[] = number_format($aRow['total'],2);
+    $frequency = '';
+    if ($aRow['custom_recurring'] == 0) {
+        $frequency = _l('invoice_add_edit_recurring_month' . ($aRow['recurring'] > 1 ? 's' : ''), $aRow['recurring']);
+    } else {
+        if ($aRow['recurring_type'] == 'day') {
+            $frequency = _l('frequency_every', $aRow['recurring'] . ' ' . _l('invoice_recurring_days'));
+        } elseif ($aRow['recurring_type'] == 'week') {
+            $frequency = _l('frequency_every', $aRow['recurring'] . ' ' . _l('invoice_recurring_weeks'));
+        } elseif ($aRow['recurring_type'] == 'month') {
+            $frequency = _l('frequency_every', $aRow['recurring'] . ' ' . _l('invoice_recurring_months'));
+        } elseif ($aRow['recurring_type'] == 'year') {
+            $frequency = _l('frequency_every', $aRow['recurring'] . ' ' . _l('invoice_recurring_years'));
+        }
+    }
+    $row[] = e($frequency);
 
-    $row[] = number_format($aRow['total']*.15,2);
+    $row[] = $aRow['cycles_remaining'] == null ? _l('cycles_infinity') : $aRow['cycles_remaining'];
 
-    $row[] = $aRow['year'];
+    $row[] = e($aRow['last_date'] ? _d($aRow['last_date']) : '-');
 
+    $compareRecurring = $aRow['recurring_type'];
 
-    $row[] = '<a href="' . admin_url('projects/view/' . $aRow['project_id']) . '">' . $aRow['project_name'] . '</a>';
-    ;
-
-    $row[] = render_tags($aRow['tags']);
-
-
-
-    $row[] = format_invoice_status($aRow[db_prefix() . 'invoices.status']);
-
-    // Custom fields add values
-    foreach ($customFieldsColumns as $customFieldColumn) {
-        $row[] = (strpos($customFieldColumn, 'date_picker_') !== false ? _d($aRow[$customFieldColumn]) : $aRow[$customFieldColumn]);
+    if ($aRow['custom_recurring'] == 0) {
+        $compareRecurring = 'month';
     }
 
-    $row['DT_RowClass'] = 'has-row-options';
+    $next_date = date('Y-m-d', strtotime('+' . $aRow['recurring'] . ' ' . strtoupper($compareRecurring), strtotime($aRow['helper_next_date'])));
 
-    $row = hooks()->apply_filters('invoices_table_row_data', $row, $aRow);
+    if ($aRow['cycles'] == 0 || $aRow['cycles'] != $aRow['total_cycles']) {
+        $row[] = e(_d($next_date));
+    } elseif ($aRow['cycles'] > 0 && $aRow['cycles'] == $aRow['total_cycles']) {
+        $row[] = '<span class="badge">' . _l('recurring_has_ended', _l('invoice_lowercase')) . '</span>';
+    } else {
+        $row[] = '-';
+    }
 
     $output['aaData'][] = $row;
 }

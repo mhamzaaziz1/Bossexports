@@ -24,9 +24,9 @@ hooks()->add_filter('get_dashboard_widgets', 'goals_add_dashboard_widget');
 function goals_add_dashboard_widget($widgets)
 {
     $widgets[] = [
-            'path'      => 'goals/widget',
-            'container' => 'right-4',
-        ];
+        'path'      => 'goals/widget',
+        'container' => 'right-4',
+    ];
 
     return $widgets;
 }
@@ -36,8 +36,8 @@ function goals_staff_member_deleted($data)
     $CI = &get_instance();
     $CI->db->where('staff_id', $data['id']);
     $CI->db->update(db_prefix() . 'goals', [
-            'staff_id' => $data['transfer_data_to'],
-        ]);
+        'staff_id' => $data['transfer_data_to'],
+    ]);
 }
 
 function goals_global_search_result_output($output, $data)
@@ -52,17 +52,17 @@ function goals_global_search_result_output($output, $data)
 function goals_global_search_result_query($result, $q, $limit)
 {
     $CI = &get_instance();
-    if (has_permission('goals', '', 'view')) {
+    if (staff_can('view',  'goals')) {
         // Goals
         $CI->db->select()->from(db_prefix() . 'goals')->like('description', $q)->or_like('subject', $q)->limit($limit);
 
         $CI->db->order_by('subject', 'ASC');
 
         $result[] = [
-                'result'         => $CI->db->get()->result_array(),
-                'type'           => 'goals',
-                'search_heading' => _l('goals'),
-            ];
+            'result'         => $CI->db->get()->result_array(),
+            'type'           => 'goals',
+            'search_heading' => _l('goals'),
+        ];
     }
 
     return $result;
@@ -71,9 +71,9 @@ function goals_global_search_result_query($result, $q, $limit)
 function goals_migration_tables_to_replace_old_links($tables)
 {
     $tables[] = [
-                'table' => db_prefix() . 'goals',
-                'field' => 'description',
-            ];
+        'table' => db_prefix() . 'goals',
+        'field' => 'description',
+    ];
 
     return $tables;
 }
@@ -83,10 +83,10 @@ function goals_permissions()
     $capabilities = [];
 
     $capabilities['capabilities'] = [
-            'view'   => _l('permission_view') . '(' . _l('permission_global') . ')',
-            'create' => _l('permission_create'),
-            'edit'   => _l('permission_edit'),
-            'delete' => _l('permission_delete'),
+        'view'   => _l('permission_view') . '(' . _l('permission_global') . ')',
+        'create' => _l('permission_create'),
+        'edit'   => _l('permission_edit'),
+        'delete' => _l('permission_delete'),
     ];
 
     register_staff_capabilities('goals', $capabilities, _l('goals'));
@@ -99,17 +99,22 @@ function goals_notification()
     $goals = $CI->goals_model->get('', true);
     foreach ($goals as $goal) {
         $achievement = $CI->goals_model->calculate_goal_achievement($goal['id']);
+
         if ($achievement['percent'] >= 100) {
-            if ($goal['notify_when_achieve'] == 1) {
-                if (date('Y-m-d') >= $goal['end_date']) {
+            if (date('Y-m-d') >= $goal['end_date']) {
+                if ($goal['notify_when_achieve'] == 1) {
                     $CI->goals_model->notify_staff_members($goal['id'], 'success', $achievement);
+                } else {
+                    $CI->goals_model->mark_as_notified($goal['id']);
                 }
             }
         } else {
             // not yet achieved, check for end date
-            if ($goal['notify_when_fail'] == 1) {
-                if (date('Y-m-d') > $goal['end_date']) {
+            if (date('Y-m-d') > $goal['end_date']) {
+                if ($goal['notify_when_fail'] == 1) {
                     $CI->goals_model->notify_staff_members($goal['id'], 'failed', $achievement);
+                } else {
+                    $CI->goals_model->mark_as_notified($goal['id']);
                 }
             }
         }
@@ -133,86 +138,116 @@ function goals_module_activation_hook()
 register_language_files(GOALS_MODULE_NAME, [GOALS_MODULE_NAME]);
 
 /**
- * Init goals module menu items in setup in admin_init hook
- * @return null
- */
+* Init goals module menu items in setup in admin_init hook
+* @return null
+*/
 function goals_module_init_menu_items()
 {
     $CI = &get_instance();
 
     $CI->app->add_quick_actions_link([
-            'name'       => _l('goal'),
-            'url'        => 'goals/goal',
-            'permission' => 'goals',
-            'position'   => 56,
-            ]);
+        'name'       => _l('goal'),
+        'url'        => 'goals/goal',
+        'permission' => 'goals',
+        'position'   => 56,
+        'icon'       => 'fa-solid fa-bars-progress',
+    ]);
 
-    if (has_permission('goals', '', 'view')) {
+    if (staff_can('view',  'goals')) {
         $CI->app_menu->add_sidebar_children_item('utilities', [
-                'slug'     => 'goals-tracking',
-                'name'     => _l('goals'),
-                'href'     => admin_url('goals'),
-                'position' => 24,
+            'slug'     => 'goals-tracking',
+            'name'     => _l('goals'),
+            'href'     => admin_url('goals'),
+            'position' => 24,
         ]);
     }
 }
 
 
 /**
- * Get goal types for the goals feature
- * @return array
- */
+* Get goal types for the goals feature
+*
+* @return array
+*/
 function get_goal_types()
 {
     $types = [
         [
-            'key'      => 1,
-            'lang_key' => 'goal_type_total_income',
-            'subtext'  => 'goal_type_income_subtext',
+            'key'       => 1,
+            'lang_key'  => 'goal_type_total_income',
+            'subtext'   => 'goal_type_income_subtext',
+            'dashboard' => has_permission('invoices', 'view'),
         ],
         [
-            'key'      => 2,
-            'lang_key' => 'goal_type_convert_leads',
+            'key'       => 8,
+            'lang_key'  => 'goal_type_invoiced_amount',
+            'subtext'   => '',
+            'dashboard' => has_permission('invoices', 'view'),
         ],
         [
-            'key'      => 3,
-            'lang_key' => 'goal_type_increase_customers_without_leads_conversions',
-            'subtext'  => 'goal_type_increase_customers_without_leads_conversions_subtext',
+            'key'       => 2,
+            'lang_key'  => 'goal_type_convert_leads',
+            'dashboard' => is_staff_member(),
         ],
         [
-            'key'      => 4,
-            'lang_key' => 'goal_type_increase_customers_with_leads_conversions',
-            'subtext'  => 'goal_type_increase_customers_with_leads_conversions_subtext',
+            'key'       => 3,
+            'lang_key'  => 'goal_type_increase_customers_without_leads_conversions',
+            'subtext'   => 'goal_type_increase_customers_without_leads_conversions_subtext',
+            'dashboard' => has_permission('customers', 'view'),
         ],
         [
-            'key'      => 5,
-            'lang_key' => 'goal_type_make_contracts_by_type_calc_database',
-            'subtext'  => 'goal_type_make_contracts_by_type_calc_database_subtext',
+            'key'       => 4,
+            'lang_key'  => 'goal_type_increase_customers_with_leads_conversions',
+            'subtext'   => 'goal_type_increase_customers_with_leads_conversions_subtext',
+            'dashboard' => has_permission('customers', 'view'),
+
         ],
         [
-            'key'      => 7,
-            'lang_key' => 'goal_type_make_contracts_by_type_calc_date',
-            'subtext'  => 'goal_type_make_contracts_by_type_calc_date_subtext',
+            'key'       => 5,
+            'lang_key'  => 'goal_type_make_contracts_by_type_calc_database',
+            'subtext'   => 'goal_type_make_contracts_by_type_calc_database_subtext',
+            'dashboard' => has_permission('contracts', 'view'),
         ],
         [
-            'key'      => 6,
-            'lang_key' => 'goal_type_total_estimates_converted',
-            'subtext'  => 'goal_type_total_estimates_converted_subtext',
+            'key'       => 7,
+            'lang_key'  => 'goal_type_make_contracts_by_type_calc_date',
+            'subtext'   => 'goal_type_make_contracts_by_type_calc_date_subtext',
+            'dashboard' => has_permission('contracts', 'view'),
         ],
         [
-            'key'      => 8,
-            'lang_key' => 'goal_type_call_logs',
-            'subtext'  => 'goal_type_call_logs_subtext',
+            'key'       => 6,
+            'lang_key'  => 'goal_type_total_estimates_converted',
+            'subtext'   => 'goal_type_total_estimates_converted_subtext',
+            'dashboard' => has_permission('estimates', 'view'),
         ],
     ];
 
     return hooks()->apply_filters('get_goal_types', $types);
 }
+
 /**
- * Translate goal type based on passed key
- * @param  mixed $key
- * @return string
- */
+* Get goal type by given key
+*
+* @param  int $key
+*
+* @return array
+*/
+function get_goal_type($key)
+{
+    foreach (get_goal_types() as $type) {
+        if ($type['key'] == $key) {
+            return $type;
+        }
+    }
+}
+
+/**
+* Translate goal type based on passed key
+*
+* @param  mixed $key
+*
+* @return string
+*/
 function format_goal_type($key)
 {
     foreach (get_goal_types() as $type) {

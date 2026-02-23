@@ -24,9 +24,12 @@
  * - Serhan Apaydın
  * - JD Isaacks
  * - tomhorvat
- * - Stjepan
+ * - Stjepan Majdak
  * - Vanja Retkovac (vr00)
  */
+
+use Carbon\CarbonInterface;
+
 return [
     'year' => ':count godinu|:count godine|:count godina',
     'y' => ':count god.|:count god.|:count god.',
@@ -59,37 +62,25 @@ return [
     'formats' => [
         'LT' => 'H:mm',
         'LTS' => 'H:mm:ss',
-        'L' => 'DD.MM.YYYY',
-        'LL' => 'D. MMMM YYYY',
-        'LLL' => 'D. MMMM YYYY H:mm',
-        'LLLL' => 'dddd, D. MMMM YYYY H:mm',
+        'L' => 'D. M. YYYY.',
+        'LL' => 'D. MMMM YYYY.',
+        'LLL' => 'D. MMMM YYYY. H:mm',
+        'LLLL' => 'dddd, D. MMMM YYYY. H:mm',
     ],
     'calendar' => [
         'sameDay' => '[danas u] LT',
         'nextDay' => '[sutra u] LT',
-        'nextWeek' => function (\Carbon\CarbonInterface $date) {
-            switch ($date->dayOfWeek) {
-                case 0:
-                    return '[u] [nedjelju] [u] LT';
-                case 3:
-                    return '[u] [srijedu] [u] LT';
-                case 6:
-                    return '[u] [subotu] [u] LT';
-                default:
-                    return '[u] dddd [u] LT';
-            }
+        'nextWeek' => static fn (CarbonInterface $date) => match ($date->dayOfWeek) {
+            0 => '[u] [nedjelju] [u] LT',
+            3 => '[u] [srijedu] [u] LT',
+            6 => '[u] [subotu] [u] LT',
+            default => '[u] dddd [u] LT',
         },
         'lastDay' => '[jučer u] LT',
-        'lastWeek' => function (\Carbon\CarbonInterface $date) {
-            switch ($date->dayOfWeek) {
-                case 0:
-                case 3:
-                    return '[prošlu] dddd [u] LT';
-                case 6:
-                    return '[prošle] [subote] [u] LT';
-                default:
-                    return '[prošli] dddd [u] LT';
-            }
+        'lastWeek' => static fn (CarbonInterface $date) => match ($date->dayOfWeek) {
+            0, 3 => '[prošlu] dddd [u] LT',
+            6 => '[prošle] [subote] [u] LT',
+            default => '[prošli] dddd [u] LT',
         },
         'sameElse' => 'L',
     ],

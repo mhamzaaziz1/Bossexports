@@ -74,6 +74,8 @@ class Clients extends AdminController
 
         $this->load->model('projects_model');
         $data['project_statuses'] = $this->projects_model->get_project_statuses();
+        
+        $this->load->model('currencies_model');
 
         $data['customer_admins'] = $this->clients_model->get_customers_admin_unique_ids();
 
@@ -1138,5 +1140,98 @@ class Clients extends AdminController
 
         // Return the clients as JSON
         echo json_encode($clients);
+    }
+
+    public function get_customer_balance($id)
+    {
+        if (!has_permission('customers', '', 'view') && !is_customer_admin($id)) {
+            echo _l('access_denied');
+            die;
+        }
+
+        $this->db->query("SET sql_mode = ''");
+
+        // Logic from clients table view
+        // Invoiced amount during the period
+        $result['invoiced_amount'] = $this->db->query('SELECT
+        SUM(' . db_prefix() . 'invoices.total+' . db_prefix() . 'invoices.ship_expense+' . db_prefix() . 'invoices.other_expense) as invoiced_amount
+        FROM ' . db_prefix() . 'invoices
+        WHERE clientid = ' . $this->db->escape_str($id) . '
+        AND status != ' . Invoices_model::STATUS_DRAFT . ' AND status != ' . Invoices_model::STATUS_CANCELLED . '')
+            ->row()->invoiced_amount;
+
+        if ($result['invoiced_amount'] === null) {
+            $result['invoiced_amount'] = 0;
+        }
+
+        $result['credit_notes_amount'] = $this->db->query('SELECT
+        SUM(' . db_prefix() . 'creditnotes.total) as credit_notes_amount
+        FROM ' . db_prefix() . 'creditnotes
+        WHERE clientid = ' . $this->db->escape_str($id) . '
+        AND status != 3')
+            ->row()->credit_notes_amount;
+
+        if ($result['credit_notes_amount'] === null) {
+            $result['credit_notes_amount'] = 0;
+        }
+        
+        
+
+        $result['refunds_amount'] = $this->db->query('SELECT
+        SUM(' . db_prefix() . 'creditnote_refunds.amount) as refunds_amount
+        FROM ' . db_prefix() . 'creditnote_refunds
+        WHERE credit_note_id IN (SELECT id FROM ' . db_prefix() . 'creditnotes WHERE clientid=' . $this->db->escape_str($id) . ')')->row()->refunds_amount;
+
+        if ($result['refunds_amount'] === null) {
+            $result['refunds_amount'] = 0;
+        }
+
+        $result['invoiced_amount'] = $result['invoiced_amount'];
+
+        // Amount paid during the period
+        $result['amount_paid'] = $this->db->query('SELECT
+        SUM(' . db_prefix() . 'invoicepaymentrecords.amount) as amount_paid
+        FROM ' . db_prefix() . 'invoicepaymentrecords
+        JOIN ' . db_prefix() . 'invoices ON ' . db_prefix() . 'invoices.id = ' . db_prefix() . 'invoicepaymentrecords.invoiceid
+        WHERE ' . db_prefix() . 'invoices.clientid = ' . $this->db->escape_str($id))
+            ->row()->amount_paid;
+
+        if ($result['amount_paid'] === null) {
+            $result['amount_paid'] = 0;
+        }
+        
+        
+        $result['direct_paid'] = $this->db->query('SELECT
+        SUM(' . db_prefix() . 'invoicepaymentrecords.amount) as amount_paid
+        FROM ' . db_prefix() . 'invoicepaymentrecords
+        WHERE client_id = ' . $this->db->escape_str($id))
+            ->row()->amount_paid;
+        if ($result['direct_paid'] === null) {
+            $result['direct_paid'] = 0;
+        }
+
+
+            $result['beginning_balance'] = 0;
+        $abc =  ($this->db->select("balance")->from('tblclients')->where('userid', $id)->get()->result());
+        $result['beginning_balance'] += (float)$abc[0]->balance;
+        
+        $sql_expense = 'SELECT
+        SUM(' . db_prefix() . 'expenses.amount) as invoice_amount
+        FROM ' . db_prefix() . 'expenses
+        WHERE '. db_prefix() . 'expenses.clientid = ' . $this->db->escape_str($id) . ' AND tblexpenses.billable !=1
+        ORDER by ' . db_prefix() . 'expenses.date DESC';
+
+        $sumexpense = $this->db->query($sql_expense)->row()->invoice_amount;
+
+        $dec = get_decimal_places();
+        
+            $result['balance_due'] = number_format($result['invoiced_amount'] - $result['amount_paid'], $dec, '.', '');
+            $result['balance_due'] = $result['balance_due'] + number_format($result['beginning_balance'], $dec, '.', '');
+            $result['balance_due'] = $result['balance_due'] - number_format($result['direct_paid'], $dec, '.', '');
+            // var_dump($result['balance_due']);die;
+            $result['balance_due'] = $result['balance_due'] - number_format($result['refunds_amount'], $dec, '.', '');
+        $result['balance_due']=$result['balance_due'] + $sumexpense;
+
+        echo app_format_money($result['balance_due'], get_base_currency());
     }
 }

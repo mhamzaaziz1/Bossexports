@@ -23,11 +23,11 @@ abstract class WorkspaceCumulativeStatisticsOptions {
      * @param string $taskChannel Only calculate cumulative statistics on this
      *                            TaskChannel
      * @param string $splitByWaitTime A comma separated list of values that
-     *                                describes the thresholds to calculate
-     *                                statistics on
+     *                                describes the thresholds, in seconds, to
+     *                                calculate statistics on
      * @return FetchWorkspaceCumulativeStatisticsOptions Options builder
      */
-    public static function fetch($endDate = Values::NONE, $minutes = Values::NONE, $startDate = Values::NONE, $taskChannel = Values::NONE, $splitByWaitTime = Values::NONE) {
+    public static function fetch(\DateTime $endDate = Values::NONE, int $minutes = Values::NONE, \DateTime $startDate = Values::NONE, string $taskChannel = Values::NONE, string $splitByWaitTime = Values::NONE): FetchWorkspaceCumulativeStatisticsOptions {
         return new FetchWorkspaceCumulativeStatisticsOptions($endDate, $minutes, $startDate, $taskChannel, $splitByWaitTime);
     }
 }
@@ -43,10 +43,10 @@ class FetchWorkspaceCumulativeStatisticsOptions extends Options {
      * @param string $taskChannel Only calculate cumulative statistics on this
      *                            TaskChannel
      * @param string $splitByWaitTime A comma separated list of values that
-     *                                describes the thresholds to calculate
-     *                                statistics on
+     *                                describes the thresholds, in seconds, to
+     *                                calculate statistics on
      */
-    public function __construct($endDate = Values::NONE, $minutes = Values::NONE, $startDate = Values::NONE, $taskChannel = Values::NONE, $splitByWaitTime = Values::NONE) {
+    public function __construct(\DateTime $endDate = Values::NONE, int $minutes = Values::NONE, \DateTime $startDate = Values::NONE, string $taskChannel = Values::NONE, string $splitByWaitTime = Values::NONE) {
         $this->options['endDate'] = $endDate;
         $this->options['minutes'] = $minutes;
         $this->options['startDate'] = $startDate;
@@ -61,7 +61,7 @@ class FetchWorkspaceCumulativeStatisticsOptions extends Options {
      *                           date
      * @return $this Fluent Builder
      */
-    public function setEndDate($endDate) {
+    public function setEndDate(\DateTime $endDate): self {
         $this->options['endDate'] = $endDate;
         return $this;
     }
@@ -73,7 +73,7 @@ class FetchWorkspaceCumulativeStatisticsOptions extends Options {
      *                     past
      * @return $this Fluent Builder
      */
-    public function setMinutes($minutes) {
+    public function setMinutes(int $minutes): self {
         $this->options['minutes'] = $minutes;
         return $this;
     }
@@ -85,7 +85,7 @@ class FetchWorkspaceCumulativeStatisticsOptions extends Options {
      *                             date
      * @return $this Fluent Builder
      */
-    public function setStartDate($startDate) {
+    public function setStartDate(\DateTime $startDate): self {
         $this->options['startDate'] = $startDate;
         return $this;
     }
@@ -97,20 +97,20 @@ class FetchWorkspaceCumulativeStatisticsOptions extends Options {
      *                            TaskChannel
      * @return $this Fluent Builder
      */
-    public function setTaskChannel($taskChannel) {
+    public function setTaskChannel(string $taskChannel): self {
         $this->options['taskChannel'] = $taskChannel;
         return $this;
     }
 
     /**
-     * A comma separated list of values that describes the thresholds, in seconds, to calculate statistics on. For each threshold specified, the number of Tasks canceled and reservations accepted above and below the specified thresholds in seconds are computed. For example, `5,30` would show splits of Tasks that were canceled or accepted before and after 5 seconds and before and after 30 seconds. This can be used to show short abandoned Tasks or Tasks that failed to meet an SLA.
+     * A comma separated list of values that describes the thresholds, in seconds, to calculate statistics on. For each threshold specified, the number of Tasks canceled and reservations accepted above and below the specified thresholds in seconds are computed. For example, `5,30` would show splits of Tasks that were canceled or accepted before and after 5 seconds and before and after 30 seconds. This can be used to show short abandoned Tasks or Tasks that failed to meet an SLA. TaskRouter will calculate statistics on up to 10,000 Tasks for any given threshold.
      *
      * @param string $splitByWaitTime A comma separated list of values that
-     *                                describes the thresholds to calculate
-     *                                statistics on
+     *                                describes the thresholds, in seconds, to
+     *                                calculate statistics on
      * @return $this Fluent Builder
      */
-    public function setSplitByWaitTime($splitByWaitTime) {
+    public function setSplitByWaitTime(string $splitByWaitTime): self {
         $this->options['splitByWaitTime'] = $splitByWaitTime;
         return $this;
     }
@@ -120,13 +120,8 @@ class FetchWorkspaceCumulativeStatisticsOptions extends Options {
      *
      * @return string Machine friendly representation
      */
-    public function __toString() {
-        $options = array();
-        foreach ($this->options as $key => $value) {
-            if ($value != Values::NONE) {
-                $options[] = "$key=$value";
-            }
-        }
-        return '[Twilio.Taskrouter.V1.FetchWorkspaceCumulativeStatisticsOptions ' . \implode(' ', $options) . ']';
+    public function __toString(): string {
+        $options = \http_build_query(Values::of($this->options), '', ' ');
+        return '[Twilio.Taskrouter.V1.FetchWorkspaceCumulativeStatisticsOptions ' . $options . ']';
     }
 }

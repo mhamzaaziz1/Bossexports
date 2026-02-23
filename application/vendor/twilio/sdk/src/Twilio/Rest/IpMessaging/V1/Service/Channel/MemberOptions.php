@@ -14,47 +14,46 @@ use Twilio\Values;
 
 abstract class MemberOptions {
     /**
-     * @param string $roleSid The SID of the Role to assign to the member
+     * @param string $roleSid The role_sid
      * @return CreateMemberOptions Options builder
      */
-    public static function create($roleSid = Values::NONE) {
+    public static function create(string $roleSid = Values::NONE): CreateMemberOptions {
         return new CreateMemberOptions($roleSid);
     }
 
     /**
-     * @param string $identity The `identity` value of the resources to read
+     * @param string[] $identity The identity
      * @return ReadMemberOptions Options builder
      */
-    public static function read($identity = Values::NONE) {
+    public static function read(array $identity = Values::ARRAY_NONE): ReadMemberOptions {
         return new ReadMemberOptions($identity);
     }
 
     /**
-     * @param string $roleSid The SID of the Role to assign to the member
-     * @param int $lastConsumedMessageIndex The index of the last consumed Message
-     *                                      for the Channel for the Member
+     * @param string $roleSid The role_sid
+     * @param int $lastConsumedMessageIndex The last_consumed_message_index
      * @return UpdateMemberOptions Options builder
      */
-    public static function update($roleSid = Values::NONE, $lastConsumedMessageIndex = Values::NONE) {
+    public static function update(string $roleSid = Values::NONE, int $lastConsumedMessageIndex = Values::NONE): UpdateMemberOptions {
         return new UpdateMemberOptions($roleSid, $lastConsumedMessageIndex);
     }
 }
 
 class CreateMemberOptions extends Options {
     /**
-     * @param string $roleSid The SID of the Role to assign to the member
+     * @param string $roleSid The role_sid
      */
-    public function __construct($roleSid = Values::NONE) {
+    public function __construct(string $roleSid = Values::NONE) {
         $this->options['roleSid'] = $roleSid;
     }
 
     /**
-     * The SID of the [Role](https://www.twilio.com/docs/api/chat/rest/roles) to assign to the member. The default roles are those specified on the [Service](https://www.twilio.com/docs/chat/api/services).
+     * The role_sid
      *
-     * @param string $roleSid The SID of the Role to assign to the member
+     * @param string $roleSid The role_sid
      * @return $this Fluent Builder
      */
-    public function setRoleSid($roleSid) {
+    public function setRoleSid(string $roleSid): self {
         $this->options['roleSid'] = $roleSid;
         return $this;
     }
@@ -64,32 +63,27 @@ class CreateMemberOptions extends Options {
      *
      * @return string Machine friendly representation
      */
-    public function __toString() {
-        $options = array();
-        foreach ($this->options as $key => $value) {
-            if ($value != Values::NONE) {
-                $options[] = "$key=$value";
-            }
-        }
-        return '[Twilio.IpMessaging.V1.CreateMemberOptions ' . \implode(' ', $options) . ']';
+    public function __toString(): string {
+        $options = \http_build_query(Values::of($this->options), '', ' ');
+        return '[Twilio.IpMessaging.V1.CreateMemberOptions ' . $options . ']';
     }
 }
 
 class ReadMemberOptions extends Options {
     /**
-     * @param string $identity The `identity` value of the resources to read
+     * @param string[] $identity The identity
      */
-    public function __construct($identity = Values::NONE) {
+    public function __construct(array $identity = Values::ARRAY_NONE) {
         $this->options['identity'] = $identity;
     }
 
     /**
-     * The [User](https://www.twilio.com/docs/api/chat/rest/v1/user)'s `identity` value of the resources to read. See [access tokens](https://www.twilio.com/docs/api/chat/guides/create-tokens) for more details.
+     * The identity
      *
-     * @param string $identity The `identity` value of the resources to read
+     * @param string[] $identity The identity
      * @return $this Fluent Builder
      */
-    public function setIdentity($identity) {
+    public function setIdentity(array $identity): self {
         $this->options['identity'] = $identity;
         return $this;
     }
@@ -99,47 +93,40 @@ class ReadMemberOptions extends Options {
      *
      * @return string Machine friendly representation
      */
-    public function __toString() {
-        $options = array();
-        foreach ($this->options as $key => $value) {
-            if ($value != Values::NONE) {
-                $options[] = "$key=$value";
-            }
-        }
-        return '[Twilio.IpMessaging.V1.ReadMemberOptions ' . \implode(' ', $options) . ']';
+    public function __toString(): string {
+        $options = \http_build_query(Values::of($this->options), '', ' ');
+        return '[Twilio.IpMessaging.V1.ReadMemberOptions ' . $options . ']';
     }
 }
 
 class UpdateMemberOptions extends Options {
     /**
-     * @param string $roleSid The SID of the Role to assign to the member
-     * @param int $lastConsumedMessageIndex The index of the last consumed Message
-     *                                      for the Channel for the Member
+     * @param string $roleSid The role_sid
+     * @param int $lastConsumedMessageIndex The last_consumed_message_index
      */
-    public function __construct($roleSid = Values::NONE, $lastConsumedMessageIndex = Values::NONE) {
+    public function __construct(string $roleSid = Values::NONE, int $lastConsumedMessageIndex = Values::NONE) {
         $this->options['roleSid'] = $roleSid;
         $this->options['lastConsumedMessageIndex'] = $lastConsumedMessageIndex;
     }
 
     /**
-     * The SID of the [Role](https://www.twilio.com/docs/api/chat/rest/roles) to assign to the member. The default roles are those specified on the [Service](https://www.twilio.com/docs/chat/api/services).
+     * The role_sid
      *
-     * @param string $roleSid The SID of the Role to assign to the member
+     * @param string $roleSid The role_sid
      * @return $this Fluent Builder
      */
-    public function setRoleSid($roleSid) {
+    public function setRoleSid(string $roleSid): self {
         $this->options['roleSid'] = $roleSid;
         return $this;
     }
 
     /**
-     * The index of the last [Message](https://www.twilio.com/docs/api/chat/rest/messages) that the Member has read within the [Channel](https://www.twilio.com/docs/api/chat/rest/channels).
+     * The last_consumed_message_index
      *
-     * @param int $lastConsumedMessageIndex The index of the last consumed Message
-     *                                      for the Channel for the Member
+     * @param int $lastConsumedMessageIndex The last_consumed_message_index
      * @return $this Fluent Builder
      */
-    public function setLastConsumedMessageIndex($lastConsumedMessageIndex) {
+    public function setLastConsumedMessageIndex(int $lastConsumedMessageIndex): self {
         $this->options['lastConsumedMessageIndex'] = $lastConsumedMessageIndex;
         return $this;
     }
@@ -149,13 +136,8 @@ class UpdateMemberOptions extends Options {
      *
      * @return string Machine friendly representation
      */
-    public function __toString() {
-        $options = array();
-        foreach ($this->options as $key => $value) {
-            if ($value != Values::NONE) {
-                $options[] = "$key=$value";
-            }
-        }
-        return '[Twilio.IpMessaging.V1.UpdateMemberOptions ' . \implode(' ', $options) . ']';
+    public function __toString(): string {
+        $options = \http_build_query(Values::of($this->options), '', ' ');
+        return '[Twilio.IpMessaging.V1.UpdateMemberOptions ' . $options . ']';
     }
 }

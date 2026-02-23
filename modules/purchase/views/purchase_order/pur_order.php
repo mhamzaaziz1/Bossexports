@@ -126,8 +126,22 @@
                             <i class="fa fa-clone"></i>
                             </a>
                           </div>
-                      <?php } 
-                        if($CI->input->get('return')==1){?>
+                      <?php } ?>
+
+                      <?php if($CI->input->get('return')==1){ ?>
+                      <div class="col-md-5 form-group">
+                        <label for="pur_order_copy"><?php echo _l('pur_order'); ?></label>
+                        <select name="pur_order_copy" id="pur_order_copy" class="selectpicker" data-live-search="true" data-width="100%" data-none-selected-text="<?php echo _l('ticket_settings_none_assigned'); ?>">
+                        </select>
+                      </div>
+                      <div class="col-md-1 pad_div_0">
+                        <a href="#" onclick="copy_pur_order(); return false;" class="btn btn-success mtop25" data-toggle="tooltip" title="<?php echo _l('copy_pur_order'); ?>">
+                        <i class="fa fa-clone"></i>
+                        </a>
+                      </div>
+                      <?php } ?>
+
+                        <?php if($CI->input->get('return')==1){?>
                         <div class="input-group-addon">
                         <label class="control-label">Return Status</label>
                         <input type="text" readonly class="form-control" name="returns" value="1">

@@ -436,7 +436,7 @@ class Proposals_model extends App_Model
 
         return $this->db->get()->result_array();
     }
-    
+
     public function get_pdf($id = '', $where = [], $for_editor = false)
     {
         $this->db->where($where);
@@ -1079,5 +1079,32 @@ class Proposals_model extends App_Model
         }
 
         return false;
+    }
+
+    /**
+     * Get proposals total by client for a specific period
+     * @param  integer $client_id    Client ID
+     * @param  string  $from_date    From date (optional)
+     * @return array                 Array with count and amount
+     */
+    public function get_proposals_total_by_client($client_id, $from_date = '')
+    {
+        $this->db->select('COUNT(*) as count, SUM(total) as amount');
+        $this->db->from(db_prefix() . 'proposals');
+        $this->db->where('rel_id', $client_id);
+        $this->db->where('rel_type', 'customer');
+        $this->db->where('status !=', 5); // Exclude declined proposals
+
+        if ($from_date) {
+            $this->db->where('date >=', $from_date);
+        }
+
+        $result = $this->db->get()->row_array();
+
+        // Ensure we have valid values
+        $result['count'] = $result['count'] ? $result['count'] : 0;
+        $result['amount'] = $result['amount'] ? $result['amount'] : 0;
+
+        return $result;
     }
 }

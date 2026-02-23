@@ -14,15 +14,15 @@ $aColumns = [
     'short_description',
     'stock_quantity',
     'stock_quantity_history',
+    'chanel',
     'sku',
     ];
 $sIndexColumn = 'id';
 $sTable       = db_prefix().'omni_log_sync_woo';
 $join         = [];
 $where = [];
+array_push($where, 'AND type = "inventory"');
 $result = data_tables_init($aColumns, $sIndexColumn, $sTable, $join, $where, ['date_sync']);
-
-array_push($where, ' where type = "inventory"');
 
 $output  = $result['output'];
 $rResult = $result['rResult'];
@@ -38,6 +38,7 @@ foreach ($rResult as $aRow) {
     $row[] = $aRow['short_description'];
     $row[] = $aRow['stock_quantity'];
     $row[] = $aRow['stock_quantity_history'];
+    $row[] = $aRow['chanel'];
     $row[] = $aRow['sku'];
     $row[] = _dt($aRow['date_sync']);
     $output['aaData'][] = $row;

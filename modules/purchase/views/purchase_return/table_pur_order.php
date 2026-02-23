@@ -27,7 +27,7 @@ if(isset($vendor)){
     'order_date',
     'subtotal',
     'approve_status',
-    
+
     ];
 }
 
@@ -110,9 +110,9 @@ foreach ($rResult as $aRow) {
         }elseif($aColumns[$i] == 'pur_order_name'){
 
             $numberOutput = '';
-    
+
             $numberOutput = '<a href="' . admin_url('purchase/purchase_order/' . $aRow['id']) . '"  onclick="init_pur_order(' . $aRow['id'] . '); return false;" >'.$aRow['pur_order_number'].' - ' . $aRow['pur_order_name'] . '</a>';
-            
+
             $numberOutput .= '<div class="row-options">';
 
             if (has_permission('purchase', '', 'view')) {
@@ -122,7 +122,7 @@ foreach ($rResult as $aRow) {
                 $numberOutput .= ' | <a href="' . admin_url('purchase/pur_order/' . $aRow['id']) . '?return=1">' . _l('edit') . '</a>';
             }
             if (has_permission('purchase', '', 'delete') || is_admin()) {
-                $numberOutput .= ' | <a href="' . admin_url('purchase/delete_pur_order/' . $aRow['id']) . '" class="text-danger">' . _l('delete') . '</a>';
+                $numberOutput .= ' | <a href="' . admin_url('purchase/delete_pur_order/' . $aRow['id']) . '" class="text-danger _delete">' . _l('delete') . '</a>';
             }
             $numberOutput .= '</div>';
 
@@ -142,7 +142,7 @@ foreach ($rResult as $aRow) {
             if($aRow['total'] > 0){
                 $percent = ($paid / $aRow['total'] ) * 100;
             }
-            
+
             $_data = '<div class="progress">
                           <div class="progress-bar progress-bar-success" role="progressbar" aria-valuenow="40"
                           aria-valuemin="0" aria-valuemax="100" style="width:'.round($percent).'%">
@@ -156,9 +156,9 @@ foreach ($rResult as $aRow) {
                 $_data = '<a href="'.admin_url('expenses/list_expenses/'.$aRow['expense_convert']).'" class="btn btn-success btn-icon">'._l('view_expense').'</a>';
             }
             $_data .='<a href="javascript:void(0)" onclick="convert_expense('.$aRow['id'].','.$aRow['total'].'); return false;" class="btn btn-warning btn-icon">'._l('Return').'</a>';
-            
+
         }elseif($aColumns[$i] == '(SELECT GROUP_CONCAT(name SEPARATOR ",") FROM ' . db_prefix() . 'taggables JOIN ' . db_prefix() . 'tags ON ' . db_prefix() . 'taggables.tag_id = ' . db_prefix() . 'tags.id WHERE rel_id = ' . db_prefix() . 'pur_orders.id and rel_type="pur_order" ORDER by tag_order ASC) as tags'){
-                
+
                 $_data = render_tags($aRow['tags']);
 
         }else {

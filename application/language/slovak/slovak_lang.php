@@ -132,14 +132,14 @@ $lang['email_templates_lowercase']              = 'šablóny emailov';
 $lang['email_template_ticket_fields_heading']   = 'Tikety';
 $lang['email_template_invoices_fields_heading'] = 'Faktúry';
 $lang['email_template_clients_fields_heading']  = 'Zákazníci';
-$lang['template_name']                = 'Názov šablóny';
-$lang['template_subject']             = 'Predmet';
-$lang['template_fromname']            = 'Meno odosielateľa';
-$lang['template_fromemail']           = 'Email odosielateľa';
-$lang['send_as_plain_text']           = 'Odoslať ako obyčajný text';
-$lang['email_template_disabled']      = 'Zakázané';
-$lang['email_template_email_message'] = 'Správa emailu';
-$lang['available_merge_fields']       = 'Dostupné polia';
+$lang['template_name']                          = 'Názov šablóny';
+$lang['template_subject']                       = 'Predmet';
+$lang['template_fromname']                      = 'Meno odosielateľa';
+$lang['template_fromemail']                     = 'Email odosielateľa';
+$lang['send_as_plain_text']                     = 'Odoslať ako obyčajný text';
+$lang['email_template_disabled']                = 'Zakázané';
+$lang['email_template_email_message']           = 'Správa emailu';
+$lang['available_merge_fields']                 = 'Dostupné polia';
 # Home
 $lang['dashboard_string']                          = 'Nástenka';
 $lang['home_latest_todos']                         = 'Aktuálne úlohy';
@@ -1168,7 +1168,7 @@ $lang['invoice_marked_as_sent_failed'] = 'Nepodarilo sa označiť faktúru ako o
 # Payments
 $lang['payment_transaction_id'] = 'ID Transakcie';
 # Settings Menu
-$lang['acs_expense_categories']                       = 'Kategórie výdavkov';
+$lang['acs_expense_categories'] = 'Kategórie výdavkov';
 # Expenses
 $lang['expense_category']                             = 'Kategórie výdavkov';
 $lang['expense_category_lowercase']                   = 'kategórie výdavkov';
@@ -1464,9 +1464,9 @@ $lang['bulk_export_pdf_proposals'] = 'Ponuky';
 # Invoices
 $lang['delete_invoice'] = 'Zmazať';
 # Calendar
-$lang['items']          = 'Položky';
-$lang['support']        = 'Podpora';
-$lang['new_ticket']     = 'Nový tiket';
+$lang['items']      = 'Položky';
+$lang['support']    = 'Podpora';
+$lang['new_ticket'] = 'Nový tiket';
 # Reminders
 $lang['calendar_lead_reminder']  = 'Pripomienka akvizície';
 $lang['lead_set_reminder_title'] = 'Pridať pripomienku akvizície';
@@ -2048,11 +2048,11 @@ $lang['project_activity_status_updated']               = 'Aktualizoval stav proj
 $lang['project_activity_visible_to_customer']          = 'Viditeľné pre zákazníka';
 $lang['project_activity_project_file_removed']         = 'Odstránil súbor projektu';
 # Customers area
-$lang['clients_my_estimates']                                  = 'Odhady';
-$lang['client_no_reply']                                       = 'Žiadna odpoveď';
-$lang['clients_nav_projects']                                  = 'Projekty';
-$lang['clients_my_projects']                                   = 'Projekty';
-$lang['client_profile_image']                                  = 'Profilový obrázok';
+$lang['clients_my_estimates'] = 'Odhady';
+$lang['client_no_reply']      = 'Žiadna odpoveď';
+$lang['clients_nav_projects'] = 'Projekty';
+$lang['clients_my_projects']  = 'Projekty';
+$lang['client_profile_image'] = 'Profilový obrázok';
 /////
 $lang['sales_report_cancelled_invoices_not_included']          = 'Zrušené faktúry sú vyradené z prehľadu';
 $lang['invoices_merge_cancel_merged_invoices']                 = 'Označiť zlúčené faktúry ako zrušené namiesto odstránenia';
@@ -2312,9 +2312,9 @@ $lang['to_date']                                = 'Dátum do';
 $lang['not_results_found']                      = 'Žiadne výsledky';
 $lang['lead_lock_after_convert_to_customer']    = 'Zakázať úpravy akvizíc potom, čo boli zmenené na zákazníkov (neplatí pre administrátorov)';
 $lang['default_pipeline_sort']                  = 'Predvolené zoradenie stavov';
-$lang['toggle_full_view']             = 'Zapnúť plné zobrazenie';
-$lang['not_estimate_invoice_deleted'] = 'odstránil vytvorenú faktúru';
-$lang['not_task_new_comment']         = 'komentoval úlohu %s';
+$lang['toggle_full_view']                       = 'Zapnúť plné zobrazenie';
+$lang['not_estimate_invoice_deleted']           = 'odstránil vytvorenú faktúru';
+$lang['not_task_new_comment']                   = 'komentoval úlohu %s';
 
 # Version 1.1.8
 $lang['invoice_number_exists']                  = 'Toto číslo faktúry už existuje v tomto účtovnom roku.';
@@ -2448,18 +2448,18 @@ $lang['task_log_time_end']    = $lang['project_timesheet_end_time'];
 $lang['task_single_log_user'] = $lang['project_timesheet_user'];
 
 # Version 1.2.2
-$lang['milestone_description']                      = 'Popis';
-$lang['description_visible_to_customer']            = 'Zobraziť popis klientovi';
-$lang['upcoming_tasks']                             = 'Nadchádzajúce úlohy';
-$lang['payment_credit_card_number']                 = 'Číslo karty';
-$lang['payment_credit_card_expiration_date']        = 'Dátum expirácie';
-$lang['payment_billing_email']                      = 'Email';
-$lang['submit_payment']                             = 'Potvrdiť platbu';
-$lang['custom_field_disallow_customer_to_edit']     = 'Zakázať zákazníkom úpravy tohoto poľa';
-$lang['project_due_notice']                         = 'Tento projekt mal byť dokončený pred %s dňami';
-$lang['not_lead_added_attachment']                  = 'pridal novú prílohu k akvizicii %s';
-$lang['lead_note_date_added']                       = 'Poznámka pridaná: %s';
-$lang['recurring_custom']                           = 'Vlastné';
+$lang['milestone_description']                  = 'Popis';
+$lang['description_visible_to_customer']        = 'Zobraziť popis klientovi';
+$lang['upcoming_tasks']                         = 'Nadchádzajúce úlohy';
+$lang['payment_credit_card_number']             = 'Číslo karty';
+$lang['payment_credit_card_expiration_date']    = 'Dátum expirácie';
+$lang['payment_billing_email']                  = 'Email';
+$lang['submit_payment']                         = 'Potvrdiť platbu';
+$lang['custom_field_disallow_customer_to_edit'] = 'Zakázať zákazníkom úpravy tohoto poľa';
+$lang['project_due_notice']                     = 'Tento projekt mal byť dokončený pred %s dňami';
+$lang['not_lead_added_attachment']              = 'pridal novú prílohu k akvizicii %s';
+$lang['lead_note_date_added']                   = 'Poznámka pridaná: %s';
+$lang['recurring_custom']                       = 'Vlastné';
 // don't translate these, only added for better readability already translated for the expenses custom recurring feature.
 $lang['invoice_recurring_months'] = $lang['expense_recurring_months'];
 $lang['invoice_recurring_years']  = $lang['expense_recurring_years'];
@@ -2988,8 +2988,6 @@ $lang['signature']                               = 'Podpis';
 $lang['signature_image']                         = 'Obrázok podpisu';
 $lang['insert_checklist_templates']              = 'Vložiť šablónu zoznamov';
 $lang['save_as_template']                        = 'Uložiť ako šablónu';
-$lang['scroll_responsive_tables_help']           = 'Tabuľky s veľkým množstvom údajov budú mať horizontálne posúvanie namiesto riadkov s ikonou +.';
-$lang['scroll_responsive_tables']                = 'Aktivovať posúvanie tabuliek';
 $lang['invoice_item_add_edit_rate_currency']     = 'Sadzba - %s';
 $lang['total_files_deleted']                     = 'Celkom odstránených súborov: %s';
 $lang['invalid_transaction']                     = 'Neplatná transakcia. Skúste to prosím znovu.';
@@ -3321,19 +3319,19 @@ $lang['customer_requires_registration_confirmation']            = 'Vyžaduje pot
 $lang['confirm_registration']                                   = 'Potvrdiť registráciu';
 $lang['customer_registration_successfully_confirmed']           = 'Registrácia zákazníka bola úspešne potvrdená';
 $lang['customer_register_account_confirmation_approval_notice'] = 'Ďakujeme za registráciu, Váš účet bude aktivovaný po overení a schváleni.';
-$lang['after_subscription_payment_succeeded'] = 'Po úspešnej úhrade predplatného';
-$lang['subscription_option_send_invoice'] = 'Poslať faktúru';
-$lang['subscription_option_send_payment_receipt'] = 'Poslať doklad k úhrade';
-$lang['subscription_option_send_payment_receipt_and_invoice'] = 'Poslať faktúru a doklad k úhrade';
-$lang['subscription_option_do_nothing'] = 'Nerobiť nič';
-$lang['gdpr_not_enabled'] = 'GDPR nie je povolené';
-$lang['enable_gdpr'] = 'Povoliť GDPR';
-$lang['gdpr_right_to_rectification'] = 'Prejsť k oprave';
-$lang['test_sms_config'] = 'Otestovať SMS konfiguráciu';
-$lang['test_sms_message'] = 'Testovacia správa';
-$lang['send_test_sms'] = 'Poslať testovaciu SMS';
-$lang['gdpr_short'] = 'GDPR';
-$lang['allow_non_admin_staff_to_delete_ticket_attachments'] = 'Povoliť neadministrátorom odstrániť prílohy tiketov';
+$lang['after_subscription_payment_succeeded']                   = 'Po úspešnej úhrade predplatného';
+$lang['subscription_option_send_invoice']                       = 'Poslať faktúru';
+$lang['subscription_option_send_payment_receipt']               = 'Poslať doklad k úhrade';
+$lang['subscription_option_send_payment_receipt_and_invoice']   = 'Poslať faktúru a doklad k úhrade';
+$lang['subscription_option_do_nothing']                         = 'Nerobiť nič';
+$lang['gdpr_not_enabled']                                       = 'GDPR nie je povolené';
+$lang['enable_gdpr']                                            = 'Povoliť GDPR';
+$lang['gdpr_right_to_rectification']                            = 'Prejsť k oprave';
+$lang['test_sms_config']                                        = 'Otestovať SMS konfiguráciu';
+$lang['test_sms_message']                                       = 'Testovacia správa';
+$lang['send_test_sms']                                          = 'Poslať testovaciu SMS';
+$lang['gdpr_short']                                             = 'GDPR';
+$lang['allow_non_admin_staff_to_delete_ticket_attachments']     = 'Povoliť neadministrátorom odstrániť prílohy tiketov';
 
 # Version 2.1.0
 $lang['contract_number']                                = 'Číslo zmluvy';
@@ -3349,11 +3347,11 @@ $lang['contract_notes']                                 = 'Poznámky';
 $lang['contract_add_note']                              = 'Pridať poznámku';
 
 # Version 2.1.1
-$lang['frequency']         = 'Opakovanie';
-$lang['frequency_every']   = 'Každý %s';
-$lang['last_invoice_date'] = 'Posledný dátum faktúry';
+$lang['frequency']              = 'Opakovanie';
+$lang['frequency_every']        = 'Každý %s';
+$lang['last_invoice_date']      = 'Posledný dátum faktúry';
 $lang['next_invoice_date_list'] = 'Nasledujúci dátum faktúry';
-$lang['enter_new_card']    = 'Zadajte novú kartu';
+$lang['enter_new_card']         = 'Zadajte novú kartu';
 
 # Version 2.2.0
 $lang['save_and_record_payment']                                     = 'Uložiť a zapísať platbu';
@@ -3396,28 +3394,28 @@ $lang['not_customer_uploaded_file']                                  = 'Nový s�
 # Version 2.2.1
 
 $lang['customer_files_info_message'] = 'Súbory z projektov a úloh prepojených so zákazníkom sa v tejto tabuľke nezobrazujú.';
-$lang['ticket_import_reply_only'] = 'Pokúste sa importovať iba skutočnú odpoveď na tiket (bez citovanej / presmerovanej správy).';
-$lang['learn_more'] = 'Zistiť viac';
-$lang['sales_item'] = 'Položka';
+$lang['ticket_import_reply_only']    = 'Pokúste sa importovať iba skutočnú odpoveď na tiket (bez citovanej / presmerovanej správy).';
+$lang['learn_more']                  = 'Zistiť viac';
+$lang['sales_item']                  = 'Položka';
 
 
 # Version 2.3.0
 
-$lang['modules']                    = 'Moduly';
-$lang['module']                     = 'Modul';
-$lang['module_description']         = 'Popis';
-$lang['module_activate']            = 'Aktivovať';
-$lang['module_deactivate']          = 'Deaktivovať';
-$lang['module_uninstall']           = 'Odinštalovať';
-$lang['module_upgrade_database']    = 'Aktualizovať databázu';
-$lang['module_settings']            = 'Nastavenia';
-$lang['module_version']             = 'Verzia %s';
-$lang['module_by']                  = 'Od %s';
-$lang['staff_which_are_using_role'] = 'Zamestnanci, ktorí túto úlohu využívajú';
-$lang['copy']                       = 'Kopírovať';
-$lang['read_more']                  = 'Čítať viac';
-$lang['show_less']                  = 'Zobraziť menej';
-$lang['project_progress_text']      = 'Projektový pokrok';
+$lang['modules']                                 = 'Moduly';
+$lang['module']                                  = 'Modul';
+$lang['module_description']                      = 'Popis';
+$lang['module_activate']                         = 'Aktivovať';
+$lang['module_deactivate']                       = 'Deaktivovať';
+$lang['module_uninstall']                        = 'Odinštalovať';
+$lang['module_upgrade_database']                 = 'Aktualizovať databázu';
+$lang['module_settings']                         = 'Nastavenia';
+$lang['module_version']                          = 'Verzia %s';
+$lang['module_by']                               = 'Od %s';
+$lang['staff_which_are_using_role']              = 'Zamestnanci, ktorí túto úlohu využívajú';
+$lang['copy']                                    = 'Kopírovať';
+$lang['read_more']                               = 'Čítať viac';
+$lang['show_less']                               = 'Zobraziť menej';
+$lang['project_progress_text']                   = 'Projektový pokrok';
 $lang['timer_not_stopped_yet']                   = 'Tento časovač ešte nie je zastavený';
 $lang['refunds']                                 = 'Refundácie';
 $lang['refund']                                  = 'Refundácia';
@@ -3442,19 +3440,19 @@ $lang['tags_update_replace_warning'] = 'Niektoré značky sa neaktualizujú, pre
 $lang['attach_statement']            = 'Pripojiť vyhlásenie zákazníka';
 
 # Version 2.4.0
-$lang['delete_credit_card']               = 'Vymazať kartu';
-$lang['delete_credit_card_info']          = 'Kreditnú kartu nemôžete vymazať, pretože máte aktívne predplatné.';
-$lang['credit_card_successfully_deleted'] = 'Kreditná karta bola úspešne vymazaná.';
-$lang['subscription_incomplete']          = 'Neúplné';
-$lang['subscription_incomplete_expired']  = 'Neúplná platnosť uplynula';
-$lang['credit_card_short']                = 'Kreditná karta';
-$lang['webhook_created']                  = 'Webhook bol úspešne vytvorený.';
-$lang['subscriptions_terms_info']         = 'Pred prihlásením sa na odber noviniek, zadajte zákaznícke podmienky, ktoré sa zobrazia zákazníkovi.';
-$lang['subscription_complete_payment']    = 'Dokončiť platbu';
-$lang['subscription_is_subscription_is_expired'] = 'Platnosť tohto predplatného vypršala.';
+$lang['delete_credit_card']                        = 'Vymazať kartu';
+$lang['delete_credit_card_info']                   = 'Kreditnú kartu nemôžete vymazať, pretože máte aktívne predplatné.';
+$lang['credit_card_successfully_deleted']          = 'Kreditná karta bola úspešne vymazaná.';
+$lang['subscription_incomplete']                   = 'Neúplné';
+$lang['subscription_incomplete_expired']           = 'Neúplná platnosť uplynula';
+$lang['credit_card_short']                         = 'Kreditná karta';
+$lang['webhook_created']                           = 'Webhook bol úspešne vytvorený.';
+$lang['subscriptions_terms_info']                  = 'Pred prihlásením sa na odber noviniek, zadajte zákaznícke podmienky, ktoré sa zobrazia zákazníkovi.';
+$lang['subscription_complete_payment']             = 'Dokončiť platbu';
+$lang['subscription_is_subscription_is_expired']   = 'Platnosť tohto predplatného vypršala.';
 $lang['subscription_plan_currency_does_not_match'] = 'Vybraná mena plánu sa nezhoduje s menou vybranou nižšie.';
-$lang['subscription_first_billing_date_info'] = 'Ak je zákazník prihlásený na predplatné, nechajte toto pole prázdne. Toto pole musí byť budúci dátum, ak vyberiete dátum a dátum bude zadaný, ale zákazník sa ešte neprihlásil na odber, použije sa dátum, kedy sa zákazník prihlási na odber.';
-$lang['stripe_subscription_select_plan'] = 'Vyberte Stripe plán';
+$lang['subscription_first_billing_date_info']      = 'Ak je zákazník prihlásený na predplatné, nechajte toto pole prázdne. Toto pole musí byť budúci dátum, ak vyberiete dátum a dátum bude zadaný, ale zákazník sa ešte neprihlásil na odber, použije sa dátum, kedy sa zákazník prihlási na odber.';
+$lang['stripe_subscription_select_plan']           = 'Vyberte Stripe plán';
 
 # Version 2.4.1
 $lang['contract_content_permission_edit_warning'] = 'Vaše súčasné oprávnenie vám neumožňuje upravovať obsah zmluvy. Poraďte sa s
@@ -3471,22 +3469,22 @@ $lang['email_scheduled_successfully']   = 'E-mail bol úspešne naplánovaný';
 $lang['invoice_will_be_sent_at']        = 'Faktúra bude odoslaná na %s';
 
 # Version 2.5.0
-$lang['recaptcha_ignore_ips']               = 'Ignorované IP adresy';
-$lang['recaptcha_ignore_ips_info']          = 'Zadajte IP adresy oddelené čiarkou, pri ktorých má reCaptcha preskočiť overenie.';
-$lang['show_task_reminders_on_calendar']    = 'Pripomienky úloh';
-$lang['contracts_about_to_expire']          = 'Zmluvy čoskoro vypršia';
-$lang['no_contracts_about_to_expire']       = 'Neexistujú žiadne zmluvy, ktorých platnosť vyprší v nasledujúcich %s dňoch.';
-$lang['lead_value']                         = 'Hodnota poľa';
-$lang['lead_value_tooltip']                 = 'Použije sa základná mena.';
-$lang['leads_dt_lead_value']                = 'Hodnota poľa';
-$lang['leads_canban_lead_value']            = 'Hodnota poľa: %s';
-$lang['lead_add_edit_lead_value']           = 'Hodnota poľa';
+$lang['recaptcha_ignore_ips']            = 'Ignorované IP adresy';
+$lang['recaptcha_ignore_ips_info']       = 'Zadajte IP adresy oddelené čiarkou, pri ktorých má reCaptcha preskočiť overenie.';
+$lang['show_task_reminders_on_calendar'] = 'Pripomienky úloh';
+$lang['contracts_about_to_expire']       = 'Zmluvy čoskoro vypršia';
+$lang['no_contracts_about_to_expire']    = 'Neexistujú žiadne zmluvy, ktorých platnosť vyprší v nasledujúcich %s dňoch.';
+$lang['lead_value']                      = 'Hodnota poľa';
+$lang['lead_value_tooltip']              = 'Použije sa základná mena.';
+$lang['leads_dt_lead_value']             = 'Hodnota poľa';
+$lang['leads_canban_lead_value']         = 'Hodnota poľa: %s';
+$lang['lead_add_edit_lead_value']        = 'Hodnota poľa';
 
 # Version 2.6.0
-$lang['gantt_view_day'] = 'Zobrazenie dní';
-$lang['gantt_view_week'] = 'Zobrazenie týždňov';
+$lang['gantt_view_day']   = 'Zobrazenie dní';
+$lang['gantt_view_week']  = 'Zobrazenie týždňov';
 $lang['gantt_view_month'] = 'Zobrazenie mesiacov';
-$lang['gantt_view_year'] = 'Zobrazenie rokov';
+$lang['gantt_view_year']  = 'Zobrazenie rokov';
 
 # Version 2.7.0
 $lang['hour_of_day_perform_tasks_reminder_notification_help'] = '24 hodinový formát napr. 9 na 9:00 alebo 15 na 3:00. Používa sa na opakujúce sa úlohy, pripomenutia úloh atď.';
@@ -3501,18 +3499,18 @@ $lang['allow_primary_contact_to_manage_other_contacts']       = 'Povoliť primá
 $lang['contact_form_validation_is_unique']                    = 'Kontakt s týmto {field} už v našom systéme existuje';
 $lang['invoice_number_not_applied_on_draft']                  = 'Ak je faktúra uložená ako koncept, číslo sa nepoužije. Namiesto toho sa pri odoslaní faktúry zákazníkovi, alebo pri jej označení ako odoslaná, uvedie ďalšie číslo faktúry.';
 
-$lang['two_factor_authentication_disabed']                    = 'Zakázané';
-$lang['enable_google_two_factor_authentication']              = 'Povoliť Google Authenticator';
-$lang['set_google_two_factor_authentication_failed']          = 'Uloženie autentifikácie zlyhalo, skúste to znova';
-$lang['enter_two_factor_auth_code_from_mobile']               = 'Zadajte autentifikačný kód z aplikácie Authenticator';
-$lang['staff_two_factor_authentication']                      = 'Dvojfaktorová autentifikácia';
-$lang['google_authentication_code']                           = 'Zadajte kód z aplikácie Authenticator';
-$lang['set_two_factor_authentication_successful']             = 'Úspešne aktualizované nastavenia dvojfaktorového overenia';
-$lang['set_two_factor_authentication_failed']                 = 'Nepodarilo sa aktualizovať nastavenia dvojfaktorového overenia';
-$lang['google_2fa_code_valid']                                = 'Autentifikácia bola úspešne overená';
-$lang['google_2fa_code_invalid']                              = 'Bol zadaný neplatný autentifikačný kód, skúste to znova.';
-$lang['google_2fa_scan_qr_guide']                             = 'Naskenujte QR kód nižšie pomocou aplikácie Google Authenticator na vašom mobilnom zariadení. Potom vyplňte dole uvedené pole kódom vygenerovaným v aplikácii';
-$lang['google_2fa_manul_input_secret']                        = 'Tajný kľúč pre ručné zadanie';
+$lang['two_factor_authentication_disabed']           = 'Zakázané';
+$lang['enable_google_two_factor_authentication']     = 'Povoliť Google Authenticator';
+$lang['set_google_two_factor_authentication_failed'] = 'Uloženie autentifikácie zlyhalo, skúste to znova';
+$lang['enter_two_factor_auth_code_from_mobile']      = 'Zadajte autentifikačný kód z aplikácie Authenticator';
+$lang['staff_two_factor_authentication']             = 'Dvojfaktorová autentifikácia';
+$lang['google_authentication_code']                  = 'Zadajte kód z aplikácie Authenticator';
+$lang['set_two_factor_authentication_successful']    = 'Úspešne aktualizované nastavenia dvojfaktorového overenia';
+$lang['set_two_factor_authentication_failed']        = 'Nepodarilo sa aktualizovať nastavenia dvojfaktorového overenia';
+$lang['google_2fa_code_valid']                       = 'Autentifikácia bola úspešne overená';
+$lang['google_2fa_code_invalid']                     = 'Bol zadaný neplatný autentifikačný kód, skúste to znova.';
+$lang['google_2fa_scan_qr_guide']                    = 'Naskenujte QR kód nižšie pomocou aplikácie Google Authenticator na vašom mobilnom zariadení. Potom vyplňte dole uvedené pole kódom vygenerovaným v aplikácii';
+$lang['google_2fa_manul_input_secret']               = 'Tajný kľúč pre ručné zadanie';
 
 # Version 2.7.1
 $lang['templates']                                   = 'Šablóny';
@@ -3547,69 +3545,371 @@ $lang['email_to_ticket_config']          = 'Konfigurácia tiketu e-mailom';
 
 
 # Version 2.8.0
-$lang['enable_support_menu_badges']     = 'Enable support menu item badge';
-$lang['item_copy_success']              = 'Item copied successfully';
-$lang['item_copy_fail']                 = 'Failed to copy item';
+$lang['enable_support_menu_badges']              = 'Enable support menu item badge';
+$lang['item_copy_success']                       = 'Item copied successfully';
+$lang['item_copy_fail']                          = 'Failed to copy item';
 $lang['attach_invoice_to_payment_receipt_email'] = 'Attach invoice PDF when sending payment receipt to email';
 
-$lang['estimate_request']                       = 'Estimate request';
-$lang['estimate_requests']                      = 'Estimate request';
-$lang['estimate_request_form']                  = 'Estimate request form';
-$lang['acs_estimate_request']                   = 'Estimate request';
-$lang['acs_estimate_request_forms']             = 'Forms';
-$lang['estimate_request_forms']             = 'Estimate Request Forms';
-$lang['estimate_request_notify_staff']          = 'Staff Members to Notify';
-$lang['estimate_request_notify_when_submitted']     = 'Notify when estimate request submitted';
-$lang['estimate_request_assignee']              = 'Responsible (Assignee)';
-$lang['estimate_request_notify_roles']          = 'Roles to Notify';
-$lang['custom_field_estimate_request']          = 'Estimate request';
-$lang['new_estimate_request_submitted_from_form']     = 'New Estimate Request submitted from Form - %s';
-$lang['acs_estimate_request_statuses_submenu']  = 'Statuses';
-$lang['estimate_request_dt_email']              = 'Email';
-$lang['estimate_request_dt_assigned']           = 'Assigned';
-$lang['estimate_request_dt_status']             = 'Status';
-$lang['estimate_request_dt_datecreated']        = 'Created';
-$lang['estimate_request_attachments']           = 'Attachments';
-$lang['estimate_request_new_status']            = 'New Status';
-$lang['estimate_request_status_table_name']     = 'Status Name';
-$lang['estimate_request_table_total']           = 'Total Request: %s';
-$lang['estimate_request_statuses_not_found']    = 'No Estimate Request statuses found';
-$lang['estimate_request_status_add_edit_name']  = 'Status Name';
-$lang['estimate_request_status_color']          = 'Color';
-$lang['estimate_request_status_add_edit_order'] = 'Status Order';
-$lang['estimate_request_status']                = 'Status';
-$lang['estimate_request_date_added']            = 'Date Created';
-$lang['estmate_request_tags_updated']           = 'Tags Updated';
-$lang['not_estimate_request_activity_status_updated'] = '%s updated estimate request status from %s to %s';
-$lang['estimate_request_lowercase']             = 'estimate request';
+$lang['estimate_request']                                  = 'Estimate request';
+$lang['estimate_requests']                                 = 'Estimate request';
+$lang['estimate_request_form']                             = 'Estimate request form';
+$lang['acs_estimate_request']                              = 'Estimate request';
+$lang['acs_estimate_request_forms']                        = 'Forms';
+$lang['estimate_request_forms']                            = 'Estimate Request Forms';
+$lang['estimate_request_notify_staff']                     = 'Staff Members to Notify';
+$lang['estimate_request_notify_when_submitted']            = 'Notify when estimate request submitted';
+$lang['estimate_request_assignee']                         = 'Responsible (Assignee)';
+$lang['estimate_request_notify_roles']                     = 'Roles to Notify';
+$lang['custom_field_estimate_request']                     = 'Estimate request';
+$lang['new_estimate_request_submitted_from_form']          = 'New Estimate Request submitted from Form - %s';
+$lang['acs_estimate_request_statuses_submenu']             = 'Statuses';
+$lang['estimate_request_dt_email']                         = 'Email';
+$lang['estimate_request_dt_assigned']                      = 'Assigned';
+$lang['estimate_request_dt_status']                        = 'Status';
+$lang['estimate_request_dt_datecreated']                   = 'Created';
+$lang['estimate_request_attachments']                      = 'Attachments';
+$lang['estimate_request_new_status']                       = 'New Status';
+$lang['estimate_request_status_table_name']                = 'Status Name';
+$lang['estimate_request_table_total']                      = 'Total Request: %s';
+$lang['estimate_request_statuses_not_found']               = 'No Estimate Request statuses found';
+$lang['estimate_request_status_add_edit_name']             = 'Status Name';
+$lang['estimate_request_status_color']                     = 'Color';
+$lang['estimate_request_status_add_edit_order']            = 'Status Order';
+$lang['estimate_request_status']                           = 'Status';
+$lang['estimate_request_date_added']                       = 'Date Created';
+$lang['estmate_request_tags_updated']                      = 'Tags Updated';
+$lang['not_estimate_request_activity_status_updated']      = '%s updated estimate request status from %s to %s';
+$lang['estimate_request_lowercase']                        = 'estimate request';
 $lang['estimate_request_form_email_field_is_required']     = 'Email field is required to be added on the form';
 $lang['estimate_request_form_email_field_set_to_required'] = 'Mark the email field as required';
 $lang['not_delete_estimate_request_default_status']        = 'Cannot delete core estimate request status';
-$lang['mark_estimate_request_as']               = 'Mark as %s';
-$lang['estimate_request_updated']              = 'Estimate Request Updated';
-$lang['convert_estimate_request']               = 'Convert Estimate Request';
-$lang['estimate_request_client_firstname']      = 'First Name';
-$lang['estimate_request_client_lastname']       = 'Last Name';
-$lang['estimate_request_email']                 = 'Email';
-$lang['estimate_request_for_lead']              = 'Lead';
-$lang['estimate_request_for_customer']          = 'Customer';
-$lang['estimate_request_related']               = 'Related to';
-$lang['estimate_request_client_created_success'] = 'Estimate Request Customer Created';
-$lang['estimate_request_assigned']              = 'Staff Assigned';
-$lang['not_estimate_request_activity_assigned_updated']       = 'Estimate Request Assigned to %s';
-$lang['estimate_request_status_lowercase']      = 'estimate request status';
-$lang['estimate_request_assigned_to_staff']     = 'Estimate Request has been assigned to you';
+$lang['mark_estimate_request_as']                          = 'Mark as %s';
+$lang['estimate_request_updated']                          = 'Estimate Request Updated';
+$lang['convert_estimate_request']                          = 'Convert Estimate Request';
+$lang['estimate_request_client_firstname']                 = 'First Name';
+$lang['estimate_request_client_lastname']                  = 'Last Name';
+$lang['estimate_request_email']                            = 'Email';
+$lang['estimate_request_for_lead']                         = 'Lead';
+$lang['estimate_request_for_customer']                     = 'Customer';
+$lang['estimate_request_related']                          = 'Related to';
+$lang['estimate_request_client_created_success']           = 'Estimate Request Customer Created';
+$lang['estimate_request_assigned']                         = 'Staff Assigned';
+$lang['not_estimate_request_activity_assigned_updated']    = 'Estimate Request Assigned to %s';
+$lang['estimate_request_status_lowercase']                 = 'estimate request status';
+$lang['estimate_request_assigned_to_staff']                = 'Estimate Request has been assigned to you';
 
-$lang['activity_due_reminder_is_sent']          = '%s sent invoice becoming due reminder';
-$lang['invoice_due_notice_before']              = 'Send due reminder X days before due date';
-$lang['overdue_notices']                        = 'Overdue Notices';
-$lang['invoice_overdue_notices_info']           = 'Overdue notices are sent when the invoice becomes overdue.';
-$lang['due_reminders']                          = 'Due Reminders';
-$lang['due_reminders_for_invoices_info']        = 'Due reminders are sent to unpaid and partially paid invoices as reminder to the customer to pay the invoice before is due.';
-$lang['expenses_list_made_payment_by']          = 'Made Payment by %s';
+$lang['activity_due_reminder_is_sent']   = '%s sent invoice becoming due reminder';
+$lang['invoice_due_notice_before']       = 'Send due reminder X days before due date';
+$lang['overdue_notices']                 = 'Overdue Notices';
+$lang['invoice_overdue_notices_info']    = 'Overdue notices are sent when the invoice becomes overdue.';
+$lang['due_reminders']                   = 'Due Reminders';
+$lang['due_reminders_for_invoices_info'] = 'Due reminders are sent to unpaid and partially paid invoices as reminder to the customer to pay the invoice before is due.';
+$lang['expenses_list_made_payment_by']   = 'Made Payment by %s';
 
 # Version 2.8.2
-$lang['hide_task_checklist_items_completed']          = 'Hide completed items';
-$lang['show_task_checklist_items_completed']          = 'Show completed items %s';
-$lang['task_checklist_assign']                        = 'Assign staff';
-$lang['task_checklist_assigned']                      = 'Assigned to %s';
+$lang['hide_task_checklist_items_completed'] = 'Hide completed items';
+$lang['show_task_checklist_items_completed'] = 'Show completed items %s';
+$lang['task_checklist_assign']               = 'Assign staff';
+$lang['task_checklist_assigned']             = 'Assigned to %s';
+
+# Version 2.8.3
+$lang['projects_send_contact_notification']                   = 'Send contacts notifications';
+$lang['project_send_all_contacts_with_notifications_enabled'] = 'To all contacts with notifications for projects enabled';
+$lang['project_do_not_send_contacts_notifications']           = 'Do not send notifications';
+$lang['project_send_specific_contacts_with_notification']     = 'Specific contacts';
+$lang['project_contacts_to_notify']                           = 'Select contacts to notify';
+$lang['contract_signed_by']                                   = 'Signer Name';
+$lang['contract_signed_date']                                 = 'Signed Date';
+$lang['contract_signed_ip']                                   = 'IP Address';
+$lang['show_estimate_request_in_customers_area']              = 'Show Estimate request link in customers area?';
+$lang['customers_estimate_request_link_text']                 = 'Request Estimate';
+$lang['total_expenses_deleted']                               = 'Total Expenses Deleted: %s';
+$lang['estimate_convert_to_project']                          = 'Convert to Project';
+$lang['estimate_items_convert_to_tasks']                      = 'Items that will be converted to tasks';
+
+# Version 2.9.0
+$lang['home_payment_records']                                  = 'Payment Records';
+$lang['weekly']                                                = 'Weekly';
+$lang['monthly']                                               = 'Monthly';
+$lang['failed_to_update_timesheet']                            = 'Timesheet was not updated';
+$lang['permission_create_timesheets']                          = 'Create Timesheets';
+$lang['permission_edit_timesheets']                            = 'Edit Timesheets (Global)';
+$lang['permission_edit_own_timesheets']                        = 'Edit Own Timesheets';
+$lang['permission_delete_timesheets']                          = 'Delete Timesheets (Global)';
+$lang['permission_delete_own_timesheets']                      = 'Delete own Timesheets';
+$lang['permission_edit_milestones']                            = 'Edit Milestones';
+$lang['permission_delete_milestones']                          = 'Delete Milestones';
+$lang['add_timesheet']                                         = 'Add timesheet';
+$lang['submit_button_bg_color']                                = 'Submit button background color';
+$lang['submit_button_text_color']                              = 'Submit button background text';
+$lang['automatically_assign_ticket_to_first_staff_responding'] = 'Automatically assign the ticket to the first staff that post a reply?';
+
+# Version 2.9.1
+$lang['contract_signed_not_all_fields_editable'] = 'This contract is signed, hence not all fields can be edited until the signature is removed.';
+$lang['form_submit_success_action']              = 'What should happen after a visitor submits this form';
+$lang['form_submit_success_display_thank_you']   = 'Display thank you messsage';
+$lang['form_submit_success_redirect_to_website'] = 'Redirect to another website';
+$lang['form_submit_website_url']                 = 'Website URL';
+
+# Version 2.9.2
+$lang['open_google_map']                                  = 'Open in Google Map';
+$lang['milestone_start_date']                             = 'Start Date';
+$lang['send_reminder_for_completed_but_not_billed_tasks'] = 'Send an email reminder of billable tasks completed but not billed';
+$lang['staff_to_notify_completed_but_not_billed_tasks']   = 'Select which staff members you want to receive the reminder';
+$lang['reminder_for_completed_but_not_billed_tasks_days'] = 'Select days of the week reminder should be sent';
+$lang['notifications']                                    = 'Notifications';
+$lang['merged']                                           = 'Merged';
+$lang['ticket_merged_notice']                             = 'This ticket is merged into the ticket with ID';
+$lang['view_primary_ticket']                              = 'View primary ticket';
+$lang['merge_tickets']                                    = 'Merge Tickets';
+$lang['primary_ticket']                                   = 'Primary Ticket';
+$lang['primary_ticket_status']                            = 'Primary Ticket Status';
+$lang['tickets_merged']                                   = 'Tickets Merged Successfully';
+$lang['cannot_merge_into_merged_ticket']                  = 'Ticket that is merged into another ticket cannot be used as primary ticket';
+$lang['merge_ticket_ids_field_label']                     = 'Merge Ticket #';
+$lang['merge_ticket_ids_field_placeholder']               = 'example: 5 or 5,6';
+$lang['cannot_merge_tickets_with_ids']                    = 'Ticket %s is already merged in another ticket';
+$lang['ticket_merged_tickets_header']                     = 'This ticket contains %s tickets that are merged';
+$lang['batch_payments_table_invoice_number_heading']      = 'Invoice Number';
+$lang['batch_payments_table_payment_date_heading']        = 'Payment Date';
+$lang['batch_payments_table_payment_mode_heading']        = 'Payment Mode';
+$lang['batch_payments_table_transaction_id_heading']      = 'Transaction Id';
+$lang['batch_payments_table_amount_received_heading']     = 'Amount received';
+$lang['batch_payments_table_invoice_balance_due']         = 'Invoice Balance Due';
+$lang['add_batch_payments']                               = 'Add Payments';
+$lang['batch_payment_filter_by_customer']                 = 'Filter invoices by customer';
+$lang['batch_payments']                                   = 'Batch Payments';
+$lang['batch_payment_added_successfully']                 = 'You have successfully added %s payments';
+$lang['batch_payments_send_invoice_payment_recorded']     = 'Do not send invoice payment recorded email to customer contacts';
+$lang['invoice_batch_payments']                           = 'Batch Payment';
+$lang['staff_is_currently_replying']                      = '%s is currently replying to ticket.';
+
+# Version 2.9.4
+$lang['permission_view_timesheet_report']                  = 'View Timesheets Report';
+$lang['timesheets_overview_all_members_notice_permission'] = 'Timesheet overview for all staff members is only available for Staff with Permission to view timesheet reports and administrators.';
+$lang['show_project_on_proposal']                          = 'Show Project Name On Proposal';
+$lang['ticket_reports_staff']                              = 'Staff Member';
+$lang['ticket_reports_total_assigned']                     = 'Total Assigned Tickets';
+$lang['ticket_reports_open_tickets']                       = 'Open Tickets';
+$lang['ticket_reports_closed_tickets']                     = 'Closed Tickets';
+$lang['ticket_reports_replies_to_tickets']                 = 'Replies To Tickets';
+$lang['ticket_reports_average_reply_time']                 = 'Average Reply Time';
+$lang['home_tickets_report']                               = 'Staff Tickets Report';
+$lang['ticket_reports_average_reply_time_help']            = 'Average response time from assigned tickets.';
+$lang['created_by']                                        = 'Created by';
+
+$lang['staff_related_ticket_notification_to_assignee_only']      = 'Send staff-related ticket notifications to the ticket assignee only';
+$lang['staff_related_ticket_notification_to_assignee_only_help'] = 'If this option is set to Yes and the ticket does not have an assignee, notification will be sent to all staff that belongs to the ticket department';
+$lang['import_expenses']                                         = 'Import Expenses';
+$lang['show_pdf_signature_proposal']                             = 'Show PDF Signature on Proposal';
+$lang['enable_honeypot_spam_validation']                         = 'Enable Honeypot spam validation';
+
+# Version 3.0.0
+$lang['contracts_view_marked_as_signed'] = 'Marked As Signed';
+$lang['contracts_view_signed']           = 'signed';
+$lang['contracts_view_not_expired']      = 'Not Expired';
+$lang['contract_information']            = 'Contract Information';
+$lang['receipt']                         = 'Receipt';
+$lang['search_proposals']                = 'Search Proposals';
+$lang['search_estimates']                = 'Search Estimates';
+$lang['quick_create']                    = 'Quick Create';
+
+
+# Version 3.0.5
+$lang['subscription_last_sent']                             = 'Last Sent';
+$lang['automatically_set_logged_in_staff_sales_agent']      = 'Automatically assign logged in staff as sale agent';
+$lang['automatically_set_logged_in_staff_sales_agent_help'] = 'Applicable for: Estimates, invoices, proposal';
+$lang['permission_view_all_templates']                      = 'View All Templates';
+$lang['settings_contract_sign_reminder_every_days_info']    = 'Sign reminders are sent to the customer contacts after the contract is first time sent to the customer and they are automatically stopped when the contract is signed.';
+$lang['contract_sign_reminder_every_days']                  = 'Send sign reminder every (days)';
+$lang['contract_sign_reminders']                            = 'Sign Reminders';
+$lang['payment_gateway_fee_percentage']                     = 'Percentage Fee';
+$lang['payment_gateway_fee_fixed']                          = 'Fixed Fee';
+$lang['payment_attempt_amount']                             = 'Invoice Total';
+$lang['payment_attempt_fee']                                = 'Payment Fee';
+$lang['feature']                                            = 'Feature';
+$lang['capabilities']                                       = 'Capabilities';
+
+# Version 3.1.0
+$lang['filter_boolean_yes'] = 'Yes';
+$lang['filter_boolean_no'] = 'No';
+$lang['filter_matchtype_and'] = 'and';
+$lang['filter_matchtype_or'] = 'or';
+$lang['filter_share'] = 'Share with other team members?';
+$lang['filter_mark_as_default'] = 'Mark as default';
+$lang['filter_unmark_as_default'] = 'Unmark as default';
+$lang['filter_save'] = 'Save Filter';
+$lang['filter_name'] = 'Filter name';
+$lang['filter_apply'] = 'Apply';
+$lang['filter_apply_and_save'] = 'Apply and Save';
+$lang['filter_use_dynamic_dates'] = 'Use dynamic dates';
+$lang['filter_new'] = 'New Filter';
+$lang['filter_clear_active'] = 'Clear Filter';
+$lang['filter_edit'] = 'Edit';
+$lang['filter_create'] = 'Create Filter';
+$lang['filter_update'] = 'Update Filter';
+$lang['filter_delete'] = 'Delete Filter';
+$lang['filter_cannot_be_shared'] = 'This filter cannot be shared with other team members as it contains rules that may not be available for all users.';
+$lang['filter_add_rule'] = 'Add Rule';
+
+$lang['filter_operator_is_empty'] = 'is unknown';
+$lang['filter_operator_is_not_empty'] = 'is known';
+$lang['filter_operator_equal'] = 'equal';
+$lang['filter_operator_not_equal'] = 'not equal';
+$lang['filter_operator_begins_with'] = 'begins with';
+$lang['filter_operator_not_begins_with'] = 'not begins with';
+$lang['filter_operator_contains'] = 'contains';
+$lang['filter_operator_not_contains'] = 'not contains';
+$lang['filter_operator_ends_with'] = 'ends with';
+$lang['filter_operator_not_ends_with'] = 'not ends with';
+$lang['filter_operator_in'] = 'in';
+$lang['filter_operator_not_in'] = 'not in';
+$lang['filter_operator_between'] = 'between';
+$lang['filter_operator_not_between'] = 'not between';
+$lang['filter_operator_dynamic'] = 'dynamic';
+$lang['filter_operator_greater'] = 'greater';
+$lang['filter_operator_greater_or_equal'] = 'greater or equal';
+$lang['filter_operator_less'] = 'less';
+$lang['filter_operator_less_or_equal'] = 'less or equal';
+$lang['no_filters_found'] = 'No saved filters, get started by creating a new filter.';
+
+$lang['staff_logged_in_public_ticket_warning'] = 'You are logged in a staff member, if you want to reply to the ticket as staff, you must make reply via the admin area.';
+
+# Version 3.1.2
+$lang['allow_non_admin_members_to_delete_tickets_and_replies'] = 'Allow non-admin staff members to delete tickets and replies';
+$lang['default_filter_info'] = 'The filter will be marked as default only for your account.';
+$lang['required_register_fields'] = 'Required fields for registration (customers area)';
+
+# Version 3.1.6
+$lang['allow_non_admin_members_to_edit_ticket_messages'] = 'Allow non-admin staff members to delete tickets and replies';
+$lang['proposal_auto_convert_to_invoice_on_client_accept'] = 'Auto convert the proposal to invoice after client accept (only customers related proposals)';
+$lang['invoice_activity_auto_converted_from_proposal']      = 'Invoice auto created from proposal with number %s';
+$lang['clients_proposal_invoiced_successfully'] = 'Thank you for accepting the proposal. Please review the created invoice for the proposal';
+
+# Version 3.2.0
+$lang['ideal_payment_failure_message'] = 'The payment failed or was canceled.';
+$lang['ideal_api_publishable_key'] = 'Stripe Publishable Key';
+$lang['ideal_api_secret_key'] = 'Stripe API Secret Key';
+$lang['filters'] = 'Filters';
+$lang['view_financial_stats'] = 'View Financial Stats';
+$lang['timesheet_summary'] = 'Timesheet Summary';
+$lang['timesheet_detailed_overview'] = 'Detailed Overview of Logged Timesheets and Hours';
+$lang['ticket_request_history'] = 'Request History';
+$lang['integrations'] = 'Integrations';
+$lang['settings_group_other'] = 'Other';
+$lang['settings_group_configure_features'] = 'Configure Features';
+$lang['disable_ticket_public_url'] = 'Disable Ticket Public URL';
+
+# Version 3.2.1
+$lang['ideal_gateway_keys_not_configured'] = 'iDEAL Payment Gateway API not configured.';
+$lang['ideal_gateway_cannot_be_activated_keys_not_configured'] = 'iDEAL Payment Gateway cannot be activated as the Stripe Publishable/API key is not configured.';
+$lang['company_logo_light'] = 'Company Logo Light';
+$lang['welcome_back_sign_in'] = 'Welcome, please sign in to your dashboard';
+
+# Version 3.3.0
+$lang['settings_ai'] = 'AI';
+$lang['settings_group_ai'] = 'AI Integration';
+$lang['settings_ai_general'] = 'General';
+$lang['settings_ai_provider'] = 'Provider';
+$lang['settings_ai_system_prompt'] = 'System Prompt';
+$lang['settings_ai_system_prompt_help'] = 'Provide context about your company and how you handle support tickets to help AI generate better responses.';
+$lang['settings_ai_enable_ticket_summarization'] = 'Enable Ticket Summarization';
+$lang['settings_ai_enable_ticket_summarization_help'] = 'Enable the AI ticket summary feature to automatically generate a summary of the ticket conversation.';
+$lang['settings_ai_enable_ticket_reply_suggestions'] = 'Enable Ticket Reply Suggestion';
+$lang['settings_ai_enable_ticket_reply_suggestions_help'] = 'Enable the AI ticket reply suggestion to automatically generate a reply to the customer based on the tickets conversation.';
+$lang['ticket_summarization_disabled'] = 'Ticket summarization is disabled';
+$lang['ticket_reply_suggestion_disabled'] = 'Ticket reply suggestions is disabled';
+
+$lang['openai_api_key'] = 'OpenAI API Key';
+$lang['openai_model'] = 'OpenAI Model';
+$lang['openai'] = 'OpenAI';
+$lang['ticket_summarize_ai'] = 'Summarize (AI)';
+$lang['ticket_suggest_reply'] = 'Suggest Reply (AI)';
+$lang['ticket_rephrase_reply'] = 'Rephrase (AI)';
+$lang['ai_ticket_summary'] = 'Ticket Summary (AI)';
+$lang['openai_max_token'] = 'Max Output Tokens';
+$lang['warn_ticket_thread_too_long'] = 'This ticket contains a significant amount of information. Processing such a long ticket may require more input tokens, which could potentially impact the accuracy or efficiency of the response. Would you like to proceed with this request?';
+$lang['text_enhancement_make_friendly'] = 'Make more friendly';
+$lang['text_enhancement_make_formal'] = 'Make more formal';
+$lang['text_enhancement_make_polite'] = 'Make more polite';
+
+$lang['openai_fine_tuning']          = 'OpenAI Fine-Tuning';
+$lang['fine_tuning_source_data']     = 'Source Data for Fine-Tuning';
+$lang['available_articles']          = 'Available Articles';
+$lang['fine_tuning_min_articles']    = 'You need at least 10 knowledge base articles for fine-tuning.';
+$lang['start_fine_tuning']           = 'Start Fine-Tuning';
+$lang['last_fine_tuning_job']        = 'Last Fine-Tuning Job';
+$lang['job_id']                      = 'Job ID';
+$lang['status']                      = 'Status';
+$lang['fine_tuned_model']            = 'Fine-Tuned Model';
+$lang['created_at']                  = 'Created At';
+$lang['finished_at']                 = 'Finished At';
+$lang['loading_job_status']          = 'Loading job status...';
+$lang['refresh_status']              = 'Refresh Status';
+$lang['fine_tuned_models']           = 'Fine-Tuned Models';
+$lang['enable_fine_tuning']          = 'Enable Fine-Tuning';
+$lang['no_fine_tuned_models']        = 'No fine-tuned models available yet.';
+$lang['model_id']                    = 'Model ID';
+$lang['owned_by']                    = 'Owned By';
+$lang['options']                     = 'Options';
+$lang['active']                      = 'Active';
+$lang['set_as_active']               = 'Set as Active';
+$lang['processing']                  = 'Processing...';
+$lang['error_processing_request']    = 'Error processing request';
+$lang['fine_tuning_completed']       = 'Fine-tuning completed successfully!';
+$lang['fine_tuning_enabled']         = 'Fine-tuning has been enabled';
+$lang['fine_tuning_disabled']        = 'Fine-tuning has been disabled';
+$lang['fine_tuned_model_set']        = 'Fine-tuned model has been set as active';
+$lang['confirm_delete_fine_tuned_model'] = 'Are you sure you want to delete this fine-tuned model? This action cannot be undone.';
+$lang['fine_tuned_model_deleted']    = 'Fine-tuned model has been deleted';
+$lang['fine_tuned_model_delete_failed'] = 'Failed to delete fine-tuned model';
+$lang['fine_tuning_base_model']      = 'Fine-Tuning Base Model';
+$lang['fine_tuning_base_model_description'] = 'This is the base model that will be used for fine-tuning. Different models have different capabilities and price points.';
+$lang['advanced_features']           = 'Advanced Features';
+$lang['openai_fine_tuning_description'] = 'Fine-tune OpenAI models with your knowledge base and predefined replies content for more accurate responses.';
+$lang['retrain_model']               = 'Re-Train Model';
+$lang['retrain_model_description']   = 'Create a new fine-tuned model with the latest content. Previous fine-tuned models will be deleted.';
+$lang['model_is_recommended'] = 'Recommended';
+
+# 3.4.0
+$lang['settings_group_einvoice']                                = 'e-Invoice';
+$lang['settings_einvoice_templates']                            = 'e-Invoice Templates';
+$lang['einvoice']                                               = 'e-Invoice';
+$lang['settings_einvoice_default_template']                     = 'Default e-Invoice template';
+$lang['settings_einvoice_default_credit_note_template']         = 'Default e-Invoice template for credit note';
+$lang['settings_einvoice_send_as_invoice_email_attachment']     = 'Send e-Invoice as invoice attachment with email';
+$lang['settings_einvoice_send_as_credit_note_email_attachment'] = 'Send e-Invoice as credit note attachment with email';
+$lang['einvoice_new_template']                          = 'New e-Invoice template';
+$lang['einvoice_template_invalid_xml']                  = 'The entered XML content is invalid. Please fix';
+$lang['einvoice_template_invalid_xml_on_submit']        = 'Invalid XML. Please correct errors before submitting.';
+$lang['einvoice_template_invalid_json']                 = 'The entered JSON content is invalid. Please fix the JSON syntax.';
+$lang['einvoice_template_invalid_mustache']             = 'The template contains invalid Mustache syntax. Please check your template variables.';
+$lang['xml_error']                                      = 'XML Error';
+$lang['einvoice_no_template_set']                       = 'No e-Invoice template set. Please set one in the settings.';
+$lang['einvoice_module_permission_bulk']                = 'Bulk export';
+$lang['einvoice_module_bulk_export']                    = 'e-Invoice Export';
+$lang['template_type']                        = 'Type';
+$lang['template_variables']                   = 'Template variables';
+$lang['validate_template']                    = 'Validate Template';
+$lang['validating']                           = 'Validating...';
+$lang['saving']                               = 'Saving...';
+$lang['template_validation_success']          = 'Template validation successful!';
+$lang['template_content_required']            = 'Template content is required.';
+
+$lang['item_is_optional'] = 'This item is optional';
+$lang['item_is_selected'] = 'Selected';
+$lang['note_title'] = 'Note Title';
+$lang['note_content'] = 'Note Content';
+$lang['enabled_languages'] = 'Enabled Languages';
+
+$lang['csv_export'] = 'CSV Export';
+$lang['csv_exports'] = 'CSV Exports';
+$lang['contacts'] = 'Contacts';
+$lang['csv_export_select_type'] = 'Export Type';
+$lang['csv_export_all_time'] = 'All Time';
+$lang['csv_export_three_months'] = 'Last 3 Months';
+$lang['csv_export_six_months'] = 'Last 6 Months';
+$lang['csv_export_twelve_months'] = 'Last 12 Months';
+$lang['csv_export_from_date'] = 'From Date';
+$lang['csv_export_to_date'] = 'To Date';
+$lang['csv_export_button'] = 'Export';

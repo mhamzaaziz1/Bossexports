@@ -7,6 +7,7 @@ class Statement_model extends App_Model
     public function __construct()
     {
         parent::__construct();
+        $this->load->helper('statement');
     }
 
     /**
@@ -23,61 +24,53 @@ class Statement_model extends App_Model
      */
     public function get_invoices_aging($customer_id)
     {
-        // Define aging buckets
+        // 1. Initialize buckets
         $aging = [
-            'current' => 0,
-            '1_30' => 0,
-            '31_60' => 0,
-            '61_90' => 0,
+            'current' => 0, // Future or Today
+            '1_30'    => 0,
+            '31_60'   => 0,
+            '61_90'   => 0,
             'over_90' => 0,
-            'total' => 0
+            'total'   => 0
         ];
 
-        // Get all unpaid/partially paid invoices for this customer
-        $this->db->select('id, total, date, duedate, status');
-        $this->db->from(db_prefix() . 'invoices');
-        $this->db->where('clientid', $customer_id);
-        $this->db->where('status !=', Invoices_model::STATUS_PAID);
-        $this->db->where('status !=', Invoices_model::STATUS_CANCELLED);
-        $this->db->where('status !=', Invoices_model::STATUS_DRAFT);
-        $invoices = $this->db->get()->result_array();
-
-        // Get current date for aging calculation
-        $today = new DateTime(date('Y-m-d'));
-
-        foreach ($invoices as $invoice) {
-            // Calculate amount due for this invoice
-            $this->db->select('SUM(amount) as total_paid');
-            $this->db->from(db_prefix() . 'invoicepaymentrecords');
-            $this->db->where('invoiceid', $invoice['id']);
-            $payments = $this->db->get()->row();
-
-            $total_paid = $payments ? $payments->total_paid : 0;
-            $amount_due = $invoice['total'] - $total_paid;
-
-            if ($amount_due <= 0) {
-                continue; // Skip if fully paid
-            }
-
-            // Calculate days overdue
-            $due_date = new DateTime($invoice['duedate']);
-            $days_overdue = $today->diff($due_date)->days;
-
-            // If due date is in the future, it's not overdue
-            if ($today < $due_date) {
-                $aging['current'] += $amount_due;
-            } elseif ($days_overdue <= 30) {
-                $aging['1_30'] += $amount_due;
-            } elseif ($days_overdue <= 60) {
-                $aging['31_60'] += $amount_due;
-            } elseif ($days_overdue <= 90) {
-                $aging['61_90'] += $amount_due;
-            } else {
-                $aging['over_90'] += $amount_due;
-            }
-
-            $aging['total'] += $amount_due;
+        // 2. Get the CLIENT'S REAL TOTAL BALANCE
+        // We need this exact number to be the limit for our calculation
+        $aging['current'] = before_balance($customer_id,date('Y-m-d'));
+        if (function_exists('get_client_total_balance')) {
+            $aging['total'] = before_balance($customer_id,date('Y-m-d'));
         }
+
+        $invoices_1_30 = $this->db->select('SUM(total) as total')
+    ->where(['clientid' => $customer_id, 'date >=' => date('Y-m-d', strtotime('-30 days')), 'date <=' => date('Y-m-d')])
+    ->where_not_in('status', [5])
+    ->group_by('clientid') // Group by clientid as requested
+    ->get(db_prefix() . 'invoices')
+    ->row();
+
+$aging['1_30'] = $invoices_1_30 ? (float) $invoices_1_30->total : 0.00;
+
+
+// 31-60 Days (Sum, Grouped by Client ID)
+$invoices_31_60 = $this->db->select('SUM(total) as total')
+    ->where(['clientid' => $customer_id, 'date >=' => date('Y-m-d', strtotime('-60 days')), 'date <=' => date('Y-m-d', strtotime('-31 days'))])
+    ->where_not_in('status', [5])
+    ->group_by('clientid') // Group by clientid as requested
+    ->get(db_prefix() . 'invoices')
+    ->row();
+
+$aging['31_60'] = $invoices_31_60 ? (float) $invoices_31_60->total : 0.00;
+
+
+// 61-90 Days (Sum, Grouped by Client ID)
+$invoices_61_90 = $this->db->select('SUM(total) as total')
+    ->where(['clientid' => $customer_id, 'date >=' => date('Y-m-d', strtotime('-90 days')), 'date <=' => date('Y-m-d', strtotime('-61 days'))])
+    ->where_not_in('status', [5])
+    ->group_by('clientid') // Group by clientid as requested
+    ->get(db_prefix() . 'invoices')
+    ->row();
+
+$aging['61_90'] = $invoices_61_90 ? (float) $invoices_61_90->total : 0.00;
 
         return $aging;
     }
@@ -297,47 +290,8 @@ class Statement_model extends App_Model
 
 
 
-        // Beginning balance is all invoices amount before the FROM date - payments received before FROM date
-        $result['beginning_balance'] = $this->db->query('
-            SELECT (
-            COALESCE(SUM(' . db_prefix() . 'invoices.total),0) - (
-            (
-            SELECT COALESCE(SUM(' . db_prefix() . 'invoicepaymentrecords.amount),0)
-            FROM ' . db_prefix() . 'invoicepaymentrecords
-            JOIN ' . db_prefix() . 'invoices ON ' . db_prefix() . 'invoices.id = ' . db_prefix() . 'invoicepaymentrecords.invoiceid
-            WHERE ' . db_prefix() . 'invoicepaymentrecords.date < "' . $this->db->escape_str($from) . '"
-            AND ' . db_prefix() . 'invoices.clientid=' . $this->db->escape_str($customer_id) . '
-            ) + (
-                SELECT COALESCE(SUM(' . db_prefix() . 'creditnotes.total),0)
-                FROM ' . db_prefix() . 'creditnotes
-                WHERE ' . db_prefix() . 'creditnotes.date < "' . $this->db->escape_str($from) . '"
-                AND ' . db_prefix() . 'creditnotes.clientid=' . $this->db->escape_str($customer_id) . '
-            )+(
-            SELECT COALESCE(SUM(' . db_prefix() . 'invoicepaymentrecords.amount),0)
-            FROM ' . db_prefix() . 'invoicepaymentrecords
-            WHERE ' . db_prefix() . 'invoicepaymentrecords.date < "' . $this->db->escape_str($from) . '"
-            AND ' . db_prefix() . 'invoicepaymentrecords.invoiceid = 0
-            AND ' . db_prefix() . 'invoicepaymentrecords.client_id=' . $this->db->escape_str($customer_id) . '
-            )-(
-            SELECT COALESCE(SUM(' . db_prefix() . 'expenses.amount),0)
-            FROM ' . db_prefix() . 'expenses
-            WHERE ' . db_prefix() . 'expenses.clientid = ' . $this->db->escape_str($customer_id) . ' AND tblexpenses.billable !=1
-            AND ' . db_prefix() . 'expenses.date < "' . $this->db->escape_str($from) . '"
-            )
-        )
-            )
-            as beginning_balance FROM ' . db_prefix() . 'invoices
-            WHERE date < "' . $this->db->escape_str($from) . '"
-            AND clientid = ' . $this->db->escape_str($customer_id) . '
-            AND status != ' . Invoices_model::STATUS_DRAFT . '
-            AND status != ' . Invoices_model::STATUS_CANCELLED)
-              ->row()->beginning_balance;
-
-        if ($result['beginning_balance'] === null) {
-            $result['beginning_balance'] = 0;
-        }
-        $abc =  ($this->db->select("balance")->from('tblclients')->where('userid', $customer_id)->get()->result());
-        $result['beginning_balance'] += (float)$abc[0]->balance;
+        // Get beginning balance using the helper function
+        $result['beginning_balance'] = before_balance($customer_id, $from);
 
         $dec = get_decimal_places();
         $result['invoiced_amount']=$result['invoiced_amount']+ $sumexpense;

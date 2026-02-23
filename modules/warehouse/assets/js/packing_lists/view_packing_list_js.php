@@ -10,10 +10,10 @@
 		<?php if(isset($send_mail_approve)){ 
 			?>
 			data_send_mail = <?php echo json_encode($send_mail_approve); ?>;
-			data_send_mail.rel_id = <?php echo html_entity_decode($packing_list->id); ?>;
+			data_send_mail.rel_id = <?php echo new_html_entity_decode($packing_list->id); ?>;
 			data_send_mail.rel_type = '5';
 
-			data_send_mail.addedfrom = <?php echo html_entity_decode($packing_list->staff_id); ?>;
+			data_send_mail.addedfrom = <?php echo new_html_entity_decode($packing_list->staff_id); ?>;
 
 			$.get(admin_url+'warehouse/send_mail', data_send_mail).done(function(response){
 				response = JSON.parse(response);
@@ -158,10 +158,10 @@ function approve_request(id){
 
 	//check before approval
 	var data = {};
-	data.rel_id = <?php echo html_entity_decode($packing_list->id); ?>;
+	data.rel_id = <?php echo new_html_entity_decode($packing_list->id); ?>;
 	data.rel_type = '5';
 	
-	data.addedfrom = <?php echo html_entity_decode($packing_list->staff_id); ?>;
+	data.addedfrom = <?php echo new_html_entity_decode($packing_list->staff_id); ?>;
 	$("body").append('<div class="dt-loader"></div>');
 	$.post(admin_url + 'warehouse/packing_list_check_before_approval', data).done(function(response){
 		response = JSON.parse(response);
@@ -235,10 +235,10 @@ function send_request_approve(id){
 	"use strict";
 
 	var data = {};
-	data.rel_id = <?php echo html_entity_decode($packing_list->id); ?>;
+	data.rel_id = <?php echo new_html_entity_decode($packing_list->id); ?>;
 	data.rel_type = '5';
 	
-	data.addedfrom = <?php echo html_entity_decode($packing_list->staff_id); ?>;
+	data.addedfrom = <?php echo new_html_entity_decode($packing_list->staff_id); ?>;
 	$("body").append('<div class="dt-loader"></div>');
 	$.post(admin_url + 'warehouse/send_request_approve', data).done(function(response){
 		response = JSON.parse(response);

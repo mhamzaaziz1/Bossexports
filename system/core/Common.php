@@ -35,6 +35,7 @@
  * @since	Version 1.0.0
  * @filesource
  */
+
 defined('BASEPATH') OR exit('No direct script access allowed');
 
 /**
@@ -49,6 +50,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
  * @link		https://codeigniter.com/user_guide/
  */
 
+require_once(BASEPATH . 'core/Exceptions.php');
 // ------------------------------------------------------------------------
 
 if ( ! function_exists('is_php'))
@@ -127,19 +129,21 @@ if ( ! function_exists('is_really_writable'))
 if ( ! function_exists('load_class'))
 {
 	/**
+     * @template C
 	 * Class registry
 	 *
 	 * This function acts as a singleton. If the requested class does not
 	 * exist it is instantiated and set to a static variable. If it has
 	 * previously been instantiated the variable is returned.
 	 *
-	 * @param	string	the class name being requested
-	 * @param	string	the directory where the class should be found
-	 * @param	mixed	an optional argument to pass to the class constructor
-	 * @return	object
+	 * @param class-string<C> $class	the class name being requested
+	 * @param string          $directory the directory where the class should be found
+	 * @param	mixed        $param	an optional argument to pass to the class constructor
+	 * @return	object|C
 	 */
-	function &load_class($class, $directory = 'libraries', $param = NULL)
+	function &load_class(string $class, string $directory = 'libraries', $param = NULL)
 	{
+
 		static $_classes = array();
 
 		// Does the class exist? If so, we're done...

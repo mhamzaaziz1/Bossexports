@@ -90,15 +90,16 @@ class Invoice_items_model extends App_Model
             return null;
         }
 
+        // First, fetch the item description for the given item ID
+        $item = $this->db->select('description')->from(db_prefix() . 'items')->where('id', $item_id)->get()->row();
+        if (!$item || !isset($item->description) || $item->description === '') {
+            return null;
+        }
+
         // Query to get the last sale price from invoices, estimates, or proposals
-        $this->db->select('rate');
+        $this->db->select(db_prefix() . 'itemable.rate');
         $this->db->from(db_prefix() . 'itemable');
-        $this->db->where('description', function($db) use ($item_id) {
-            $db->select('description');
-            $db->from(db_prefix() . 'items');
-            $db->where('id', $item_id);
-            $db->limit(1);
-        });
+        $this->db->where(db_prefix() . 'itemable.description', $item->description);
 
         // Join with invoices, estimates, and proposals to filter by customer
         $this->db->join(db_prefix() . 'invoices', db_prefix() . 'itemable.rel_id = ' . db_prefix() . 'invoices.id AND ' . db_prefix() . 'itemable.rel_type = "invoice"', 'left');
@@ -106,7 +107,8 @@ class Invoice_items_model extends App_Model
         $this->db->join(db_prefix() . 'proposals', db_prefix() . 'itemable.rel_id = ' . db_prefix() . 'proposals.id AND ' . db_prefix() . 'itemable.rel_type = "proposal"', 'left');
 
         // Filter by customer ID
-        $this->db->where('(' . db_prefix() . 'invoices.clientid = ' . $customer_id . ' OR ' . db_prefix() . 'estimates.clientid = ' . $customer_id . ' OR ' . db_prefix() . 'proposals.rel_id = ' . $customer_id . ' AND ' . db_prefix() . 'proposals.rel_type = "customer")');
+        $customer_id = (int) $customer_id;
+        $this->db->where('(' . db_prefix() . 'invoices.clientid = ' . $customer_id . ' OR ' . db_prefix() . 'estimates.clientid = ' . $customer_id . ' OR (' . db_prefix() . 'proposals.rel_id = ' . $customer_id . ' AND ' . db_prefix() . 'proposals.rel_type = "customer"))');
 
         // Order by date to get the most recent
         $this->db->order_by(db_prefix() . 'invoices.date', 'DESC');
@@ -347,7 +349,7 @@ class Invoice_items_model extends App_Model
             $data['inventory_commodity'] = $this->db->query($sql)->result_array();
             $items[$key]['subtext'] = " ";
             // $items[$key]['subtext'] = $item['subtext']. '(SQ Qty '.$item['pqty'].') (SO Qty '.$item['eqty'].') (invoice Qty '.$item['iqty'].')';
-            $items[$key]['name']    = $item['commodity_code'] .'-  ' .$item['name'] .' (' . app_format_number($item['rate']) . ')        '.' (Inventory='.number_format($data['inventory_commodity'][0]["inventory_number"]).')  (SQ Qty='.number_format($p[0]->pqty).') (S0 Qty='.number_format($e[0]->eqty).')';
+            $items[$key]['name']    = $item['commodity_code'] .'-  ' .$item['name'] .' (' . app_format_number($item['rate'] ?? 0) . ')        '.' (Inventory='.number_format($data['inventory_commodity'][0]["inventory_number"] ?? 0).')  (SQ Qty='.number_format($p[0]->pqty ?? 0).') (S0 Qty='.number_format($e[0]->eqty ?? 0).')';
         }
 
         return $items;

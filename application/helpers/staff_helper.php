@@ -38,7 +38,9 @@ function get_available_staff_permissions($data = [])
         ],
         'contracts' => [
             'name'         => _l('contracts'),
-            'capabilities' => $allPermissionsArray,
+            'capabilities' => array_merge($allPermissionsArray, [
+                'view_all_templates' => _l('permission_view_all_templates'),
+            ]),
         ],
         'credit_notes' => [
             'name'         => _l('credit_notes'),
@@ -87,20 +89,24 @@ function get_available_staff_permissions($data = [])
         ],
         'projects' => [
             'name'         => _l('projects'),
-            'capabilities' => $withNotApplicableViewOwn,
-            'help'         => [
+            'capabilities' => array_merge($withNotApplicableViewOwn, [ 'create_milestones' => _l('permission_create_timesheets'),
+                'edit_milestones'                                                          => _l('permission_edit_milestones'), 'delete_milestones' => _l('permission_delete_milestones'), ]),
+            'help' => [
                 'view'     => _l('help_project_permissions'),
                 'view_own' => _l('permission_projects_based_on_assignee'),
             ],
         ],
         'proposals' => [
             'name'         => _l('proposals'),
-            'capabilities' => $allPermissionsArray,
+            'capabilities' => array_merge($allPermissionsArray, [
+                'view_all_templates' => _l('permission_view_all_templates'),
+            ]),
         ],
         'reports' => [
             'name'         => _l('reports'),
             'capabilities' => [
-                'view' => $viewGlobalName,
+                'view'            => $viewGlobalName,
+                'view-timesheets' => _l('permission_view_timesheet_report'),
             ],
         ],
         'roles' => [
@@ -124,8 +130,13 @@ function get_available_staff_permissions($data = [])
         ],
         'tasks' => [
             'name'         => _l('tasks'),
-            'capabilities' => $withNotApplicableViewOwn,
-             'help'        => [
+            'capabilities' => array_merge($withNotApplicableViewOwn, [
+                'edit_timesheet'       => _l('permission_edit_timesheets'),
+                'edit_own_timesheet'   => _l('permission_edit_own_timesheets'),
+                'delete_timesheet'     => _l('permission_delete_timesheets'),
+                'delete_own_timesheet' => _l('permission_delete_own_timesheets'),
+            ]),
+             'help' => [
                 'view'     => _l('help_tasks_permissions'),
                 'view_own' => _l('permission_tasks_based_on_assignee'),
             ],
@@ -237,7 +248,7 @@ function staff_profile_image($id, $classes = ['staff-profile-image'], $type = 's
 
     $_attributes = '';
     foreach ($img_attrs as $key => $val) {
-        $_attributes .= $key . '=' . '"' . html_escape($val) . '" ';
+        $_attributes .= $key . '=' . '"' . e($val) . '" ';
     }
 
     $blankImageFormatted = '<img src="' . $url . '" ' . $_attributes . ' class="' . implode(' ', $classes) . '" />';
@@ -299,7 +310,7 @@ function get_staff_full_name($userid = '')
         $CI->app_object_cache->add('staff-full-name-data-' . $userid, $staff);
     }
 
-    return html_escape($staff ? $staff->firstname . ' ' . $staff->lastname : '');
+    return $staff ? $staff->firstname . ' ' . $staff->lastname : '';
 }
 
 /**
@@ -376,4 +387,39 @@ function is_staff_member($staff_id = '')
     ->where('is_not_staff', 0);
 
     return $CI->db->count_all_results(db_prefix() . 'staff') > 0 ? true : false;
+}
+
+/**
+ * Get device MAC address
+ * @param  string $ip User IP
+ * @return string
+ */
+function get_device_mac_address($ip)
+{
+    $mac = 'Unknown';
+    if ($ip == '127.0.0.1' || $ip == '::1') {
+        $output = shell_exec("getmac");
+        if ($output) {
+            foreach (explode("\n", $output) as $line) {
+                if (strpos($line, 'Tcpip') !== false) {
+                    $mac = substr($line, 0, 17);
+                    break;
+                }
+            }
+        }
+    } else {
+        $output = shell_exec("arp -a $ip");
+        if ($output) {
+             foreach (explode("\n", $output) as $line) {
+                if (strpos($line, $ip) !== false) {
+                    $parts = preg_split('/\s+/', trim($line));
+                    if (isset($parts[1])) {
+                        $mac = $parts[1];
+                        break;
+                    }
+                }
+            }
+        }
+    }
+    return strtoupper($mac);
 }

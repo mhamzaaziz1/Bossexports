@@ -9,16 +9,14 @@
 <br>	
 <div class="clearfix"></div>
 <div class="row text-right">
-    <?php
-    //var_dump($data);
+<?php
  for ($i=1; $i <= $total_page; $i++) {
  	$active = '';
  	if($page == $i){
  		$active = 'active';
  	}
    ?> 
- 		<button class="btn btn_page<?php echo html_entity_decode($active); ?>" data-page="<?php echo html_entity_decode($i); ?>"><?php echo html_entity_decode($i); ?></button>
-<?php } ?>
-
+ 		<button class="btn btn_page <?php echo html_entity_decode($active); ?>" data-page="<?php echo html_entity_decode($i); ?>"><?php echo html_entity_decode($i); ?></button>
+<?php } ?>	
 </div>
 <input type="hidden" name="group_id" value="<?php echo html_entity_decode($group_id); ?>">

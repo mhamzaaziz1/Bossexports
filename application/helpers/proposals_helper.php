@@ -22,18 +22,20 @@ function get_proposal_shortlink($proposal)
 
     // Create short link and return the newly created short link
     $short_link = app_generate_short_link([
-        'long_url'  => $long_url,
-        'title'     => format_proposal_number($proposal->id)
+        'long_url' => $long_url,
+        'title'    => format_proposal_number($proposal->id),
     ]);
 
     if ($short_link) {
         $CI = &get_instance();
         $CI->db->where('id', $proposal->id);
         $CI->db->update(db_prefix() . 'proposals', [
-            'short_link' => $short_link
+            'short_link' => $short_link,
         ]);
+
         return $short_link;
     }
+
     return $long_url;
 }
 
@@ -147,7 +149,9 @@ function format_proposal_status($status, $classes = '', $label = true)
  */
 function format_proposal_number($id)
 {
-    return get_option('proposal_number_prefix') . str_pad($id, get_option('number_padding_prefixes'), '0', STR_PAD_LEFT);
+    $format = get_option('proposal_number_prefix') . str_pad($id, get_option('number_padding_prefixes'), '0', STR_PAD_LEFT);
+
+    return hooks()->apply_filters('proposal_number_format', $format, $id);
 }
 
 
@@ -180,8 +184,8 @@ function get_proposal_item_taxes($itemid)
  */
 function get_proposals_percent_by_status($status, $total_proposals = '')
 {
-    $has_permission_view                 = has_permission('proposals', '', 'view');
-    $has_permission_view_own             = has_permission('proposals', '', 'view_own');
+    $has_permission_view                 = staff_can('view',  'proposals');
+    $has_permission_view_own             = staff_can('view_own',  'proposals');
     $allow_staff_view_proposals_assigned = get_option('allow_staff_view_proposals_assigned');
     $staffId                             = get_staff_user_id();
 
@@ -272,27 +276,28 @@ function parse_proposal_content_merge_fields($proposal)
     $CI->load->library('merge_fields/proposals_merge_fields');
     $CI->load->library('merge_fields/other_merge_fields');
 
+	$content = is_array($proposal) ? $proposal['content'] : $proposal->content;
+	if ($content === null) {
+		return $proposal;
+	}
+
     $merge_fields = [];
     $merge_fields = array_merge($merge_fields, $CI->proposals_merge_fields->format($id));
     $merge_fields = array_merge($merge_fields, $CI->other_merge_fields->format());
-    foreach ($merge_fields as $key => $val) {
-        $content = is_array($proposal) ? $proposal['content'] : $proposal->content;
 
+    foreach ($merge_fields as $key => $val) {
         if (stripos($content, $key) !== false) {
-            if (is_array($proposal)) {
-                $proposal['content'] = str_ireplace($key, $val, $content);
-            } else {
-                $proposal->content = str_ireplace($key, $val, $content);
-            }
+            $content = str_ireplace($key, $val, $content);
         } else {
-            if (is_array($proposal)) {
-                $proposal['content'] = str_ireplace($key, '', $content);
-            } else {
-                $proposal->content = str_ireplace($key, '', $content);
-            }
+            $content = str_ireplace($key, '', $content);
         }
     }
 
+    if (is_array($proposal)) {
+        $proposal['content'] = $content;
+    } else {
+        $proposal->content = $content;
+    }
     return $proposal;
 }
 
@@ -318,7 +323,7 @@ function staff_has_assigned_proposals($staff_id = '')
 
 function get_proposals_sql_where_staff($staff_id)
 {
-    $has_permission_view_own            = has_permission('proposals', '', 'view_own');
+    $has_permission_view_own            = staff_can('view_own',  'proposals');
     $allow_staff_view_invoices_assigned = get_option('allow_staff_view_proposals_assigned');
     $CI                                 = &get_instance();
 

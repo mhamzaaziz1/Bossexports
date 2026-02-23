@@ -18,6 +18,13 @@ class ViewsTracking
 
     public static function create($rel_type, $rel_id)
     {
+        // When bitly URL is generated, Bitly makes request to the URL, To verify whether it's valid or not
+        // In this case, we don't log view tracking
+        if(isset($_SERVER['HTTP_USER_AGENT']) &&
+            stripos($_SERVER['HTTP_USER_AGENT'], 'bitlybot') !== false) {
+            return false;
+        }
+
         $CI = & get_instance();
         if (!is_staff_logged_in()) {
             $CI->db->where('rel_id', $rel_id);

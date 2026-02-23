@@ -763,8 +763,8 @@ if (!function_exists('get_table_items_and_taxes')) {
 
             $item_amount_with_quantity = hooks()->apply_filters(
                 'item_preview_amount_with_currency',
-            app_format_number(($item['qty'] * $item['rate'])),
-            [
+                app_format_number(($item['qty'] * $item['rate'])),
+                [
                 'item'       => $item,
                 'item_taxes' => $item_taxes,
             ]
@@ -1232,4 +1232,51 @@ function handle_google_drive_links_in_text($text)
     }
 
     return $text;
+}
+
+hooks()->add_filter('get_option', '_check_deprecated_calendar_view_name_option', 10, 2);
+hooks()->add_filter('get_option', '_check_removed_number_padding_option_name', 10, 2);
+
+function _check_deprecated_calendar_view_name_option($value, $name)
+{
+    if ($name === 'default_view_calendar' &&
+            is_client_logged_in() &&
+            get_option('_v283_update_clients_theme') !== 'perfex' &&
+            active_clients_theme() !== 'perfex' &&
+            !in_array($value, ['dayGridMonth','dayGridWeek','dayGridDay','timeGridWeek','timeGridDay'])) {
+        $CalendarV5toV3ViewNamesMap = [
+            'dayGridMonth' => 'month',
+            'dayGridWeek'  => 'basicWeek',
+            'dayGridDay'   => 'basicDay',
+            'timeGridWeek' => 'agendaWeek',
+            'timeGridDay'  => 'agendaDay',
+        ];
+
+        if (array_key_exists($value, $CalendarV5toV3ViewNamesMap)) {
+            return $CalendarV5toV3ViewNamesMap[$value];
+        }
+    }
+
+    return $value;
+}
+
+function _check_removed_number_padding_option_name($value, $name)
+{
+    if ($name === 'number_padding_invoice_and_estimate') {
+        return get_option('number_padding_prefixes');
+    }
+
+    return $value;
+}
+
+/**
+ * Prepares task array gantt data to be used in the gantt chart
+ * @param  array $task task array
+ * @return array
+ */
+function get_task_array_gantt_data($task, $dep_id = null, $defaultEnd = null)
+{
+    _deprecated_function('get_task_array_gantt_data', '2.9.2', 'AbstractGantt::tasks_array_data');
+
+    return \app\services\projects\AbstractGantt::tasks_array_data($task, $dep_id, $defaultEnd);
 }

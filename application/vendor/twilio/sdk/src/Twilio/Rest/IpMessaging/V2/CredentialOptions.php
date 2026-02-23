@@ -14,60 +14,42 @@ use Twilio\Values;
 
 abstract class CredentialOptions {
     /**
-     * @param string $friendlyName A string to describe the resource
-     * @param string $certificate [APN only] The URL encoded representation of the
-     *                            certificate
-     * @param string $privateKey [APN only] The URL encoded representation of the
-     *                           private key
-     * @param bool $sandbox [APN only] Whether to send the credential to sandbox
-     *                      APNs
-     * @param string $apiKey [GCM only] The API key for the project that was
-     *                       obtained from the Google Developer console for your
-     *                       GCM Service application credential
-     * @param string $secret [FCM only] The Server key of your project from
-     *                       Firebase console
+     * @param string $friendlyName The friendly_name
+     * @param string $certificate The certificate
+     * @param string $privateKey The private_key
+     * @param bool $sandbox The sandbox
+     * @param string $apiKey The api_key
+     * @param string $secret The secret
      * @return CreateCredentialOptions Options builder
      */
-    public static function create($friendlyName = Values::NONE, $certificate = Values::NONE, $privateKey = Values::NONE, $sandbox = Values::NONE, $apiKey = Values::NONE, $secret = Values::NONE) {
+    public static function create(string $friendlyName = Values::NONE, string $certificate = Values::NONE, string $privateKey = Values::NONE, bool $sandbox = Values::NONE, string $apiKey = Values::NONE, string $secret = Values::NONE): CreateCredentialOptions {
         return new CreateCredentialOptions($friendlyName, $certificate, $privateKey, $sandbox, $apiKey, $secret);
     }
 
     /**
-     * @param string $friendlyName A string to describe the resource
-     * @param string $certificate [APN only] The URL encoded representation of the
-     *                            certificate
-     * @param string $privateKey [APN only] The URL encoded representation of the
-     *                           private key
-     * @param bool $sandbox [APN only] Whether to send the credential to sandbox
-     *                      APNs
-     * @param string $apiKey [GCM only] The API key for the project that was
-     *                       obtained from the Google Developer console for your
-     *                       GCM Service application credential
-     * @param string $secret [FCM only] The Server key of your project from
-     *                       Firebase console
+     * @param string $friendlyName The friendly_name
+     * @param string $certificate The certificate
+     * @param string $privateKey The private_key
+     * @param bool $sandbox The sandbox
+     * @param string $apiKey The api_key
+     * @param string $secret The secret
      * @return UpdateCredentialOptions Options builder
      */
-    public static function update($friendlyName = Values::NONE, $certificate = Values::NONE, $privateKey = Values::NONE, $sandbox = Values::NONE, $apiKey = Values::NONE, $secret = Values::NONE) {
+    public static function update(string $friendlyName = Values::NONE, string $certificate = Values::NONE, string $privateKey = Values::NONE, bool $sandbox = Values::NONE, string $apiKey = Values::NONE, string $secret = Values::NONE): UpdateCredentialOptions {
         return new UpdateCredentialOptions($friendlyName, $certificate, $privateKey, $sandbox, $apiKey, $secret);
     }
 }
 
 class CreateCredentialOptions extends Options {
     /**
-     * @param string $friendlyName A string to describe the resource
-     * @param string $certificate [APN only] The URL encoded representation of the
-     *                            certificate
-     * @param string $privateKey [APN only] The URL encoded representation of the
-     *                           private key
-     * @param bool $sandbox [APN only] Whether to send the credential to sandbox
-     *                      APNs
-     * @param string $apiKey [GCM only] The API key for the project that was
-     *                       obtained from the Google Developer console for your
-     *                       GCM Service application credential
-     * @param string $secret [FCM only] The Server key of your project from
-     *                       Firebase console
+     * @param string $friendlyName The friendly_name
+     * @param string $certificate The certificate
+     * @param string $privateKey The private_key
+     * @param bool $sandbox The sandbox
+     * @param string $apiKey The api_key
+     * @param string $secret The secret
      */
-    public function __construct($friendlyName = Values::NONE, $certificate = Values::NONE, $privateKey = Values::NONE, $sandbox = Values::NONE, $apiKey = Values::NONE, $secret = Values::NONE) {
+    public function __construct(string $friendlyName = Values::NONE, string $certificate = Values::NONE, string $privateKey = Values::NONE, bool $sandbox = Values::NONE, string $apiKey = Values::NONE, string $secret = Values::NONE) {
         $this->options['friendlyName'] = $friendlyName;
         $this->options['certificate'] = $certificate;
         $this->options['privateKey'] = $privateKey;
@@ -77,79 +59,67 @@ class CreateCredentialOptions extends Options {
     }
 
     /**
-     * A descriptive string that you create to describe the new resource. It can be up to 64 characters long.
+     * The friendly_name
      *
-     * @param string $friendlyName A string to describe the resource
+     * @param string $friendlyName The friendly_name
      * @return $this Fluent Builder
      */
-    public function setFriendlyName($friendlyName) {
+    public function setFriendlyName(string $friendlyName): self {
         $this->options['friendlyName'] = $friendlyName;
         return $this;
     }
 
     /**
-     * [APN only] The URL encoded representation of the certificate. For example,
-    `-----BEGIN CERTIFICATE-----
-    MIIFnTCCBIWgAwIBAgIIAjy9H849+E8wDQYJKoZIhvcNAQEF.....A==
-    -----END CERTIFICATE-----`
+     * The certificate
      *
-     * @param string $certificate [APN only] The URL encoded representation of the
-     *                            certificate
+     * @param string $certificate The certificate
      * @return $this Fluent Builder
      */
-    public function setCertificate($certificate) {
+    public function setCertificate(string $certificate): self {
         $this->options['certificate'] = $certificate;
         return $this;
     }
 
     /**
-     * [APN only] The URL encoded representation of the private key. For example,
-    `-----BEGIN RSA PRIVATE KEY-----
-    MIIEpQIBAAKCAQEAuyf/lNrH9ck8DmNyo3fG...
-    -----END RSA PRIVATE KEY-----`
+     * The private_key
      *
-     * @param string $privateKey [APN only] The URL encoded representation of the
-     *                           private key
+     * @param string $privateKey The private_key
      * @return $this Fluent Builder
      */
-    public function setPrivateKey($privateKey) {
+    public function setPrivateKey(string $privateKey): self {
         $this->options['privateKey'] = $privateKey;
         return $this;
     }
 
     /**
-     * [APN only] Whether to send the credential to sandbox APNs. Can be `true` to send to sandbox APNs or `false` to send to production.
+     * The sandbox
      *
-     * @param bool $sandbox [APN only] Whether to send the credential to sandbox
-     *                      APNs
+     * @param bool $sandbox The sandbox
      * @return $this Fluent Builder
      */
-    public function setSandbox($sandbox) {
+    public function setSandbox(bool $sandbox): self {
         $this->options['sandbox'] = $sandbox;
         return $this;
     }
 
     /**
-     * [GCM only] The API key for the project that was obtained from the Google Developer console for your GCM Service application credential.
+     * The api_key
      *
-     * @param string $apiKey [GCM only] The API key for the project that was
-     *                       obtained from the Google Developer console for your
-     *                       GCM Service application credential
+     * @param string $apiKey The api_key
      * @return $this Fluent Builder
      */
-    public function setApiKey($apiKey) {
+    public function setApiKey(string $apiKey): self {
         $this->options['apiKey'] = $apiKey;
         return $this;
     }
 
     /**
-     * [FCM only] The **Server key** of your project from the Firebase console, found under Settings / Cloud messaging.
+     * The secret
      *
-     * @param string $secret [FCM only] The Server key of your project from
-     *                       Firebase console
+     * @param string $secret The secret
      * @return $this Fluent Builder
      */
-    public function setSecret($secret) {
+    public function setSecret(string $secret): self {
         $this->options['secret'] = $secret;
         return $this;
     }
@@ -159,33 +129,22 @@ class CreateCredentialOptions extends Options {
      *
      * @return string Machine friendly representation
      */
-    public function __toString() {
-        $options = array();
-        foreach ($this->options as $key => $value) {
-            if ($value != Values::NONE) {
-                $options[] = "$key=$value";
-            }
-        }
-        return '[Twilio.IpMessaging.V2.CreateCredentialOptions ' . \implode(' ', $options) . ']';
+    public function __toString(): string {
+        $options = \http_build_query(Values::of($this->options), '', ' ');
+        return '[Twilio.IpMessaging.V2.CreateCredentialOptions ' . $options . ']';
     }
 }
 
 class UpdateCredentialOptions extends Options {
     /**
-     * @param string $friendlyName A string to describe the resource
-     * @param string $certificate [APN only] The URL encoded representation of the
-     *                            certificate
-     * @param string $privateKey [APN only] The URL encoded representation of the
-     *                           private key
-     * @param bool $sandbox [APN only] Whether to send the credential to sandbox
-     *                      APNs
-     * @param string $apiKey [GCM only] The API key for the project that was
-     *                       obtained from the Google Developer console for your
-     *                       GCM Service application credential
-     * @param string $secret [FCM only] The Server key of your project from
-     *                       Firebase console
+     * @param string $friendlyName The friendly_name
+     * @param string $certificate The certificate
+     * @param string $privateKey The private_key
+     * @param bool $sandbox The sandbox
+     * @param string $apiKey The api_key
+     * @param string $secret The secret
      */
-    public function __construct($friendlyName = Values::NONE, $certificate = Values::NONE, $privateKey = Values::NONE, $sandbox = Values::NONE, $apiKey = Values::NONE, $secret = Values::NONE) {
+    public function __construct(string $friendlyName = Values::NONE, string $certificate = Values::NONE, string $privateKey = Values::NONE, bool $sandbox = Values::NONE, string $apiKey = Values::NONE, string $secret = Values::NONE) {
         $this->options['friendlyName'] = $friendlyName;
         $this->options['certificate'] = $certificate;
         $this->options['privateKey'] = $privateKey;
@@ -195,79 +154,67 @@ class UpdateCredentialOptions extends Options {
     }
 
     /**
-     * A descriptive string that you create to describe the resource. It can be up to 64 characters long.
+     * The friendly_name
      *
-     * @param string $friendlyName A string to describe the resource
+     * @param string $friendlyName The friendly_name
      * @return $this Fluent Builder
      */
-    public function setFriendlyName($friendlyName) {
+    public function setFriendlyName(string $friendlyName): self {
         $this->options['friendlyName'] = $friendlyName;
         return $this;
     }
 
     /**
-     * [APN only] The URL encoded representation of the certificate. For example,
-    `-----BEGIN CERTIFICATE-----
-    MIIFnTCCBIWgAwIBAgIIAjy9H849+E8wDQYJKoZIhvcNAQEF.....A==
-    -----END CERTIFICATE-----`
+     * The certificate
      *
-     * @param string $certificate [APN only] The URL encoded representation of the
-     *                            certificate
+     * @param string $certificate The certificate
      * @return $this Fluent Builder
      */
-    public function setCertificate($certificate) {
+    public function setCertificate(string $certificate): self {
         $this->options['certificate'] = $certificate;
         return $this;
     }
 
     /**
-     * [APN only] The URL encoded representation of the private key. For example,
-    `-----BEGIN RSA PRIVATE KEY-----
-    MIIEpQIBAAKCAQEAuyf/lNrH9ck8DmNyo3fG...
-    -----END RSA PRIVATE KEY-----`
+     * The private_key
      *
-     * @param string $privateKey [APN only] The URL encoded representation of the
-     *                           private key
+     * @param string $privateKey The private_key
      * @return $this Fluent Builder
      */
-    public function setPrivateKey($privateKey) {
+    public function setPrivateKey(string $privateKey): self {
         $this->options['privateKey'] = $privateKey;
         return $this;
     }
 
     /**
-     * [APN only] Whether to send the credential to sandbox APNs. Can be `true` to send to sandbox APNs or `false` to send to production.
+     * The sandbox
      *
-     * @param bool $sandbox [APN only] Whether to send the credential to sandbox
-     *                      APNs
+     * @param bool $sandbox The sandbox
      * @return $this Fluent Builder
      */
-    public function setSandbox($sandbox) {
+    public function setSandbox(bool $sandbox): self {
         $this->options['sandbox'] = $sandbox;
         return $this;
     }
 
     /**
-     * [GCM only] The API key for the project that was obtained from the Google Developer console for your GCM Service application credential.
+     * The api_key
      *
-     * @param string $apiKey [GCM only] The API key for the project that was
-     *                       obtained from the Google Developer console for your
-     *                       GCM Service application credential
+     * @param string $apiKey The api_key
      * @return $this Fluent Builder
      */
-    public function setApiKey($apiKey) {
+    public function setApiKey(string $apiKey): self {
         $this->options['apiKey'] = $apiKey;
         return $this;
     }
 
     /**
-     * [FCM only] The **Server key** of your project from the Firebase console, found under Settings / Cloud messaging.
+     * The secret
      *
-     * @param string $secret [FCM only] The Server key of your project from
-     *                       Firebase console
+     * @param string $secret The secret
      * @return $this Fluent Builder
      */
-    public function setSecret($secret) {
+    public function setSecret(string $secret): self {
         $this->options['secret'] = $secret;
         return $this;
     }
@@ -277,13 +224,8 @@ class UpdateCredentialOptions extends Options {
      *
      * @return string Machine friendly representation
      */
-    public function __toString() {
-        $options = array();
-        foreach ($this->options as $key => $value) {
-            if ($value != Values::NONE) {
-                $options[] = "$key=$value";
-            }
-        }
-        return '[Twilio.IpMessaging.V2.UpdateCredentialOptions ' . \implode(' ', $options) . ']';
+    public function __toString(): string {
+        $options = \http_build_query(Values::of($this->options), '', ' ');
+        return '[Twilio.IpMessaging.V2.UpdateCredentialOptions ' . $options . ']';
     }
 }

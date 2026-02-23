@@ -7,12 +7,15 @@ $this->ci->load->model('clients_model');
 $this->ci->load->model('warehouse/warehouse_model');
 
 $aColumns = [ 
-    'id',
     'name_discount',
     'client',
-    'price',
-    'product_id',
-    'total_product',
+    'order_number',
+    'voucher_coupon',
+    'total_order',
+    'discount',
+    'tax',
+    'total_after',
+    'date_apply',
     ];
 $sIndexColumn = 'id';
 $sTable       = db_prefix().'omni_log_discount';
@@ -28,12 +31,16 @@ foreach ($rResult as $aRow) {
     $row = [];
     $row[] = $aRow['name_discount'];
     $row[] = get_company_name($aRow['client']);
-    $row[] = '';
-    $row[] = app_format_money($aRow['price'], '');
-    $row[] = '';
-    $row[] = '';
-    $row[] = app_format_money($aRow['total_product'], '');
+    $row[] = '#'.$aRow['order_number'];
+    $row[] = $aRow['voucher_coupon'];
+    $row[] = $aRow['total_order'];
+    $row[] = $aRow['discount'];
+    $row[] = $aRow['tax'];
+    $row[] = $aRow['total_after'];
     $row[] = _d($aRow['date_apply']);
     $output['aaData'][] = $row;
 
 }
+
+echo json_encode($output);
+die;

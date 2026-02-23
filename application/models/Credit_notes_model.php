@@ -739,10 +739,12 @@ class Credit_notes_model extends App_Model
 
     private function total_refunds_by_credit_note($id)
     {
-        return sum_from_table(db_prefix() . 'creditnote_refunds', [
+        $total = sum_from_table(db_prefix() . 'creditnote_refunds', [
                 'field' => 'amount',
                 'where' => ['credit_note_id' => $id],
             ]);
+
+        return $total ? $total : 0;
     }
 
     public function apply_credits($id, $data)
@@ -790,10 +792,12 @@ class Credit_notes_model extends App_Model
 
     private function total_credits_used_by_credit_note($id)
     {
-        return sum_from_table(db_prefix() . 'credits', [
+        $total = sum_from_table(db_prefix() . 'credits', [
                 'field' => 'amount',
                 'where' => ['credit_id' => $id],
             ]);
+
+        return $total ? $total : 0;
     }
 
     public function update_credit_note_status($id)
@@ -926,5 +930,26 @@ class Credit_notes_model extends App_Model
         }
 
         return $data;
+    }
+
+    /**
+     * @since  3.2.0
+     *
+     * Save formatted number
+     *
+     * @param  int $id
+     *
+     * @return boolean
+     */
+    public function save_formatted_number($id)
+    {
+        $formatted_number = format_credit_note_number($id);
+
+        $this->db->where('id', $id);
+        $this->db->update(db_prefix() . 'creditnotes', [
+            'formatted_number' => $formatted_number,
+        ]);
+
+        return $this->db->affected_rows() > 0;
     }
 }

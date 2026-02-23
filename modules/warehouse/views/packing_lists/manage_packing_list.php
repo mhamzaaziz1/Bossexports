@@ -20,7 +20,7 @@
 						<div class="row">    
 							<div class="col-md-3">
 								<?php if(!isset($invoice_id)){ ?>
-									<?php if (has_permission('warehouse', '', 'create') || is_admin()) { ?>
+									<?php if (has_permission('wh_packing_list', '', 'create') || is_admin()) { ?>
 										<a href="<?php echo admin_url('warehouse/packing_list'); ?>"class="btn btn-info pull-left mright10 ">
 											<?php echo _l('add'); ?>
 										</a>
@@ -71,7 +71,7 @@
 							_l('packing_list_number'),
 							_l('customer_name'),
 							_l('wh_dimension'),
-							_l('volume_m3_label'),
+							_l('volume_m3_label').'('.get_option('custom_name_for_m3').')',
 							_l('total_amount'),
 							_l('discount_total'),
 							_l('total_after_discount'),

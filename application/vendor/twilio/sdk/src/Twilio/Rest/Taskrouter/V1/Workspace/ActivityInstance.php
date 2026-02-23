@@ -25,23 +25,23 @@ use Twilio\Version;
  * @property string $sid
  * @property string $workspaceSid
  * @property string $url
+ * @property array $links
  */
 class ActivityInstance extends InstanceResource {
     /**
      * Initialize the ActivityInstance
      *
-     * @param \Twilio\Version $version Version that contains the resource
+     * @param Version $version Version that contains the resource
      * @param mixed[] $payload The response payload
      * @param string $workspaceSid The SID of the Workspace that contains the
      *                             Activity
      * @param string $sid The SID of the resource to fetch
-     * @return \Twilio\Rest\Taskrouter\V1\Workspace\ActivityInstance
      */
-    public function __construct(Version $version, array $payload, $workspaceSid, $sid = null) {
+    public function __construct(Version $version, array $payload, string $workspaceSid, string $sid = null) {
         parent::__construct($version);
 
         // Marshaled Properties
-        $this->properties = array(
+        $this->properties = [
             'accountSid' => Values::array_get($payload, 'account_sid'),
             'available' => Values::array_get($payload, 'available'),
             'dateCreated' => Deserialize::dateTime(Values::array_get($payload, 'date_created')),
@@ -50,20 +50,19 @@ class ActivityInstance extends InstanceResource {
             'sid' => Values::array_get($payload, 'sid'),
             'workspaceSid' => Values::array_get($payload, 'workspace_sid'),
             'url' => Values::array_get($payload, 'url'),
-        );
+            'links' => Values::array_get($payload, 'links'),
+        ];
 
-        $this->solution = array('workspaceSid' => $workspaceSid, 'sid' => $sid ?: $this->properties['sid'], );
+        $this->solution = ['workspaceSid' => $workspaceSid, 'sid' => $sid ?: $this->properties['sid'], ];
     }
 
     /**
      * Generate an instance context for the instance, the context is capable of
      * performing various actions.  All instance actions are proxied to the context
      *
-     * @return \Twilio\Rest\Taskrouter\V1\Workspace\ActivityContext Context for
-     *                                                              this
-     *                                                              ActivityInstance
+     * @return ActivityContext Context for this ActivityInstance
      */
-    protected function proxy() {
+    protected function proxy(): ActivityContext {
         if (!$this->context) {
             $this->context = new ActivityContext(
                 $this->version,
@@ -76,12 +75,12 @@ class ActivityInstance extends InstanceResource {
     }
 
     /**
-     * Fetch a ActivityInstance
+     * Fetch the ActivityInstance
      *
      * @return ActivityInstance Fetched ActivityInstance
      * @throws TwilioException When an HTTP error occurs.
      */
-    public function fetch() {
+    public function fetch(): ActivityInstance {
         return $this->proxy()->fetch();
     }
 
@@ -92,17 +91,17 @@ class ActivityInstance extends InstanceResource {
      * @return ActivityInstance Updated ActivityInstance
      * @throws TwilioException When an HTTP error occurs.
      */
-    public function update($options = array()) {
+    public function update(array $options = []): ActivityInstance {
         return $this->proxy()->update($options);
     }
 
     /**
-     * Deletes the ActivityInstance
+     * Delete the ActivityInstance
      *
-     * @return boolean True if delete succeeds, false otherwise
+     * @return bool True if delete succeeds, false otherwise
      * @throws TwilioException When an HTTP error occurs.
      */
-    public function delete() {
+    public function delete(): bool {
         return $this->proxy()->delete();
     }
 
@@ -113,7 +112,7 @@ class ActivityInstance extends InstanceResource {
      * @return mixed The requested property
      * @throws TwilioException For unknown properties
      */
-    public function __get($name) {
+    public function __get(string $name) {
         if (\array_key_exists($name, $this->properties)) {
             return $this->properties[$name];
         }
@@ -131,8 +130,8 @@ class ActivityInstance extends InstanceResource {
      *
      * @return string Machine friendly representation
      */
-    public function __toString() {
-        $context = array();
+    public function __toString(): string {
+        $context = [];
         foreach ($this->solution as $key => $value) {
             $context[] = "$key=$value";
         }

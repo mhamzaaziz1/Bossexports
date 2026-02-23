@@ -188,8 +188,9 @@ function prefixed_table_fields_wildcard($table, $alias, $field)
  * Prefix all columns from table with the table name
  * Used for select statements eq db_prefix().'clients.company'
  * @param  string $table table name
+ * @param  bool $string if true, a string will be returned otherwise array
  * @param  array $exclude exclude fields from prefixing
- * @return array
+ * @return array|string
  */
 function prefixed_table_fields_array($table, $string = false, $exclude = [])
 {

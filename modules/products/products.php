@@ -224,7 +224,7 @@ function add_product_menu()
 }
 
 // Add settings menu(tab menu) In Admin Side
-$CI->app_tabs->add_settings_tab('products', [
+$CI->app->add_settings_section('products', [
     'name'     => 'Products',
     'view'     => 'products/settings',
     'position' => 60,

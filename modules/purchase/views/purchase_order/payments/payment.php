@@ -15,7 +15,7 @@
 								<div class="f_client_id">
                                   <div class="col-md-12 form-group">
                                       <label for="vendor"><?php echo _l('vendor'); ?></label>
-                                      <select name="vendor" id="vendor" class="selectpicker"; return false;" data-live-search="true" data-width="100%" data-none-selected-text="<?php echo _l('ticket_settings_none_assigned'); ?>" >
+                                      <select name="vendor" id="vendor" class="selectpicker" data-live-search="true" data-width="100%" data-none-selected-text="<?php echo _l('ticket_settings_none_assigned'); ?>" >
                                           <option value=""></option>
                                           <?php foreach($vendors as $s) { ?>
                                           <option value="<?php echo html_entity_decode($s['userid']); ?>" <?php if(isset($pur_order) && $pur_order->vendor == $s['userid']){ echo 'selected'; }else{ if(isset($ven) && $ven == $s['userid']){ echo 'selected';} } ?>><?php echo html_entity_decode($s['company']); ?></option>
@@ -23,8 +23,8 @@
                                       </select>              
                                     </div>
                                 </div>
-								<?php;}?>
-								<?php echo render_date_input('date','payment_edit_date',""); ?>
+								<?php } ?>
+								<?php echo render_date_input('date','payment_edit_date',_d(date('Y-m-d'))); ?>
 								<?php echo render_select('paymentmode',$payment_modes,array('id','name'),'payment_mode',""); ?>
 								<div class="row">
 								    <div class="col-md-6">
@@ -83,6 +83,39 @@
                     });
 				$(function(){
 					appValidateForm($('form'),{ amount:'required', date:'required' });
+
+                    // Auto-generate transaction ID on date change
+                    $('input[name="date"]').on('change', function() {
+                        var date = $(this).val();
+                        if(date) {
+                            $.post(admin_url + 'purchase/get_next_transactionid', {date: date}).done(function(response) {
+                                $('input[name="transactionid"]').val(response);
+                            });
+                        }
+                    });
+
+                    // Trigger change on load if date is set (for edit mode or initial default)
+                    if($('input[name="date"]').val()){
+                         // Only if transaction ID is empty? User didn't specify, but usually we auto-fill empty ones.
+                         // But for existing payments, we shouldn't overwrite.
+                         // However, for new payments (url has no id), we might want to. 
+                         // For now, let's just do it on active change to be safe, or check if empty.
+                         if($('input[name="transactionid"]').val() == ''){
+                             $('input[name="date"]').trigger('change');
+                         }
+                    }
+
+                    // Check for duplicate transaction ID
+                    $('input[name="transactionid"]').on('blur', function() {
+                        var transactionid = $(this).val();
+                        if(transactionid) {
+                            $.post(admin_url + 'purchase/check_transactionid_exists', {transactionid: transactionid}).done(function(response) {
+                                if(response == 'true') {
+                                    alert_float('warning', 'Transaction ID already exists!');
+                                }
+                            });
+                        }
+                    });
 				});
 			</script>
 		</body>

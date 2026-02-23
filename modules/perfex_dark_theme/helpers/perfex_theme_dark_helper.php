@@ -49,7 +49,7 @@ function perfex_app_client_dark_head_includes()
 function perfex_dark_theme_settings_tab()
 {
     $CI = &get_instance();
-    $CI->app_tabs->add_settings_tab('perfex-theme-dark-settings', [
+    $CI->app->add_settings_section('perfex-theme-dark-settings', [
         'name'     => '' . _l('perfex_dark_theme_settings_first') . '',
         'view'     => 'perfex_dark_theme/perfex_dark_theme_settings',
         'position' => 50,

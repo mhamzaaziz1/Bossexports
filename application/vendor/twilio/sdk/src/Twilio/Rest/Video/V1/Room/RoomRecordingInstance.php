@@ -30,6 +30,7 @@ use Twilio\Version;
  * @property array $groupingSids
  * @property string $trackName
  * @property string $offset
+ * @property string $mediaExternalLocation
  * @property string $roomSid
  * @property array $links
  */
@@ -37,18 +38,17 @@ class RoomRecordingInstance extends InstanceResource {
     /**
      * Initialize the RoomRecordingInstance
      *
-     * @param \Twilio\Version $version Version that contains the resource
+     * @param Version $version Version that contains the resource
      * @param mixed[] $payload The response payload
      * @param string $roomSid The SID of the Room resource the recording is
      *                        associated with
      * @param string $sid The SID that identifies the resource to fetch
-     * @return \Twilio\Rest\Video\V1\Room\RoomRecordingInstance
      */
-    public function __construct(Version $version, array $payload, $roomSid, $sid = null) {
+    public function __construct(Version $version, array $payload, string $roomSid, string $sid = null) {
         parent::__construct($version);
 
         // Marshaled Properties
-        $this->properties = array(
+        $this->properties = [
             'accountSid' => Values::array_get($payload, 'account_sid'),
             'status' => Values::array_get($payload, 'status'),
             'dateCreated' => Deserialize::dateTime(Values::array_get($payload, 'date_created')),
@@ -63,21 +63,21 @@ class RoomRecordingInstance extends InstanceResource {
             'groupingSids' => Values::array_get($payload, 'grouping_sids'),
             'trackName' => Values::array_get($payload, 'track_name'),
             'offset' => Values::array_get($payload, 'offset'),
+            'mediaExternalLocation' => Values::array_get($payload, 'media_external_location'),
             'roomSid' => Values::array_get($payload, 'room_sid'),
             'links' => Values::array_get($payload, 'links'),
-        );
+        ];
 
-        $this->solution = array('roomSid' => $roomSid, 'sid' => $sid ?: $this->properties['sid'], );
+        $this->solution = ['roomSid' => $roomSid, 'sid' => $sid ?: $this->properties['sid'], ];
     }
 
     /**
      * Generate an instance context for the instance, the context is capable of
      * performing various actions.  All instance actions are proxied to the context
      *
-     * @return \Twilio\Rest\Video\V1\Room\RoomRecordingContext Context for this
-     *                                                         RoomRecordingInstance
+     * @return RoomRecordingContext Context for this RoomRecordingInstance
      */
-    protected function proxy() {
+    protected function proxy(): RoomRecordingContext {
         if (!$this->context) {
             $this->context = new RoomRecordingContext(
                 $this->version,
@@ -90,22 +90,22 @@ class RoomRecordingInstance extends InstanceResource {
     }
 
     /**
-     * Fetch a RoomRecordingInstance
+     * Fetch the RoomRecordingInstance
      *
      * @return RoomRecordingInstance Fetched RoomRecordingInstance
      * @throws TwilioException When an HTTP error occurs.
      */
-    public function fetch() {
+    public function fetch(): RoomRecordingInstance {
         return $this->proxy()->fetch();
     }
 
     /**
-     * Deletes the RoomRecordingInstance
+     * Delete the RoomRecordingInstance
      *
-     * @return boolean True if delete succeeds, false otherwise
+     * @return bool True if delete succeeds, false otherwise
      * @throws TwilioException When an HTTP error occurs.
      */
-    public function delete() {
+    public function delete(): bool {
         return $this->proxy()->delete();
     }
 
@@ -116,7 +116,7 @@ class RoomRecordingInstance extends InstanceResource {
      * @return mixed The requested property
      * @throws TwilioException For unknown properties
      */
-    public function __get($name) {
+    public function __get(string $name) {
         if (\array_key_exists($name, $this->properties)) {
             return $this->properties[$name];
         }
@@ -134,8 +134,8 @@ class RoomRecordingInstance extends InstanceResource {
      *
      * @return string Machine friendly representation
      */
-    public function __toString() {
-        $context = array();
+    public function __toString(): string {
+        $context = [];
         foreach ($this->solution as $key => $value) {
             $context[] = "$key=$value";
         }

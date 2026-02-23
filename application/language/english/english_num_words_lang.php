@@ -1,5 +1,6 @@
 <?php
 
+$lang['num_word_0']        = 'Zero';
 $lang['num_word_1']        = 'One';
 $lang['num_word_2']        = 'Two';
 $lang['num_word_3']        = 'Three';
@@ -115,11 +116,17 @@ $lang['num_word_trillion'] = 'Trillion';
 $lang['num_word_zillion']  = 'Zillion';
 $lang['num_word_cents']    = 'Cents';
 $lang['number_word_and']   = 'And';
+$lang['number_word_only']  = 'Only';
 
-# For Indian Customers, used with INR currency
+// For Indian Customers, used with INR currency
 $lang['num_word_hundred'] = 'Hundred';
-$lang['num_word_lakh'] = 'Lakh';
-$lang['num_word_lakhs'] = 'Lakh';
+$lang['num_word_lakh']    = 'Lakh';
+$lang['num_word_lakhs']   = 'Lakh';
+$lang['num_word_crore']   = 'Crore';
+$lang['num_word_paisa']   = 'Paisa';
+
+// AED currency, Fils instead of Cents.
+$lang['num_word_cents_AED'] = 'Fils';
 
 // Show in invoices and estimates
 $lang['num_word'] = 'With words';
@@ -127,6 +134,8 @@ $lang['num_word'] = 'With words';
 $currencies = [
     'USD' => 'Dollars',
     'EUR' => 'Euros',
+    'INR' => 'Rupees',
+    'AED' => 'Dirhams',
 ];
 
 $currencies = hooks()->apply_filters('before_number_format_render_languge_currencies', $currencies);

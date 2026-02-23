@@ -58,6 +58,9 @@
      <hr />
      <?php render_yes_no_option('show_pdf_signature_contract','show_pdf_signature_contract'); ?>
      <hr />
+     <?php render_yes_no_option('show_pdf_signature_payment','show_pdf_signature_payment'); ?>
+     <hr />
+
      <?php $signature = get_option('signature_image'); ?>
      <?php if($signature != ''){ ?>
      <div class="form-group">

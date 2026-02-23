@@ -49,7 +49,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
  * @link		https://codeigniter.com/user_guide/libraries/uri.html
  */
 class CI_URI {
-public $config;
+
 	/**
 	 * List of cached URI segments
 	 *
@@ -91,6 +91,11 @@ public $config;
 	 */
 	protected $_permitted_uri_chars;
 
+    /**
+     * @var  CI_Config
+     */
+    public CI_Config $config;
+
 	/**
 	 * Class constructor
 	 *
@@ -127,9 +132,7 @@ public $config;
 						break;
 					case 'PATH_INFO':
 					default:
-						$uri = isset($_SERVER[$protocol])
-							? $_SERVER[$protocol]
-							: $this->_parse_request_uri();
+						$uri = $_SERVER[$protocol] ?? $this->_parse_request_uri();
 						break;
 				}
 			}
@@ -145,10 +148,10 @@ public $config;
 	/**
 	 * Set URI String
 	 *
-	 * @param 	string	$str
+	 * @param string $str
 	 * @return	void
 	 */
-	protected function _set_uri_string($str)
+	protected function _set_uri_string(string $str)
 	{
 		// Filter out control characters and trim slashes
 		$this->uri_string = trim(remove_invisible_characters($str, FALSE), '/');

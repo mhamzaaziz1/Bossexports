@@ -31,8 +31,6 @@ $lang['goal_failed']                                                    = 'Faile
 $lang['goal_close']                                                     = 'Very Close';
 $lang['goal_type_total_income']                                         = 'Achieve Total Income';
 $lang['goal_type_convert_leads']                                        = 'Convert X Leads';
-$lang['goal_type_call_logs']                                        = 'Call Logs';
-$lang['goal_type_call_logs_subtext']                                        = 'Progress of call logs';
 $lang['goal_type_increase_customers_without_leads_conversions']         = 'Increase Customer Number';
 $lang['goal_type_increase_customers_without_leads_conversions_subtext'] = 'Leads Conversion is Excluded';
 $lang['goal_type_increase_customers_with_leads_conversions']            = 'Increase Customer Number';
@@ -44,13 +42,18 @@ $lang['goal_type_make_contracts_by_type_calc_date_subtext']             = 'Is ca
 $lang['goal_type_total_estimates_converted']                            = 'X Estimates Conversion ';
 $lang['goal_type_total_estimates_converted_subtext']                    = 'Will be taken only estimates that will be converted to invoices';
 $lang['goal_type_income_subtext']                                       = 'Income will be calculated in your base currency (not converted)';
+
 $lang['not_goal_message_success']                                       = 'Congratulations! We achieved new goal.<br /> Goal Type: %s
 <br />Goal Achievement: %s
 <br />Total Achievement: %s
 <br />Start Date: %s
 <br />End Date: %s';
+
 $lang['not_goal_message_failed'] = 'We failed to achieve goal!<br /> Goal Type: %s
 <br />Goal Achievement: %s
 <br />Total Achievement: %s
 <br />Start Date: %s
 <br />End Date: %s';
+
+# Version 2.4.5
+$lang['goal_type_invoiced_amount'] = 'Invoiced Amount';

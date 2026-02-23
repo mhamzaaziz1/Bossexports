@@ -30,7 +30,7 @@ abstract class WorkspaceOptions {
      *                                     types of TaskQueues
      * @return UpdateWorkspaceOptions Options builder
      */
-    public static function update($defaultActivitySid = Values::NONE, $eventCallbackUrl = Values::NONE, $eventsFilter = Values::NONE, $friendlyName = Values::NONE, $multiTaskEnabled = Values::NONE, $timeoutActivitySid = Values::NONE, $prioritizeQueueOrder = Values::NONE) {
+    public static function update(string $defaultActivitySid = Values::NONE, string $eventCallbackUrl = Values::NONE, string $eventsFilter = Values::NONE, string $friendlyName = Values::NONE, bool $multiTaskEnabled = Values::NONE, string $timeoutActivitySid = Values::NONE, string $prioritizeQueueOrder = Values::NONE): UpdateWorkspaceOptions {
         return new UpdateWorkspaceOptions($defaultActivitySid, $eventCallbackUrl, $eventsFilter, $friendlyName, $multiTaskEnabled, $timeoutActivitySid, $prioritizeQueueOrder);
     }
 
@@ -39,7 +39,7 @@ abstract class WorkspaceOptions {
      *                             read
      * @return ReadWorkspaceOptions Options builder
      */
-    public static function read($friendlyName = Values::NONE) {
+    public static function read(string $friendlyName = Values::NONE): ReadWorkspaceOptions {
         return new ReadWorkspaceOptions($friendlyName);
     }
 
@@ -54,7 +54,7 @@ abstract class WorkspaceOptions {
      *                                     types of TaskQueues
      * @return CreateWorkspaceOptions Options builder
      */
-    public static function create($eventCallbackUrl = Values::NONE, $eventsFilter = Values::NONE, $multiTaskEnabled = Values::NONE, $template = Values::NONE, $prioritizeQueueOrder = Values::NONE) {
+    public static function create(string $eventCallbackUrl = Values::NONE, string $eventsFilter = Values::NONE, bool $multiTaskEnabled = Values::NONE, string $template = Values::NONE, string $prioritizeQueueOrder = Values::NONE): CreateWorkspaceOptions {
         return new CreateWorkspaceOptions($eventCallbackUrl, $eventsFilter, $multiTaskEnabled, $template, $prioritizeQueueOrder);
     }
 }
@@ -76,7 +76,7 @@ class UpdateWorkspaceOptions extends Options {
      *                                     Workers are receiving Tasks from both
      *                                     types of TaskQueues
      */
-    public function __construct($defaultActivitySid = Values::NONE, $eventCallbackUrl = Values::NONE, $eventsFilter = Values::NONE, $friendlyName = Values::NONE, $multiTaskEnabled = Values::NONE, $timeoutActivitySid = Values::NONE, $prioritizeQueueOrder = Values::NONE) {
+    public function __construct(string $defaultActivitySid = Values::NONE, string $eventCallbackUrl = Values::NONE, string $eventsFilter = Values::NONE, string $friendlyName = Values::NONE, bool $multiTaskEnabled = Values::NONE, string $timeoutActivitySid = Values::NONE, string $prioritizeQueueOrder = Values::NONE) {
         $this->options['defaultActivitySid'] = $defaultActivitySid;
         $this->options['eventCallbackUrl'] = $eventCallbackUrl;
         $this->options['eventsFilter'] = $eventsFilter;
@@ -94,18 +94,18 @@ class UpdateWorkspaceOptions extends Options {
      *                                   Workspace
      * @return $this Fluent Builder
      */
-    public function setDefaultActivitySid($defaultActivitySid) {
+    public function setDefaultActivitySid(string $defaultActivitySid): self {
         $this->options['defaultActivitySid'] = $defaultActivitySid;
         return $this;
     }
 
     /**
-     * The URL we should call when an event occurs. See [Workspace Events](https://www.twilio.com/docs/taskrouter/api/event) for more information.
+     * The URL we should call when an event occurs. See [Workspace Events](https://www.twilio.com/docs/taskrouter/api/event) for more information. This parameter supports Twilio's [Webhooks (HTTP callbacks) Connection Overrides](https://www.twilio.com/docs/usage/webhooks/webhooks-connection-overrides).
      *
      * @param string $eventCallbackUrl The URL we should call when an event occurs
      * @return $this Fluent Builder
      */
-    public function setEventCallbackUrl($eventCallbackUrl) {
+    public function setEventCallbackUrl(string $eventCallbackUrl): self {
         $this->options['eventCallbackUrl'] = $eventCallbackUrl;
         return $this;
     }
@@ -117,7 +117,7 @@ class UpdateWorkspaceOptions extends Options {
      *                             event_callback_url
      * @return $this Fluent Builder
      */
-    public function setEventsFilter($eventsFilter) {
+    public function setEventsFilter(string $eventsFilter): self {
         $this->options['eventsFilter'] = $eventsFilter;
         return $this;
     }
@@ -128,18 +128,18 @@ class UpdateWorkspaceOptions extends Options {
      * @param string $friendlyName A string to describe the Workspace resource
      * @return $this Fluent Builder
      */
-    public function setFriendlyName($friendlyName) {
+    public function setFriendlyName(string $friendlyName): self {
         $this->options['friendlyName'] = $friendlyName;
         return $this;
     }
 
     /**
-     * Whether to enable multi-tasking. Can be: `true` to enable multi-tasking, or `false` to disable it. The default is `false`. Multi-tasking allows Workers to handle multiple Tasks simultaneously. When enabled (`true`), each Worker can receive parallel reservations up to the per-channel maximums defined in the Workers section. Otherwise, each Worker will only receive a new reservation when the previous task is completed. Learn more at [Multitasking][https://www.twilio.com/docs/taskrouter/multitasking].
+     * Whether to enable multi-tasking. Can be: `true` to enable multi-tasking, or `false` to disable it. However, all workspaces should be maintained as multi-tasking. There is no default when omitting this parameter. A multi-tasking Workspace can't be updated to single-tasking unless it is not a Flex Project and another (legacy) single-tasking Workspace exists. Multi-tasking allows Workers to handle multiple Tasks simultaneously. In multi-tasking mode, each Worker can receive parallel reservations up to the per-channel maximums defined in the Workers section. In single-tasking mode (legacy mode), each Worker will only receive a new reservation when the previous task is completed. Learn more at [Multitasking](https://www.twilio.com/docs/taskrouter/multitasking).
      *
      * @param bool $multiTaskEnabled Whether multi-tasking is enabled
      * @return $this Fluent Builder
      */
-    public function setMultiTaskEnabled($multiTaskEnabled) {
+    public function setMultiTaskEnabled(bool $multiTaskEnabled): self {
         $this->options['multiTaskEnabled'] = $multiTaskEnabled;
         return $this;
     }
@@ -152,20 +152,20 @@ class UpdateWorkspaceOptions extends Options {
      *                                   reservation times out without a response
      * @return $this Fluent Builder
      */
-    public function setTimeoutActivitySid($timeoutActivitySid) {
+    public function setTimeoutActivitySid(string $timeoutActivitySid): self {
         $this->options['timeoutActivitySid'] = $timeoutActivitySid;
         return $this;
     }
 
     /**
-     * The type of TaskQueue to prioritize when Workers are receiving Tasks from both types of TaskQueues. Can be: `LIFO` or `FIFO` and the default is `FIFO`. For more information, see [Queue Ordering][https://www.twilio.com/docs/taskrouter/queue-ordering-last-first-out-lifo].
+     * The type of TaskQueue to prioritize when Workers are receiving Tasks from both types of TaskQueues. Can be: `LIFO` or `FIFO`. For more information, see [Queue Ordering](https://www.twilio.com/docs/taskrouter/queue-ordering-last-first-out-lifo).
      *
      * @param string $prioritizeQueueOrder The type of TaskQueue to prioritize when
      *                                     Workers are receiving Tasks from both
      *                                     types of TaskQueues
      * @return $this Fluent Builder
      */
-    public function setPrioritizeQueueOrder($prioritizeQueueOrder) {
+    public function setPrioritizeQueueOrder(string $prioritizeQueueOrder): self {
         $this->options['prioritizeQueueOrder'] = $prioritizeQueueOrder;
         return $this;
     }
@@ -175,14 +175,9 @@ class UpdateWorkspaceOptions extends Options {
      *
      * @return string Machine friendly representation
      */
-    public function __toString() {
-        $options = array();
-        foreach ($this->options as $key => $value) {
-            if ($value != Values::NONE) {
-                $options[] = "$key=$value";
-            }
-        }
-        return '[Twilio.Taskrouter.V1.UpdateWorkspaceOptions ' . \implode(' ', $options) . ']';
+    public function __toString(): string {
+        $options = \http_build_query(Values::of($this->options), '', ' ');
+        return '[Twilio.Taskrouter.V1.UpdateWorkspaceOptions ' . $options . ']';
     }
 }
 
@@ -191,7 +186,7 @@ class ReadWorkspaceOptions extends Options {
      * @param string $friendlyName The friendly_name of the Workspace resources to
      *                             read
      */
-    public function __construct($friendlyName = Values::NONE) {
+    public function __construct(string $friendlyName = Values::NONE) {
         $this->options['friendlyName'] = $friendlyName;
     }
 
@@ -202,7 +197,7 @@ class ReadWorkspaceOptions extends Options {
      *                             read
      * @return $this Fluent Builder
      */
-    public function setFriendlyName($friendlyName) {
+    public function setFriendlyName(string $friendlyName): self {
         $this->options['friendlyName'] = $friendlyName;
         return $this;
     }
@@ -212,14 +207,9 @@ class ReadWorkspaceOptions extends Options {
      *
      * @return string Machine friendly representation
      */
-    public function __toString() {
-        $options = array();
-        foreach ($this->options as $key => $value) {
-            if ($value != Values::NONE) {
-                $options[] = "$key=$value";
-            }
-        }
-        return '[Twilio.Taskrouter.V1.ReadWorkspaceOptions ' . \implode(' ', $options) . ']';
+    public function __toString(): string {
+        $options = \http_build_query(Values::of($this->options), '', ' ');
+        return '[Twilio.Taskrouter.V1.ReadWorkspaceOptions ' . $options . ']';
     }
 }
 
@@ -234,7 +224,7 @@ class CreateWorkspaceOptions extends Options {
      *                                     Workers are receiving Tasks from both
      *                                     types of TaskQueues
      */
-    public function __construct($eventCallbackUrl = Values::NONE, $eventsFilter = Values::NONE, $multiTaskEnabled = Values::NONE, $template = Values::NONE, $prioritizeQueueOrder = Values::NONE) {
+    public function __construct(string $eventCallbackUrl = Values::NONE, string $eventsFilter = Values::NONE, bool $multiTaskEnabled = Values::NONE, string $template = Values::NONE, string $prioritizeQueueOrder = Values::NONE) {
         $this->options['eventCallbackUrl'] = $eventCallbackUrl;
         $this->options['eventsFilter'] = $eventsFilter;
         $this->options['multiTaskEnabled'] = $multiTaskEnabled;
@@ -243,35 +233,35 @@ class CreateWorkspaceOptions extends Options {
     }
 
     /**
-     * The URL we should call when an event occurs. If provided, the Workspace will publish events to this URL, for example, to collect data for reporting. See [Workspace Events](https://www.twilio.com/docs/taskrouter/api/event) for more information.
+     * The URL we should call when an event occurs. If provided, the Workspace will publish events to this URL, for example, to collect data for reporting. See [Workspace Events](https://www.twilio.com/docs/taskrouter/api/event) for more information. This parameter supports Twilio's [Webhooks (HTTP callbacks) Connection Overrides](https://www.twilio.com/docs/usage/webhooks/webhooks-connection-overrides).
      *
      * @param string $eventCallbackUrl The URL we should call when an event occurs
      * @return $this Fluent Builder
      */
-    public function setEventCallbackUrl($eventCallbackUrl) {
+    public function setEventCallbackUrl(string $eventCallbackUrl): self {
         $this->options['eventCallbackUrl'] = $eventCallbackUrl;
         return $this;
     }
 
     /**
-     * The list of Workspace events for which to call event_callback_url. For example if `EventsFilter=task.created,task.canceled,worker.activity.update`, then TaskRouter will call event_callback_url only when a task is created, canceled, or a Worker activity is updated.
+     * The list of Workspace events for which to call event_callback_url. For example, if `EventsFilter=task.created, task.canceled, worker.activity.update`, then TaskRouter will call event_callback_url only when a task is created, canceled, or a Worker activity is updated.
      *
      * @param string $eventsFilter The list of Workspace events for which to call
      *                             event_callback_url
      * @return $this Fluent Builder
      */
-    public function setEventsFilter($eventsFilter) {
+    public function setEventsFilter(string $eventsFilter): self {
         $this->options['eventsFilter'] = $eventsFilter;
         return $this;
     }
 
     /**
-     * Whether to enable multi-tasking. Can be: `true` to enable multi-tasking, or `false` to disable it. The default is `false`. Multi-tasking allows Workers to handle multiple Tasks simultaneously. When enabled (`true`), each Worker can receive parallel reservations up to the per-channel maximums defined in the Workers section. Otherwise, each Worker will only receive a new reservation when the previous task is completed. Learn more at [Multitasking][https://www.twilio.com/docs/taskrouter/multitasking].
+     * Whether to enable multi-tasking. Can be: `true` to enable multi-tasking, or `false` to disable it. However, all workspaces should be created as multi-tasking. The default is `true`. Multi-tasking allows Workers to handle multiple Tasks simultaneously. When enabled (`true`), each Worker can receive parallel reservations up to the per-channel maximums defined in the Workers section. In single-tasking mode (legacy mode), each Worker will only receive a new reservation when the previous task is completed. Learn more at [Multitasking](https://www.twilio.com/docs/taskrouter/multitasking).
      *
      * @param bool $multiTaskEnabled Whether multi-tasking is enabled
      * @return $this Fluent Builder
      */
-    public function setMultiTaskEnabled($multiTaskEnabled) {
+    public function setMultiTaskEnabled(bool $multiTaskEnabled): self {
         $this->options['multiTaskEnabled'] = $multiTaskEnabled;
         return $this;
     }
@@ -282,20 +272,20 @@ class CreateWorkspaceOptions extends Options {
      * @param string $template An available template name
      * @return $this Fluent Builder
      */
-    public function setTemplate($template) {
+    public function setTemplate(string $template): self {
         $this->options['template'] = $template;
         return $this;
     }
 
     /**
-     * The type of TaskQueue to prioritize when Workers are receiving Tasks from both types of TaskQueues. Can be: `LIFO` or `FIFO` and the default is `FIFO`. For more information, see [Queue Ordering][https://www.twilio.com/docs/taskrouter/queue-ordering-last-first-out-lifo].
+     * The type of TaskQueue to prioritize when Workers are receiving Tasks from both types of TaskQueues. Can be: `LIFO` or `FIFO` and the default is `FIFO`. For more information, see [Queue Ordering](https://www.twilio.com/docs/taskrouter/queue-ordering-last-first-out-lifo).
      *
      * @param string $prioritizeQueueOrder The type of TaskQueue to prioritize when
      *                                     Workers are receiving Tasks from both
      *                                     types of TaskQueues
      * @return $this Fluent Builder
      */
-    public function setPrioritizeQueueOrder($prioritizeQueueOrder) {
+    public function setPrioritizeQueueOrder(string $prioritizeQueueOrder): self {
         $this->options['prioritizeQueueOrder'] = $prioritizeQueueOrder;
         return $this;
     }
@@ -305,13 +295,8 @@ class CreateWorkspaceOptions extends Options {
      *
      * @return string Machine friendly representation
      */
-    public function __toString() {
-        $options = array();
-        foreach ($this->options as $key => $value) {
-            if ($value != Values::NONE) {
-                $options[] = "$key=$value";
-            }
-        }
-        return '[Twilio.Taskrouter.V1.CreateWorkspaceOptions ' . \implode(' ', $options) . ']';
+    public function __toString(): string {
+        $options = \http_build_query(Values::of($this->options), '', ' ');
+        return '[Twilio.Taskrouter.V1.CreateWorkspaceOptions ' . $options . ']';
     }
 }

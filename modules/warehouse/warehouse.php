@@ -5,7 +5,7 @@ defined('BASEPATH') or exit('No direct script access allowed');
 /*
 Module Name: Warehouse
 Description: Module manage warehouse, stock imported, stock export, Loss and adjustment,report...
-Version: 1.1.7
+Version: 1.3.9
 Requires at least: 2.3.*
 Author: GreenTech Solutions
 Author URI: https://codecanyon.net/user/greentech_solutions
@@ -17,24 +17,24 @@ define('WAREHOUSE_STOCK_IMPORT_MODULE_UPLOAD_FOLDER', module_dir_path(WAREHOUSE_
 define('WAREHOUSE_STOCK_EXPORT_MODULE_UPLOAD_FOLDER', module_dir_path(WAREHOUSE_MODULE_NAME, 'uploads/stock_export/'));
 define('WAREHOUSE_LOST_ADJUSTMENT_MODULE_UPLOAD_FOLDER', module_dir_path(WAREHOUSE_MODULE_NAME, 'uploads/lost_adjustment/'));
 define('WAREHOUSE_INTERNAL_DELIVERY_MODULE_UPLOAD_FOLDER', module_dir_path(WAREHOUSE_MODULE_NAME, 'uploads/internal_delivery/'));
+define('WAREHOUSE_PACKING_LIST_MODULE_UPLOAD_FOLDER', module_dir_path(WAREHOUSE_MODULE_NAME, 'uploads/packing_lists/'));
+define('WAREHOUSE_ORDER_RETURN_MODULE_UPLOAD_FOLDER', module_dir_path(WAREHOUSE_MODULE_NAME, 'uploads/order_returns/'));
 define('WAREHOUSE_PROPOSAL_UPLOAD_FOLDER', module_dir_path(WAREHOUSE_MODULE_NAME, 'uploads/proposal/'));
 define('WAREHOUSE_ITEM_UPLOAD', module_dir_path(WAREHOUSE_MODULE_NAME, 'uploads/item_img/'));
+define('WAREHOUSE_SHIPMENT_UPLOAD', module_dir_path(WAREHOUSE_MODULE_NAME, 'uploads/shipments/'));
 
 define('WAREHOUSE_PRINT_ITEM', 'modules/warehouse/uploads/print_item/');
 define('WAREHOUSE_EXPORT_ITEM', 'modules/warehouse/uploads/export_item/');
 define('WAREHOUSE_IMPORT_ITEM_ERROR', 'modules/warehouse/uploads/import_item_error/');
 define('WAREHOUSE_IMPORT_OPENING_STOCK', 'modules/warehouse/uploads/import_opening_stock_error/');
-define('REVISION', 117);
+define('WAREHOUSE_REPORT', 'modules/warehouse/uploads/reports/');
 
+define('REVISION', 139);
 //true display: brand, model, series in settings menu
 define('ACTIVE_BRAND_MODEL_SERIES', false);
 define('ACTIVE_PROPOSAL', true);
 define('ACTIVE_PROPOSAL_OLD_CUSTOMER', false);
 define('WAREHOUSE_PATH_LIBRARIES', 'modules/warehouse/libraries');
-
-
-
-
 
 hooks()->add_action('admin_init', 'warehouse_permissions');
 hooks()->add_action('app_admin_head', 'warehouse_add_head_components');
@@ -48,16 +48,22 @@ define('COMMODITY_EXPORT', FCPATH );
 
 hooks()->add_filter('create_goods_receipt', 'warehouse_create_goods_receipt');
 hooks()->add_action('after_invoice_added', 'warehouse_create_goods_delivery');
-//inventory received 
-hooks()->add_action('task_related_to_select', 'inventory_received_related_to_select');
-hooks()->add_filter('before_return_relation_values', 'inventory_received_relation_values', 10, 2);
-hooks()->add_filter('before_return_relation_data', 'inventory_received_relation_data', 10, 4);
+//inventory received
+hooks()->add_action('task_related_to_select', 'inventory_received_related_to_select'); // Old
+//hooks()->add_filter('before_return_relation_values', 'inventory_received_relation_values', 10, 2); // Old
+hooks()->add_filter('before_return_relation_data', 'inventory_received_relation_data', 10, 4); // Old
+hooks()->add_action('task_modal_rel_type_select', 'inventory_received_task_modal_rel_type_select'); // new
+hooks()->add_filter('relation_values', 'inventory_received_get_relation_values', 10, 2); // new
+hooks()->add_filter('get_relation_data', 'inventory_received_get_relation_data', 10, 4); // new
 hooks()->add_filter('tasks_table_row_data', 'inventory_received_add_table_row', 10, 3);
 
 //invetory delivery
-hooks()->add_action('task_related_to_select', 'inventory_delivery_related_to_select');
-hooks()->add_filter('before_return_relation_values', 'inventory_delivery_relation_values', 10, 2);
-hooks()->add_filter('before_return_relation_data', 'inventory_delivery_relation_data', 10, 4);
+hooks()->add_action('task_related_to_select', 'inventory_delivery_related_to_select'); // Old
+//hooks()->add_filter('before_return_relation_values', 'inventory_delivery_relation_values', 10, 2); // Old
+hooks()->add_filter('before_return_relation_data', 'inventory_delivery_relation_data', 10, 4); // Old
+hooks()->add_action('task_modal_rel_type_select', 'inventory_delivery_task_modal_rel_type_select'); // new
+hooks()->add_filter('relation_values', 'inventory_delivery_get_relation_values', 10, 2); // new
+hooks()->add_filter('get_relation_data', 'inventory_delivery_get_relation_data', 10, 4); // new
 hooks()->add_filter('tasks_table_row_data', 'inventory_delivery_add_table_row', 10, 3);
 
 //cancelled the invoice
@@ -83,6 +89,26 @@ hooks()->add_action('after_invoice_updated', 'wh_update_goods_delivery');
 //warehouse add customfield
 hooks()->add_action('after_custom_fields_select_options','init_warehouse_customfield');
 
+//warehouse before admin view create invoice: display available quantity
+hooks()->add_filter('before_admin_view_create_invoice', 'wh_before_admin_view_create_invoice');
+hooks()->add_filter('admin_invoice_ajax_search_item', 'wh_admin_invoice_ajax_search_item', 10, 2);
+
+//display Shipment in order detail of omnisale
+hooks()->add_action('omni_order_detail_header', 'omni_order_detail_add_button_header');
+hooks()->add_action('omni_sales_after_invoice_added', 'wh_omni_sales_after_invoice_added');
+hooks()->add_action('omni_sales_after_delivery_note_added', 'wh_omni_sales_after_delivery_note_added');
+
+//hook purchase module
+hooks()->add_action('after_purchase_order_add', 'wh_after_purchase_order_add');
+hooks()->add_action('after_purchase_order_approve', 'wh_after_purchase_order_add');
+
+//hook shipment menu
+hooks()->add_action('customers_navigation_end', 'init_shipment_portal_menu');
+hooks()->add_action('app_customers_portal_head', 'warehouse_client_add_head_components');
+hooks()->add_action('app_customers_portal_footer', 'warehouse_client_add_footer_components');
+
+//hook before invoice deleted
+hooks()->add_action('before_invoice_deleted', 'warehouse_before_invoice_deleted');
 
 if(ACTIVE_PROPOSAL_OLD_CUSTOMER){
 //update proposal
@@ -126,9 +152,12 @@ hooks()->add_filter('proposals_table_sql_columns', 'wh_proposal_table_sql_column
 hooks()->add_filter('proposals_table_filter_columns', 'wh_proposal_add_filter_column', 10, 2);
 hooks()->add_action('proposals_manage_add_input', 'wh_proposals_manage_add_input');
 hooks()->add_action('proposals_manage_add_li', 'wh_proposals_manage_add_li');
+
 }
-
-
+hooks()->add_action('warehouse_init',WAREHOUSE_MODULE_NAME.'_appint');
+hooks()->add_action('pre_activate_module', WAREHOUSE_MODULE_NAME.'_preactivate');
+hooks()->add_action('pre_deactivate_module', WAREHOUSE_MODULE_NAME.'_predeactivate');
+hooks()->add_action('pre_uninstall_module', WAREHOUSE_MODULE_NAME.'_uninstall');
 /**
 * Register activation module hook
 */
@@ -137,7 +166,7 @@ register_activation_hook(WAREHOUSE_MODULE_NAME, 'warehouse_module_activation_hoo
 
 /**
  * warehouse module activation hook
- * @return [type] 
+ * @return [type]
  */
 function warehouse_module_activation_hook()
 {
@@ -161,15 +190,15 @@ $CI->load->helper(WAREHOUSE_MODULE_NAME . '/warehouse');
 function warehouse_module_init_menu_items()
 {
     $CI = &get_instance();
-    if (has_permission('warehouse', '', 'view')) {
+    if (is_admin() || has_permission('warehouse_item', '', 'view') || has_permission('wh_stock_import', '', 'view')  || has_permission('wh_stock_import', '', 'view_own') || has_permission('wh_stock_export', '', 'view') || has_permission('wh_stock_export', '', 'view_own') || has_permission('wh_packing_list', '', 'view')  || has_permission('wh_packing_list', '', 'view_own') || has_permission('wh_internal_delivery_note', '', 'view')  || has_permission('wh_internal_delivery_note', '', 'view_own') || has_permission('wh_loss_adjustment', '', 'view')  || has_permission('wh_loss_adjustment', '', 'view_own') || has_permission('wh_receipt_return_order', '', 'view') || has_permission('wh_receipt_return_order', '', 'view_own') || has_permission('wh_warehouse', '', 'view') || has_permission('wh_warehouse_history', '', 'view') || has_permission('wh_report', '', 'view') || has_permission('wh_setting', '', 'view')) {
 
        $CI->app_menu->add_sidebar_menu_item('warehouse', [
             'name'     => _l('warehouse'),
-            'icon'     => 'fa fa-snowflake-o',
+            'icon'     => 'fa fa-snowflake',
             'position' => 30,
         ]);
-        
 
+       if (is_admin() || has_permission('warehouse_item', '', 'view')) {
         $CI->app_menu->add_sidebar_children_item('warehouse', [
             'slug'     => 'wa_commodity_list',
             'name'     => _l('items'),
@@ -178,6 +207,10 @@ function warehouse_module_init_menu_items()
             'position' => 1,
         ]);
 
+    }
+
+    if (is_admin() || has_permission('wh_stock_import', '', 'view') || has_permission('wh_stock_import', '', 'view_own')) {
+
         $CI->app_menu->add_sidebar_children_item('warehouse', [
             'slug'     => 'wa_manage_goods_receipt',
             'name'     => _l('stock_import'),
@@ -185,7 +218,9 @@ function warehouse_module_init_menu_items()
             'href'     => admin_url('warehouse/manage_purchase'),
             'position' => 2,
         ]);
-        
+    }
+
+    if (is_admin() || has_permission('wh_stock_export', '', 'view') || has_permission('wh_stock_export', '', 'view_own')) {
         $CI->app_menu->add_sidebar_children_item('warehouse', [
             'slug'     => 'wa_manage_goods_delivery',
             'name'     => _l('stock_export'),
@@ -193,70 +228,106 @@ function warehouse_module_init_menu_items()
             'href'     => admin_url('warehouse/manage_delivery'),
             'position' => 3,
         ]);
+    }
 
+    if (is_admin() || has_permission('wh_packing_list', '', 'view') || has_permission('wh_packing_list', '', 'view_own')) {
+        $CI->app_menu->add_sidebar_children_item('warehouse', [
+            'slug'     => 'wa_manage_packing_list',
+            'name'     => _l('wh_packing_lists'),
+            'icon'     => 'fa fa-inbox',
+            'href'     => admin_url('warehouse/manage_packing_list'),
+            'position' => 4,
+        ]);
+    }
+
+    if (is_admin() || has_permission('wh_internal_delivery_note', '', 'view') || has_permission('wh_internal_delivery_note', '', 'view_own')) {
         $CI->app_menu->add_sidebar_children_item('warehouse', [
             'slug'     => 'wa_manage_internal_delivery',
             'name'     => _l('internal_delivery_note'),
             'icon'     => 'fa fa-rss-square',
             'href'     => admin_url('warehouse/manage_internal_delivery'),
-            'position' => 10,
+            'position' => 5,
         ]);
-        
+    }
+
+    if (is_admin() || has_permission('wh_loss_adjustment', '', 'view') || has_permission('wh_loss_adjustment', '', 'view_own')) {
 
         $CI->app_menu->add_sidebar_children_item('warehouse', [
             'slug'     => 'wa_manage_loss_adjustment',
             'name'     => _l('loss_adjustment'),
             'icon'     => 'fa fa-adjust',
             'href'     => admin_url('warehouse/loss_adjustment'),
-            'position' => 4,
+            'position' => 6,
+        ]);
+    }
+
+    if (is_admin() || has_permission('wh_receipt_return_order', '', 'view') || has_permission('wh_receipt_return_order', '', 'view_own')) {
+        $CI->app_menu->add_sidebar_children_item('warehouse', [
+            'slug'     => 'wa_manage_order_return',
+            'name'     => _l('inventory_receipt_inventory_delivery_returns_goods'),
+            'icon'     => 'fa fa-reply-all',
+            'href'     => admin_url('warehouse/manage_order_return'),
+            'position' => 7,
         ]);
 
-        // $CI->app_menu->add_sidebar_children_item('warehouse', [
-        //     'slug'     => 'wa_warehouse_history',
-        //     'name'     => _l('_warehouse'),
-        //     'icon'     => 'fa fa-home menu-icon',
-        //     'href'     => admin_url('warehouse/warehouse_mange'),
-        //     'position' =>9,
-        // ]);
+    }
 
-        if(ACTIVE_PROPOSAL_OLD_CUSTOMER){
-            //add all warehouse on menu item
-            foreach (get_warehouse_name() as $warehouse_item) {
-                $CI->app_menu->add_sidebar_children_item('warehouse', [
-                    'slug'     => 'wa_manage_warehouse_'.$warehouse_item['warehouse_id'],
-                    'name'     => $warehouse_item['warehouse_name'],
-                    'icon'     => 'fa fa-home menu-icon',
-                    'href'     => admin_url('warehouse/view_warehouse_detail/'.$warehouse_item['warehouse_id']),
-                    'position' => 4,
-                ]);
-            }
-        }
-        
+    if (is_admin() || has_permission('wh_warehouse', '', 'view')) {
         $CI->app_menu->add_sidebar_children_item('warehouse', [
-            'slug'     => 'wa_warehouse_history',
+            'slug'     => 'wa_manage_warehouse',
             'name'     => _l('_warehouse'),
             'icon'     => 'fa fa-home menu-icon',
             'href'     => admin_url('warehouse/warehouse_mange'),
-            'position' => 5,
+            'position' => 7,
         ]);
-        
-        // $CI->app_menu->add_sidebar_children_item('warehouse', [
-        //     'slug'     => 'wa_warehouse_history',
-        //     'name'     => _l('warehouse_history'),
-        //     'icon'     => 'fa fa-calendar menu-icon',
-        //     'href'     => admin_url('warehouse/warehouse_history'),
-        //     'position' => 5,
-        // ]);
-        
+    }
+
+
+    if(ACTIVE_PROPOSAL_OLD_CUSTOMER){
+            //add all warehouse on menu item
+        foreach (get_warehouse_name() as $warehouse_item) {
+            $CI->app_menu->add_sidebar_children_item('warehouse', [
+                'slug'     => 'wa_manage_warehouse_'.$warehouse_item['warehouse_id'],
+                'name'     => $warehouse_item['warehouse_name'],
+                'icon'     => 'fa fa-home menu-icon',
+                'href'     => admin_url('warehouse/view_warehouse_detail/'.$warehouse_item['warehouse_id']),
+                'position' => 4,
+            ]);
+        }
+    }
+
+
+    if (is_admin() || has_permission('wh_warehouse_history', '', 'view')) {
+        $CI->app_menu->add_sidebar_children_item('warehouse', [
+            'slug'     => 'wa_warehouse_history',
+            'name'     => _l('warehouse_history'),
+            'icon'     => 'fa fa-calendar menu-icon',
+            'href'     => admin_url('warehouse/warehouse_history'),
+            'position' => 8,
+        ]);
+    }
+
+    if (is_admin() || has_permission('wh_report', '', 'view')) {
         $CI->app_menu->add_sidebar_children_item('warehouse', [
             'slug'     => 'wa_report',
             'name'     => _l('report'),
             'icon'     => 'fa fa-area-chart menu-icon',
             'href'     => admin_url('warehouse/manage_report'),
-            'position' => 6,
+            'position' => 8,
         ]);
-        
 
+        // Add P&L to standard Reports menu
+        $CI->app_menu->add_sidebar_children_item('reports', [
+            'slug'     => 'warehouse-profit-loss',
+            'name'     => _l('profit_and_loss_report'),
+            'icon'     => 'fa fa-balance-scale', 
+            'href'     => admin_url('warehouse/profit_loss'),
+            'position' => 50,
+        ]);
+
+    }
+
+    if (is_admin() || has_permission('wh_setting', '', 'view')) {
         $CI->app_menu->add_sidebar_children_item('warehouse', [
             'slug'     => 'ware_settings',
             'name'     => _l('settings'),
@@ -264,7 +335,7 @@ function warehouse_module_init_menu_items()
             'href'     => admin_url('warehouse/setting'),
             'position' => 8,
         ]);
-       
+    }
 
     }
 }
@@ -272,7 +343,7 @@ function warehouse_module_init_menu_items()
 
 /**
  * warehouse load js
- * @return library 
+ * @return library
  */
 function warehouse_load_js(){
     $CI = &get_instance();
@@ -280,10 +351,11 @@ function warehouse_load_js(){
     $viewuri = $_SERVER['REQUEST_URI'];
 
 
-     if (!(strpos($viewuri, '/admin/warehouse') === false)) {   
+     if (!(strpos($viewuri, '/admin/warehouse') === false)) {
          echo '<script src="' . module_dir_url(WAREHOUSE_MODULE_NAME, 'assets/plugins/handsontable/chosen.jquery.js') . '"></script>';
          echo '<script src="' . module_dir_url(WAREHOUSE_MODULE_NAME, 'assets/plugins/handsontable/handsontable-chosen-editor.js') . '"></script>';
          echo '<script src="' . module_dir_url(WAREHOUSE_MODULE_NAME, 'assets/plugins/signature_pad.min.js') . '"></script>';
+         echo '<script src="' . module_dir_url(WAREHOUSE_MODULE_NAME, 'assets/js/deactivate_hotkey.js') . '?v=' . REVISION . '"></script>';
      }
 
     if (!(strpos($viewuri, '/admin/warehouse/setting?group=approval_setting') === false)) {
@@ -301,52 +373,52 @@ function warehouse_load_js(){
     }
 
 
-    if (!(strpos($viewuri, '/admin/warehouse/goods_delivery') === false)) {
+    if (!(strpos($viewuri, '/admin/warehouse/goods_delivery') === false) || !(strpos($viewuri, '/admin/warehouse/manage_goods_receipt') === false)) {
          echo '<script src="' . module_dir_url(WAREHOUSE_MODULE_NAME, 'assets/plugins/handsontable/chosen.jquery.js') . '"></script>';
          echo '<script src="' . module_dir_url(WAREHOUSE_MODULE_NAME, 'assets/plugins/handsontable/handsontable-chosen-editor.js') . '"></script>';
     }
 
-    if (!(strpos($viewuri, '/admin/warehouse/manage_purchase') === false)) { 
+    if (!(strpos($viewuri, '/admin/warehouse/manage_purchase') === false)) {
          echo '<script src="' . module_dir_url(WAREHOUSE_MODULE_NAME, 'assets/js/manage_purchase.js').'?v=' . REVISION.'"></script>';
     }
 
-    if (!(strpos($viewuri, '/admin/warehouse/manage_report') === false)) { 
+    if (!(strpos($viewuri, '/admin/warehouse/manage_report') === false)) {
          echo '<script src="' . module_dir_url(WAREHOUSE_MODULE_NAME, 'assets/js/stock_summary_report.js').'?v=' . REVISION.'"></script>';
         echo '<script src="' . module_dir_url(WAREHOUSE_MODULE_NAME, 'assets/js/inventory_valuation_report.js').'?v=' . REVISION.'"></script>';
     }
 
-    if (!(strpos($viewuri, '/admin/warehouse/manage_stock_take') === false)) { 
+    if (!(strpos($viewuri, '/admin/warehouse/manage_stock_take') === false)) {
          echo '<script src="' . module_dir_url(WAREHOUSE_MODULE_NAME, 'assets/js/manage_stock_take.js').'?v=' . REVISION.'"></script>';
     }
 
-    if (!(strpos($viewuri, '/admin/warehouse/view_commodity_detail') === false)) { 
+    if (!(strpos($viewuri, '/admin/warehouse/view_commodity_detail') === false) || !(strpos($viewuri, '/admin/warehouse/shipment_detail') === false)) {
          echo '<script src="' . module_dir_url(WAREHOUSE_MODULE_NAME, 'assets/plugins/simplelightbox/simple-lightbox.min.js') . '"></script>';
          echo '<script src="' . module_dir_url(WAREHOUSE_MODULE_NAME, 'assets/plugins/simplelightbox/simple-lightbox.jquery.min.js') . '"></script>';
          echo '<script src="' . module_dir_url(WAREHOUSE_MODULE_NAME, 'assets/plugins/simplelightbox/masonry-layout-vanilla.min.js') . '"></script>';
-         
+
     }
 
-    if (!(strpos($viewuri, '/admin/warehouse/commodity_list') === false)) { 
+    if (!(strpos($viewuri, '/admin/warehouse/commodity_list') === false)) {
          echo '<script src="' . module_dir_url(WAREHOUSE_MODULE_NAME, 'assets/plugins/simplelightbox/simple-lightbox.min.js') . '"></script>';
          echo '<script src="' . module_dir_url(WAREHOUSE_MODULE_NAME, 'assets/plugins/simplelightbox/simple-lightbox.jquery.min.js') . '"></script>';
          echo '<script src="' . module_dir_url(WAREHOUSE_MODULE_NAME, 'assets/plugins/simplelightbox/masonry-layout-vanilla.min.js') . '"></script>';
-         
+
     }
-    
+
 	if (!(strpos($viewuri, '/admin/warehouse/add_loss_adjustment') === false)) {
          echo '<script src="' . module_dir_url(WAREHOUSE_MODULE_NAME, 'assets/plugins/handsontable/chosen.jquery.js') . '"></script>';
          echo '<script src="' . module_dir_url(WAREHOUSE_MODULE_NAME, 'assets/plugins/handsontable/handsontable-chosen-editor.js') . '"></script>';
     }
 
-    if (!(strpos($viewuri, '/admin/warehouse/loss_adjustment') === false)) { 
+    if (!(strpos($viewuri, '/admin/warehouse/loss_adjustment') === false)) {
         echo '<script src="' . module_dir_url(WAREHOUSE_MODULE_NAME, 'assets/js/loss_adjustment_manage.js').'?v=' . REVISION.'"></script>';
     }
 
 
-    if (!(strpos($viewuri, '/admin/warehouse/setting') === false)) { 
+    if (!(strpos($viewuri, '/admin/warehouse/setting') === false)) {
         echo '<script src="' . module_dir_url(WAREHOUSE_MODULE_NAME, 'assets/js/manage_setting.js').'?v=' . REVISION.'"></script>';
     }
-    
+
     if (!(strpos($viewuri, '/admin/warehouse/setting?group=brand') === false)) {
          echo '<script src="' . module_dir_url(WAREHOUSE_MODULE_NAME, 'assets/js/brand.js').'?v=' . REVISION.'"></script>';
     }
@@ -359,22 +431,22 @@ function warehouse_load_js(){
     if (!(strpos($viewuri, '/admin/warehouse/setting?group=warehouse_custom_fields') === false)) {
          echo '<script src="' . module_dir_url(WAREHOUSE_MODULE_NAME, 'assets/js/warehouse_custom_fields.js').'?v=' . REVISION.'"></script>';
     }
-    
-        
-        
+
+
+
 }
 
 
 /**
  * warehouse add head components
- * @return library 
+ * @return library
  */
 function warehouse_add_head_components(){
     $CI = &get_instance();
     $viewuri = $_SERVER['REQUEST_URI'];
 
 
-    if (!(strpos($viewuri, '/admin/warehouse') === false)) {  
+    if (!(strpos($viewuri, '/admin/warehouse') === false)) {
         echo '<link href="' . base_url('modules/warehouse/assets/css/styles.css') .'?v=' . REVISION. '"  rel="stylesheet" type="text/css" />';
         echo '<link href="' . module_dir_url(WAREHOUSE_MODULE_NAME, 'assets/plugins/handsontable/handsontable.full.min.css') . '"  rel="stylesheet" type="text/css" />';
         echo '<link href="' . module_dir_url(WAREHOUSE_MODULE_NAME, 'assets/plugins/handsontable/chosen.css') . '"  rel="stylesheet" type="text/css" />';
@@ -383,17 +455,17 @@ function warehouse_add_head_components(){
         echo '<link href="' . module_dir_url(WAREHOUSE_MODULE_NAME, 'assets/css/commodity_list.css')  .'?v=' . REVISION. '"  rel="stylesheet" type="text/css" />';
     }
 
-    if (!(strpos($viewuri, '/admin/warehouse/setting?group=bodys') === false)) { 
+    if (!(strpos($viewuri, '/admin/warehouse/setting?group=bodys') === false)) {
 
         echo '<link href="' . module_dir_url(WAREHOUSE_MODULE_NAME, 'assets/css/body.css')  .'?v=' . REVISION. '"  rel="stylesheet" type="text/css" />';
     }
 
-    if (!(strpos($viewuri, '/admin/warehouse/setting?group=colors') === false)) { 
+    if (!(strpos($viewuri, '/admin/warehouse/setting?group=colors') === false)) {
 
         echo '<link href="' . module_dir_url(WAREHOUSE_MODULE_NAME, 'assets/css/body.css')  .'?v=' . REVISION. '"  rel="stylesheet" type="text/css" />';
     }
 
-    if (!(strpos($viewuri, '/admin/warehouse/setting?group=commodity_group') === false)) {     
+    if (!(strpos($viewuri, '/admin/warehouse/setting?group=commodity_group') === false)) {
         echo '<link href="' . module_dir_url(WAREHOUSE_MODULE_NAME, 'assets/css/body.css')  .'?v=' . REVISION. '"  rel="stylesheet" type="text/css" />';
     }
     if (!(strpos($viewuri, '/admin/warehouse/setting?group=commodity_type') === false)) {
@@ -410,49 +482,66 @@ function warehouse_add_head_components(){
         echo '<link href="' . module_dir_url(WAREHOUSE_MODULE_NAME, 'assets/css/report.css')  .'?v=' . REVISION. '"  rel="stylesheet" type="text/css" />';
     }
 
-    
-    if (!(strpos($viewuri, '/admin/warehouse/view_commodity_detail') === false)) {
+
+    if (!(strpos($viewuri, '/admin/warehouse/view_commodity_detail') === false) || !(strpos($viewuri, '/admin/warehouse/shipment_detail') === false)) {
         echo '<link href="' . base_url('modules/warehouse/assets/css/styles.css') .'?v=' . REVISION. '"  rel="stylesheet" type="text/css" />';
         echo '<link href="' . module_dir_url(WAREHOUSE_MODULE_NAME, 'assets/plugins/simplelightbox/simple-lightbox.min.css') . '"  rel="stylesheet" type="text/css" />';
         echo '<link href="' . module_dir_url(WAREHOUSE_MODULE_NAME, 'assets/plugins/simplelightbox/masonry-layout-vanilla.min.css') . '"  rel="stylesheet" type="text/css" />';
-    }   
+    }
 
     if (!(strpos($viewuri, '/admin/warehouse/setting?group=approval_setting') === false)) {
         echo '<link href="' . module_dir_url(WAREHOUSE_MODULE_NAME, 'assets/css/approval_setting.css')  .'?v=' . REVISION. '"  rel="stylesheet" type="text/css" />';
-       
-    }   
-    
+
+    }
+
      if (!(strpos($viewuri, '/admin/warehouse/setting') === false)) {
        echo '<link href="' . module_dir_url(WAREHOUSE_MODULE_NAME, 'assets/css/body.css')  .'?v=' . REVISION. '"  rel="stylesheet" type="text/css" />';
-       
-    }   
 
-    if (!(strpos($viewuri, '/admin/warehouse/setting?group=rule_sale_price') === false)) {
+    }
+
+    if (!(strpos($viewuri, '/admin/warehouse/setting?group=rule_sale_price') === false) || !(strpos($viewuri, '/admin/warehouse/setting') === false)) {
        echo '<link href="' . module_dir_url(WAREHOUSE_MODULE_NAME, 'assets/css/rule_sale_price.css')  .'?v=' . REVISION. '"  rel="stylesheet" type="text/css" />';
-       
+
     }
 
     if (!(strpos($viewuri, '/admin/warehouse/setting?group=inventory_setting') === false)) {
        echo '<link href="' . module_dir_url(WAREHOUSE_MODULE_NAME, 'assets/css/rule_sale_price.css')  .'?v=' . REVISION. '"  rel="stylesheet" type="text/css" />';
-       
-    } 
+
+    }
     if (!(strpos($viewuri, '/admin/proposals/proposal') === false)) {
        echo '<link href="' . module_dir_url(WAREHOUSE_MODULE_NAME, 'assets/css/proposal_add_new_lead.css')  .'?v=' . REVISION. '"  rel="stylesheet" type="text/css" />';
-       
+
     }
      if (!(strpos($viewuri, '/admin/warehouse/setting?group=warehouse_custom_fields') === false)) {
        echo '<link href="' . module_dir_url(WAREHOUSE_MODULE_NAME, 'assets/css/warehouse_custom_fields.css')  .'?v=' . REVISION. '"  rel="stylesheet" type="text/css" />';
-       
+
     }
 
     if (!(strpos($viewuri, '/admin/warehouse/import_opening_stock') === false)) {
-       echo '<link href="' . module_dir_url(WAREHOUSE_MODULE_NAME, 'assets/css/import_opening_stock.css')  .'?v=' . REVISION. '"  rel="stylesheet" type="text/css" />'; 
+       echo '<link href="' . module_dir_url(WAREHOUSE_MODULE_NAME, 'assets/css/import_opening_stock.css')  .'?v=' . REVISION. '"  rel="stylesheet" type="text/css" />';
     }
-    
+
     if (!(strpos($viewuri, '/admin/warehouse/import_xlsx_commodity') === false)) {
-       echo '<link href="' . module_dir_url(WAREHOUSE_MODULE_NAME, 'assets/css/import_opening_stock.css')  .'?v=' . REVISION. '"  rel="stylesheet" type="text/css" />'; 
+       echo '<link href="' . module_dir_url(WAREHOUSE_MODULE_NAME, 'assets/css/import_opening_stock.css')  .'?v=' . REVISION. '"  rel="stylesheet" type="text/css" />';
     }
-     
+
+    if (!(strpos($viewuri, '/admin/warehouse/goods_delivery') === false) || !(strpos($viewuri, '/admin/warehouse/manage_goods_receipt') === false)) {
+       echo '<link href="' . module_dir_url(WAREHOUSE_MODULE_NAME, 'assets/css/goods_delivery.css')  .'?v=' . REVISION. '"  rel="stylesheet" type="text/css" />';
+    }
+
+    if (!(strpos($viewuri, '/admin/warehouse/commodity_list') === false)) {
+       echo '<link href="' . module_dir_url(WAREHOUSE_MODULE_NAME, 'assets/css/add_opening_stock.css')  .'?v=' . REVISION. '"  rel="stylesheet" type="text/css" />';
+    }
+
+    if (!(strpos($viewuri, '/admin/warehouse/shipment_detail') === false)) {
+       echo '<link href="' . module_dir_url(WAREHOUSE_MODULE_NAME, 'assets/css/shipments/order_status.css')  .'?v=' . REVISION. '"  rel="stylesheet" type="text/css" />';
+    }
+
+    if (!(strpos($viewuri, '/admin/manage_goods_receipt') === false)) {
+        echo '<link href="' . module_dir_url(WAREHOUSE_MODULE_NAME, 'assets/plugins/handsontable/handsontable.full.min.css') . '"  rel="stylesheet" type="text/css" />';
+        echo '<link href="' . module_dir_url(WAREHOUSE_MODULE_NAME, 'assets/plugins/handsontable/chosen.css') . '"  rel="stylesheet" type="text/css" />';
+        echo '<script src="' . module_dir_url(WAREHOUSE_MODULE_NAME, 'assets/plugins/handsontable/handsontable.full.min.js') . '"></script>';
+    }
 
 
 }
@@ -461,39 +550,69 @@ function warehouse_add_head_components(){
 
 /**
  * warehouse permissions
- * @return capabilities 
+ * @return capabilities
  */
 function warehouse_permissions()
 {
     $capabilities = [];
 
-    $capabilities['capabilities'] = [
+    $capabilitieswithoutViewOwn['capabilities'] = [
+            'view'   => _l('permission_view') . '(' . _l('permission_global') . ')',
+            'create' => _l('permission_create'),
+            'edit'   => _l('permission_edit'),
+            'delete' => _l('permission_delete'),
+    ];
+    $capabilities_all['capabilities'] = [
+            'view_own' => _l('permission_view_own'),
             'view'   => _l('permission_view') . '(' . _l('permission_global') . ')',
             'create' => _l('permission_create'),
             'edit'   => _l('permission_edit'),
             'delete' => _l('permission_delete'),
     ];
 
-    register_staff_capabilities('warehouse', $capabilities, _l('warehouse'));
+
+    $capabilities_basic_view['capabilities'] = [
+        'view'   => _l('permission_view') . '(' . _l('permission_global') . ')',
+    ];
+
+    $capabilities_basic_edit['capabilities'] = [
+        'edit'   => _l('permission_edit'),
+    ];
+
+    register_staff_capabilities('warehouse_item', $capabilitieswithoutViewOwn, _l('warehouse').' - '._l('items'));
+    register_staff_capabilities('wh_stock_import', $capabilities_all, _l('stock_import'));
+    register_staff_capabilities('wh_stock_export', $capabilities_all, _l('stock_export'));
+    register_staff_capabilities('wh_stock_export_serial_number', $capabilities_basic_edit, _l('wh_inventory_delivery_change_serial_numbers'));
+    register_staff_capabilities('wh_packing_list', $capabilities_all, _l('wh_packing_lists'));
+    register_staff_capabilities('wh_internal_delivery_note', $capabilities_all, _l('internal_delivery_note'));
+    register_staff_capabilities('wh_loss_adjustment', $capabilities_all, _l('loss_adjustment'));
+    register_staff_capabilities('wh_receipt_return_order', $capabilities_all, _l('inventory_receipt_inventory_delivery_returns_goods'));
+    register_staff_capabilities('wh_warehouse', $capabilitieswithoutViewOwn, _l('_warehouse'));
+    register_staff_capabilities('wh_warehouse_history', $capabilities_basic_view, _l('warehouse_history'));
+    register_staff_capabilities('wh_report', $capabilities_basic_view, _l('warehouse').' - '._l('report'));
+    register_staff_capabilities('wh_setting', $capabilitieswithoutViewOwn, _l('warehouse').' - '._l('setting'));
+
 }
 
 /**
  * warehouse module init tab
- *  
+ *
  */
 function warehouse_module_init_tab($invoice_id){
     $li_tab ='';
-    $li_tab .='<li role="presentation">';
-    $li_tab .='<a href="' . admin_url('warehouse/manage_delivery_filter/'.$invoice_id->id).'" >'._l('goods_delivery_tab').'</a>';
-    $li_tab .='</li>';
-    echo html_entity_decode($li_tab);
+    if (has_permission('wh_stock_export', '', 'view')) {
+        $li_tab .='<li role="presentation">';
+        $li_tab .='<a href="' . admin_url('warehouse/manage_delivery_filter/'.$invoice_id->id).'" >'._l('goods_delivery_tab').'</a>';
+        $li_tab .='</li>';
+    }
+    echo new_html_entity_decode($li_tab);
 
 }
 
 /**
  * warehouse module init tab content
- * @param  [integer] $invoice_id 
- *            
+ * @param  [integer] $invoice_id
+ *
  */
 function warehouse_module_init_tab_content($invoice_id){
     $CI = &get_instance();
@@ -530,7 +649,7 @@ function warehouse_module_init_tab_content($invoice_id){
         $table_content .='<td>'._d($value['date_add']).'</td>';
         $table_content .='<td>'.app_format_money((float)($value['total_money']),'').'</td>';
         $table_content .='<td>'.app_format_money((float)($value['total_discount']),'').'</td>';
-        $table_content .='<td>'.app_format_money((float)($value['after_discount']),'').'</td>'; 
+        $table_content .='<td>'.app_format_money((float)($value['after_discount']),'').'</td>';
         $table_content .='<td>';
         if($value['approval'] == 1){
             $table_content .= '<span class="label label-success  s-status invoice-status-2"><span class="tag">'._l('approved').'</span><span class="hide">, </span></span>&nbsp';
@@ -549,18 +668,18 @@ function warehouse_module_init_tab_content($invoice_id){
     $table_content .='</table>';
     $table_content .='</div>';
 
-    echo html_entity_decode($table_content);
+    echo new_html_entity_decode($table_content);
 
 }
 
 
 /**
  *[warehouse create goods receipt
- * @param  array $data 
- *     
+ * @param  array $data
+ *
  */
 function warehouse_create_goods_receipt($data)
-{   
+{
 
     if($data['status'] == '2' && (get_warehouse_option('auto_create_goods_received') == 1) && (get_warehouse_option('goods_receipt_warehouse') != '') && (get_warehouse_option('goods_receipt_warehouse') != '0')){
         //purchase order is approval
@@ -575,8 +694,8 @@ function warehouse_create_goods_receipt($data)
 
 /**
  * warehouse create goods delivery
- * @param  array $value 
- *       
+ * @param  array $value
+ *
  */
 function warehouse_create_goods_delivery($invoice_id)
 {
@@ -597,8 +716,8 @@ function warehouse_create_goods_delivery($invoice_id)
 
 /**
  * task related to select
- * @param  string $value 
- * @return string        
+ * @param  string $value
+ * @return string
  */
 function inventory_received_related_to_select($value)
 {
@@ -615,9 +734,9 @@ function inventory_received_related_to_select($value)
 
 /**
  * inventory received relation values
- * @param  [type] $values   
- * @param  [type] $relation 
- * @return [type]           
+ * @param  [type] $values
+ * @param  [type] $relation
+ * @return [type]
  */
 function inventory_received_relation_values($values, $relation)
 {
@@ -638,11 +757,11 @@ function inventory_received_relation_values($values, $relation)
 
 /**
  * inventory received relation data
- * @param  array $data   
- * @param  string $type   
- * @param  id $rel_id 
- * @param  array $q      
- * @return array         
+ * @param  array $data
+ * @param  string $type
+ * @param  id $rel_id
+ * @param  array $q
+ * @return array
  */
 function inventory_received_relation_data($data, $type, $rel_id, $q)
 {
@@ -663,9 +782,9 @@ function inventory_received_relation_data($data, $type, $rel_id, $q)
 
 /**
  * inventory received add table row
- * @param  string $row  
- * @param  string $aRow 
- * @return [type]       
+ * @param  string $row
+ * @param  string $aRow
+ * @return [type]
  */
 function inventory_received_add_table_row($row ,$aRow)
 {
@@ -680,7 +799,7 @@ function inventory_received_add_table_row($row ,$aRow)
 
                 $str = '<span class="hide"> - </span><a class="text-muted task-table-related" data-toggle="tooltip" title="' . _l('task_related_to') . '" href="' . admin_url('warehouse/manage_purchase/' . $inventory_received->id) . '">' . $inventory_received->goods_receipt_code . '</a><br />';
 
-                $row[2] =  str_replace('<br />', $str, $row[2]);
+                $row[2] =  new_str_replace('<br />', $str, $row[2]);
             }
 
     }
@@ -692,8 +811,8 @@ function inventory_received_add_table_row($row ,$aRow)
 //inventory delivery
 /**
  * task related to select
- * @param  string $value 
- * @return string        
+ * @param  string $value
+ * @return string
  */
 function inventory_delivery_related_to_select($value)
 {
@@ -710,9 +829,9 @@ function inventory_delivery_related_to_select($value)
 
 /**
  * inventory delivery relation values
- * @param  [type] $values   
- * @param  [type] $relation 
- * @return [type]           
+ * @param  [type] $values
+ * @param  [type] $relation
+ * @return [type]
  */
 function inventory_delivery_relation_values($values, $relation)
 {
@@ -733,11 +852,11 @@ function inventory_delivery_relation_values($values, $relation)
 
 /**
  * inventory delivery relation data
- * @param  array $data   
- * @param  string $type   
- * @param  id $rel_id 
- * @param  array $q      
- * @return array         
+ * @param  array $data
+ * @param  string $type
+ * @param  id $rel_id
+ * @param  array $q
+ * @return array
  */
 function inventory_delivery_relation_data($data, $type, $rel_id, $q)
 {
@@ -758,9 +877,9 @@ function inventory_delivery_relation_data($data, $type, $rel_id, $q)
 
 /**
  * inventory delivery add table row
- * @param  string $row  
- * @param  string $aRow 
- * @return [type]       
+ * @param  string $row
+ * @param  string $aRow
+ * @return [type]
  */
 function inventory_delivery_add_table_row($row ,$aRow)
 {
@@ -775,7 +894,7 @@ function inventory_delivery_add_table_row($row ,$aRow)
 
                 $str = '<span class="hide"> - </span><a class="text-muted task-table-related" data-toggle="tooltip" title="' . _l('task_related_to') . '" href="' . admin_url('warehouse/manage_purchase/' . $inventory_delivery->id) . '">' . $inventory_delivery->goods_delivery_code . '</a><br />';
 
-                $row[2] =  str_replace('<br />', $str, $row[2]);
+                $row[2] =  new_str_replace('<br />', $str, $row[2]);
             }
 
     }
@@ -785,8 +904,8 @@ function inventory_delivery_add_table_row($row ,$aRow)
 
 /**
  * [warehouse_reverse_goods_delivery
- * @param  integer $invoice 
- * @return boolean          
+ * @param  integer $invoice
+ * @return boolean
  */
 function wh_invoice_marked_as_cancelled($invoice_id)
 {
@@ -803,12 +922,12 @@ function wh_invoice_marked_as_cancelled($invoice_id)
 
 /**
  * wh invoice unmarked as cancelled
- * @param  integer $invoice_id 
- * @return boolean             
+ * @param  integer $invoice_id
+ * @return boolean
  */
 function wh_invoice_unmarked_as_cancelled($invoice_id)
 {
-    
+
     if($invoice_id){
         if(get_warehouse_option('auto_create_goods_delivery') == 1){
             if(get_warehouse_option('uncancelled_invoice_create_inventory_delivery_voucher') == 1 ){
@@ -828,7 +947,7 @@ function wh_invoice_unmarked_as_cancelled($invoice_id)
 
 /**
  * wh cron settings tab
- * @return view 
+ * @return view
  */
 function wh_cron_settings_tab()
 {
@@ -837,7 +956,7 @@ function wh_cron_settings_tab()
 
 /**
  * wh cron settings tab content
- * @return view 
+ * @return view
  */
 function wh_cron_settings_tab_content()
 {
@@ -846,8 +965,8 @@ function wh_cron_settings_tab_content()
 
 /**
  * warehouse cronjob settings update
- * @param  array $data 
- * @return array       
+ * @param  array $data
+ * @return array
  */
 function warehouse_cronjob_settings_update($data)
 {
@@ -864,7 +983,7 @@ function warehouse_cronjob_settings_update($data)
 
 /**
  * wh cron settings tab footer
- * @return view 
+ * @return view
  */
 function wh_cron_settings_tab_footer()
 {
@@ -874,7 +993,7 @@ function wh_cron_settings_tab_footer()
 
 /**
  * items send notification inventory warning
- *  
+ *
  */
 function items_send_notification_inventory_warning($manually)
 {
@@ -897,7 +1016,7 @@ function items_send_notification_inventory_warning($manually)
         if ($automatically_send_items_expired_before == '') {
             $automatically_send_items_expired_before = 1;
         }
-        
+
 
         $inventory_auto_operations_hour = intval($inventory_auto_operations_hour);
         $hour_now                     = date('G');
@@ -933,8 +1052,8 @@ function inventory_warning_register_other_merge_fields($for) {
 
 /**
  * wh update goods delivery
- * @param  integer $value 
- * @return boolean        
+ * @param  integer $value
+ * @return boolean
  */
 function wh_update_goods_delivery($invoice_id)
 {
@@ -974,7 +1093,7 @@ function init_warehouse_customfield($custom_field = ''){
 
     $html = '<option value="warehouse_name" '.$select.' >'. _l('_warehouse').'</option>';
 
-    echo html_entity_decode($html);
+    echo new_html_entity_decode($html);
 }
 
 
@@ -982,7 +1101,7 @@ function init_warehouse_customfield($custom_field = ''){
 
 /**
  * warehouse render search
- * @return view 
+ * @return view
  */
 function warehouse_render_search()
 {
@@ -991,7 +1110,7 @@ function warehouse_render_search()
 
 /**
  * proposal customer add js
- * @return view 
+ * @return view
  */
 function warehouse_render_search_js()
 {
@@ -1001,8 +1120,8 @@ function warehouse_render_search_js()
 
 /**
  * proposal related to select
- * @param  string $value 
- * @return string        
+ * @param  string $value
+ * @return string
  */
 function proposal_related_to_select($value)
 {
@@ -1019,11 +1138,11 @@ function proposal_related_to_select($value)
 
 /**
  * inventory delivery relation data
- * @param  array $data   
- * @param  string $type   
- * @param  id $rel_id 
- * @param  array $q      
- * @return array         
+ * @param  array $data
+ * @param  string $type
+ * @param  id $rel_id
+ * @param  array $q
+ * @return array
  */
 function proposal_relation_data($data, $type, $rel_id, $q)
 {
@@ -1034,9 +1153,9 @@ function proposal_relation_data($data, $type, $rel_id, $q)
 
     if ($type == 'customer_lead') {
 
-        return   $data = $CI->warehouse_model->get_client_lead($rel_id, $q);
-        
-        
+        return   $data = $CI->warehouse_model->get_client_lead($q, $rel_id);
+
+
     }
     return $data;
 }
@@ -1044,9 +1163,9 @@ function proposal_relation_data($data, $type, $rel_id, $q)
 
 /**
  * proposal relation values
- * @param  [type] $values   
- * @param  [type] $relation 
- * @return [type]           
+ * @param  [type] $values
+ * @param  [type] $relation
+ * @return [type]
  */
 function proposal_relation_values($values, $relation)
 {
@@ -1099,21 +1218,21 @@ function proposal_relation_values($values, $relation)
 
 /**
  * proposal search relation values
- * @param  string $rel_id   
- * @param  string $rel_type 
- * @return string           
+ * @param  string $rel_id
+ * @param  string $rel_type
+ * @return string
  */
 function proposal_search_relation_values($value)
 {
     if($value['rel_type'] == 'customer_lead'){
         $data=[];
         if(preg_match('/^customer_/', $value['rel_id'])){
-            $data['rel_id'] = str_replace('customer_', '', $value['rel_id']);
+            $data['rel_id'] = new_str_replace('customer_', '', $value['rel_id']);
             $data['rel_type'] = 'customer';
 
         }elseif(preg_match('/^lead_/', $value['rel_id'])){
 
-            $data['rel_id'] = str_replace('lead_', '', $value['rel_id']);
+            $data['rel_id'] = new_str_replace('lead_', '', $value['rel_id']);
             $data['rel_type'] = 'lead';
         }
 
@@ -1125,8 +1244,8 @@ function proposal_search_relation_values($value)
 
 /**
  * proposal render input groupt
- * @param  [type] $value 
- * @return [type]        
+ * @param  [type] $value
+ * @return [type]
  */
 function proposal_render_input_groupt($value)
 {
@@ -1139,8 +1258,8 @@ function proposal_render_input_groupt($value)
 
 /**
  * proposal render input groupb
- * @param  [type] $value 
- * @return [type]        
+ * @param  [type] $value
+ * @return [type]
  */
 function proposal_render_input_groupb($value)
 {
@@ -1163,8 +1282,8 @@ function proposal_render_input_groupb($value)
 
 /**
  * proposal before create proposal
- * @param  array $value 
- * @return array        
+ * @param  array $value
+ * @return array
  */
 function proposal_before_create_proposal($value)
 {
@@ -1173,12 +1292,12 @@ function proposal_before_create_proposal($value)
         if(isset($value['data']['rel_type']) && $value['data']['rel_type'] == 'customer_lead'){
 
             if(preg_match('/^customer_/', $value['data']['rel_id'])){
-                $value['data']['rel_id'] = str_replace('customer_', '', $value['data']['rel_id']);
+                $value['data']['rel_id'] = new_str_replace('customer_', '', $value['data']['rel_id']);
                 $value['data']['rel_type'] = 'customer';
 
             }elseif(preg_match('/^lead_/', $value['data']['rel_id'])){
 
-               $value['data']['rel_id'] = str_replace('lead_', '', $value['data']['rel_id']);
+               $value['data']['rel_id'] = new_str_replace('lead_', '', $value['data']['rel_id']);
                 $value['data']['rel_type'] = 'lead';
             }
 
@@ -1198,7 +1317,7 @@ function proposal_before_create_proposal($value)
         if(isset($value['data']['series_id'])){
             unset($value['data']['series_id']);
         }
-        
+
         return $value;
     }
 
@@ -1207,7 +1326,7 @@ function proposal_before_create_proposal($value)
 
 /**
  * wh proposal render last tab
- * @return view 
+ * @return view
  */
 function wh_proposal_render_last_tab()
 {
@@ -1216,10 +1335,10 @@ function wh_proposal_render_last_tab()
 
 /**
  * wh proposal render last tab content
- * @return view 
+ * @return view
  */
 function wh_proposal_render_last_tab_content($value)
-{   
+{
     $data=[];
     $data['proposal_id'] = $value;
     get_instance()->load->view('warehouse/proposal/proposal_attachmentfile_tab_content', $data);
@@ -1227,7 +1346,7 @@ function wh_proposal_render_last_tab_content($value)
 
 /**
  * wh proposal load js file
- * @return view 
+ * @return view
  */
 function wh_proposal_load_js_file()
 {
@@ -1238,10 +1357,10 @@ function wh_proposal_load_js_file()
 
 /**
  * item wh render warehouse
- * @return views 
+ * @return views
  */
 function item_wh_render_warehouse()
-{   
+{
     $data=[];
     $data['warehouses'] = get_warehouse_name();
 
@@ -1250,10 +1369,10 @@ function item_wh_render_warehouse()
 
 /**
  * item wh render series
- * @return view 
+ * @return view
  */
 function item_wh_render_series()
-{   
+{
     $data=[];
     $data['series_id'] = get_series_name();
 
@@ -1262,8 +1381,8 @@ function item_wh_render_series()
 
 /**
  * wh proposal before get item
- * @param  string $select 
- * @return string         
+ * @param  string $select
+ * @return string
  */
 function wh_proposal_before_get_item($select)
 {
@@ -1274,8 +1393,8 @@ function wh_proposal_before_get_item($select)
 
 /**
  * proposal before update proposal
- * @param  array $value 
- * @return array        
+ * @param  array $value
+ * @return array
  */
 function proposal_before_update_proposal($value)
 {
@@ -1284,12 +1403,12 @@ function proposal_before_update_proposal($value)
         if(isset($value['data']['rel_type']) && $value['data']['rel_type'] == 'customer_lead'){
 
             if(preg_match('/^customer_/', $value['data']['rel_id'])){
-                $value['data']['rel_id'] = str_replace('customer_', '', $value['data']['rel_id']);
+                $value['data']['rel_id'] = new_str_replace('customer_', '', $value['data']['rel_id']);
                 $value['data']['rel_type'] = 'customer';
 
             }elseif(preg_match('/^lead_/', $value['data']['rel_id'])){
 
-               $value['data']['rel_id'] = str_replace('lead_', '', $value['data']['rel_id']);
+               $value['data']['rel_id'] = new_str_replace('lead_', '', $value['data']['rel_id']);
                 $value['data']['rel_type'] = 'lead';
             }
 
@@ -1309,7 +1428,7 @@ function proposal_before_update_proposal($value)
         if(isset($value['data']['series_id'])){
             unset($value['data']['series_id']);
         }
-        
+
         return $value;
     }
 
@@ -1318,21 +1437,21 @@ function proposal_before_update_proposal($value)
 
 /**
  * item wh render series
- * @return view 
+ * @return view
  */
 function lead_wh_render_input_vat($value)
-{   
+{
     $data['vat'] = $value;
     get_instance()->load->view('warehouse/proposal/lead_wh_render_input_vat', $data);
 }
 
 /**
  * proposal wh render li
- * @param  array $proposal 
- * @return view           
+ * @param  array $proposal
+ * @return view
  */
 function proposal_wh_render_li($proposal)
-{   
+{
 
 $data=[];
 $data['proposal'] = $proposal['proposal'];
@@ -1356,10 +1475,10 @@ $data['proposal'] = $proposal['proposal'];
                 }
             }
         }
-        
+
         $data['status_convert'] = $status_convert;
         $data['lead_id'] = $lead_id;
-        
+
         get_instance()->load->view('warehouse/proposal/proposal_wh_render_li', $data);
     }
 
@@ -1367,10 +1486,10 @@ $data['proposal'] = $proposal['proposal'];
 
 /**
  * wh proposal render last tab content
- * @return view 
+ * @return view
  */
 function wh_proposal_render_lead_to_customer($value)
-{   
+{
 
         $status_convert=false;
         $lead_id='';
@@ -1397,7 +1516,7 @@ function wh_proposal_render_lead_to_customer($value)
                 }
             }
         }
-           
+
         if($status_convert == true){
             $data=[];
             $data['lead'] = $lead_value;
@@ -1410,20 +1529,20 @@ function wh_proposal_render_lead_to_customer($value)
 
 /**
  * task bookmarks add table column
- * @param  array $table_data 
- * @return array             
+ * @param  array $table_data
+ * @return array
  */
 function wh_proposal_add_table_column($table_data)
-{      
+{
     array_push($table_data, _l('processing'));
     return $table_data;
 }
 
 /**
  * contact bookmarks_add_table_row
- * @param  [type] $row  
- * @param  [type] $aRow 
- * @return [type]       
+ * @param  [type] $row
+ * @param  [type] $aRow
+ * @return [type]
  */
 function wh_proposal_add_table_row($row ,$aRow)
 {
@@ -1448,24 +1567,24 @@ function wh_proposal_add_table_row($row ,$aRow)
 
 /**
  * wh proposal table sql columns
- * @param  [type] $column 
- * @return [type]         
+ * @param  [type] $column
+ * @return [type]
  */
 function wh_proposal_table_sql_columns($column)
 {
     array_push($column, 'processing');
     return $column;
-    
+
 }
 
 /**
  * wh proposal add filter column
- * @param  array $array_filter 
- * @param  array $filter_value 
- * @return array               
+ * @param  array $array_filter
+ * @param  array $filter_value
+ * @return array
  */
 function wh_proposal_add_filter_column($array_filter, $filter_value)
-{   
+{
 
     if($filter_value['proposals_processing']){
         array_push($array_filter, 'OR processing = 1');
@@ -1477,7 +1596,7 @@ function wh_proposal_add_filter_column($array_filter, $filter_value)
 
 /**
  * wh proposals manage add input
- * @return html input 
+ * @return html input
  */
 function wh_proposals_manage_add_input($proposals_processing)
 {
@@ -1488,10 +1607,364 @@ function wh_proposals_manage_add_input($proposals_processing)
 
 /**
  * wh proposals manage add li
- * @return html li 
+ * @return html li
  */
 function wh_proposals_manage_add_li()
 {
     get_instance()->load->view('warehouse/proposal/wh_proposals_manage_add_li');
 
+}
+
+/**
+ * { filter items list }
+ *
+ * @param        $data   The data
+ */
+function filter_items_list_wh($data){
+
+    $CI = &get_instance();
+    $CI->load->model('warehouse/warehouse_model');
+
+    foreach($data as $group_id => $items){
+        foreach($items as $key => $item){
+            if($item['parent_id'] == 0 || $item['parent_id'] == null || $item['parent_id'] == ''){
+                $child_items = $CI->warehouse_model->get_product_by_parent_id($item['id']);
+                if(count($child_items) > 0){
+                    unset($data[$group_id][$key]);
+                }
+            }
+        }
+    }
+
+    return $data;
+}
+
+/**
+ * inventory received task modal rel type select
+ * @param  object $value
+ * @return string
+ */
+function inventory_received_task_modal_rel_type_select($value) {
+    $selected = '';
+    if (isset($value) && isset($value['rel_type']) && $value['rel_type'] == 'stock_import') {
+        $selected = 'selected';
+    }
+    echo "<option value='stock_import' " . $selected . ">" .
+    _l('stock_import') . "
+                           </option>";
+
+}
+
+/**
+ * inventory received get relation values description
+ * @param  object $values
+ * @param  object $relation
+ * @return
+ */
+function inventory_received_get_relation_values($values, $relation = null) {
+    if ($values['type'] == 'stock_import') {
+        if (is_array($relation)) {
+            $values['id'] = $relation['id'];
+            $values['name'] = $relation['goods_receipt_code'];
+        } else {
+            $values['id'] = $relation->id;
+            $values['name'] = $relation->goods_receipt_code;
+        }
+        $values['link'] = admin_url('warehouse/manage_purchase/' . $values['id']);
+    }
+
+    return $values;
+}
+
+/**
+ * inventory received get relation data
+ * @param  object $data
+ * @param  object $obj
+ * @return
+ */
+function inventory_received_get_relation_data($data, $obj) {
+    $type = $obj['type'];
+    $rel_id = $obj['rel_id'];
+    $CI = &get_instance();
+    $CI->load->model('warehouse/warehouse_model');
+
+    if ($type == 'stock_import') {
+        if ($rel_id != '') {
+            $data = $CI->warehouse_model->get_goods_receipt($rel_id);
+        } else {
+            $data = [];
+        }
+    }
+
+    return $data;
+}
+
+/**
+ * inventory delivery task modal rel type select
+ * @param  object $value
+ * @return string
+ */
+function inventory_delivery_task_modal_rel_type_select($value) {
+    $selected = '';
+    if (isset($value) && isset($value['rel_type']) && $value['rel_type'] == 'stock_export') {
+        $selected = 'selected';
+    }
+    echo "<option value='stock_export' " . $selected . ">" .
+    _l('stock_export') . "
+                           </option>";
+
+}
+
+/**
+ * inventory delivery get relation values description
+ * @param  object $values
+ * @param  object $relation
+ * @return
+ */
+function inventory_delivery_get_relation_values($values, $relation = null) {
+    if ($values['type'] == 'stock_export') {
+        if (is_array($relation)) {
+            $values['id'] = $relation['id'];
+            $values['name'] = $relation['goods_delivery_code'];
+        } else {
+            $values['id'] = $relation->id;
+            $values['name'] = $relation->goods_delivery_code;
+        }
+        $values['link'] = admin_url('warehouse/manage_delivery/' . $values['id']);
+    }
+
+    return $values;
+}
+
+/**
+ * inventory delivery get relation data
+ * @param  object $data
+ * @param  object $obj
+ * @return
+ */
+function inventory_delivery_get_relation_data($data, $obj) {
+
+    $type = $obj['type'];
+    $rel_id = $obj['rel_id'];
+    $CI = &get_instance();
+    $CI->load->model('warehouse/warehouse_model');
+
+    if ($type == 'stock_export') {
+        if ($rel_id != '') {
+            $data = $CI->warehouse_model->get_goods_delivery($rel_id);
+        } else {
+            $data = [];
+        }
+    }
+    return $data;
+}
+
+/**
+ * wh before admin view create invoice
+ * @param  [type] $items
+ * @return [type]
+ */
+function wh_before_admin_view_create_invoice($items) {
+    if(count($items) > 0){
+        $CI = &get_instance();
+        $CI->load->model('warehouse/warehouse_model');
+        $items = $CI->warehouse_model->wh_get_grouped('can_be_sold');
+        return $items;
+    }
+    return $items;
+}
+
+/**
+ * wh admin invoice ajax search item
+ * @param  [type] $data
+ * @return [type]
+ */
+function wh_admin_invoice_ajax_search_item($data, $search) {
+    $CI = &get_instance();
+    $CI->load->model('warehouse/warehouse_model');
+    $data = $CI->warehouse_model->wh_commodity_code_search($search, 'rate', 'can_be_sold');
+    return $data;
+}
+
+/**
+ * omni order detail add button header
+ * @param  [type] $order
+ * @return [type]
+ */
+function omni_order_detail_add_button_header($order){
+    if(get_status_modules_wh('omni_sales')){
+    //check status
+        $CI = &get_instance();
+        $CI->load->model('omni_sales/omni_sales_model');
+        $CI->load->model('warehouse/warehouse_model');
+        $cart = $CI->omni_sales_model->get_cart($order->id);
+        $shipment = $CI->warehouse_model->get_shipment_by_order($order->id);
+        if(($cart && $cart->status > 0) || isset($shipment)){
+            if(isset($shipment)){
+                echo '<a href="'.admin_url('warehouse/shipment_detail/' .$order->id).'" class="btn btn-primary mleft5 pull-right"  data-toggle="tooltip" data-title="'._l('wh_shipment_tooltip').'">'._l('wh_shipment').'</a>';
+            }
+        }
+    }
+}
+
+/**
+ * wh omni sales after invoice added
+ * @param  [type] $order_id
+ * @return [type]
+ */
+function wh_omni_sales_after_invoice_added($order_id)
+{
+    if(is_numeric($order_id)){
+        $CI = &get_instance();
+        $CI->load->model('warehouse/warehouse_model');
+
+        //create shipment info from order
+        $CI->warehouse_model->create_shipment_from_order($order_id);
+    }
+    return true;
+}
+
+/**
+ * wh omni sales after delivery note added
+ * @param  [type] $order_id
+ * @return [type]
+ */
+function wh_omni_sales_after_delivery_note_added($order_id)
+{
+    if($order_id){
+        $CI = &get_instance();
+        $CI->load->model('warehouse/warehouse_model');
+        $shipment = $CI->warehouse_model->get_shipment_by_order($order_id);
+        $shipment_id = 0;
+
+        if($shipment){
+            $shipment_id = $shipment->id;
+            $shipment_log = _l('inventory_delivery_voucher_have_been_created');
+            $CI->warehouse_model->log_wh_activity($shipment->id, 'shipment', $shipment_log);
+        }else{
+            $shipment_id = $CI->warehouse_model->create_shipment_from_order($order_id);
+            if(is_numeric($shipment_id)){
+                $shipment_log = _l('inventory_delivery_voucher_have_been_created');
+                $CI->warehouse_model->log_wh_activity($shipment_id, 'shipment', $shipment_log);
+            }
+        }
+
+        $CI->warehouse_model->update_shipment_status($shipment_id, ['shipment_status' => 'processing_order']);
+    }
+    return true;
+}
+
+/**
+ * wh after purchase order add
+ * @param  [type] $purchase_order_id
+ * @return [type]
+ */
+function wh_after_purchase_order_add($purchase_order_id)
+{
+    if(get_status_modules_wh('purchase')){
+        $CI = &get_instance();
+        $CI->load->model('purchase/purchase_model');
+        $pur_order = $CI->purchase_model->get_pur_order($purchase_order_id);
+
+        if(isset($pur_order) && (int)$pur_order->approve_status == 2 && (get_warehouse_option('auto_create_goods_received') == 1) && (get_warehouse_option('goods_receipt_warehouse') != '') && (get_warehouse_option('goods_receipt_warehouse') != '0')){
+            //purchase order is approval
+            $CI = &get_instance();
+            $CI->load->model('warehouse/warehouse_model');
+
+            $CI->warehouse_model->auto_create_goods_receipt_with_purchase_order(['id' => $purchase_order_id]);
+        }
+        return true;
+    }
+}
+
+function init_shipment_portal_menu()
+{
+    $item ='';
+    if(is_client_logged_in() && get_warehouse_option('wh_display_shipment_on_client_portal') == 1){
+        $item .= '<li class="customers-nav-item">';
+        $item .= '<a href="'.site_url('warehouse/warehouse_client/shipments').'">'._l("wh_shipments").'';
+        $item .= '</a>';
+        $item .= '</li>';
+    }
+    echo new_html_entity_decode($item);
+
+}
+
+
+function warehouse_client_add_head_components() {
+    $CI = &get_instance();
+    $viewuri = $_SERVER['REQUEST_URI'];
+
+    if (!(strpos($viewuri, '/warehouse/warehouse_client/shipment_detail') === false)) {
+       echo '<link href="' . module_dir_url(WAREHOUSE_MODULE_NAME, 'assets/css/shipments/order_status.css')  .'?v=' . REVISION. '"  rel="stylesheet" type="text/css" />';
+    }
+
+}
+
+
+function warehouse_client_add_footer_components() {
+    $CI = &get_instance();
+    $viewuri = $_SERVER['REQUEST_URI'];
+
+
+}
+
+/**
+ * warehouse before invoice deleted
+ * @param  [type] $invoice_id
+ * @return [type]
+ */
+function warehouse_before_invoice_deleted($invoice_id)
+{
+    if($invoice_id){
+        $CI = &get_instance();
+        $CI->load->model('warehouse/warehouse_model');
+        $CI->warehouse_model->inventory_cancel_invoice($invoice_id);
+    }
+    return true;
+}
+
+function warehouse_appint(){
+    // $CI = & get_instance();
+    // require_once 'libraries/gtsslib.php';
+    // $warehouse_api = new WarehouseLic();
+    // $warehouse_gtssres = $warehouse_api->verify_license(true);
+    // if(!$warehouse_gtssres || ($warehouse_gtssres && isset($warehouse_gtssres['status']) && !$warehouse_gtssres['status'])){
+    //      $CI->app_modules->deactivate(WAREHOUSE_MODULE_NAME);
+    //     set_alert('danger', "One of your modules failed its verification and got deactivated. Please reactivate or contact support.");
+    //     redirect(admin_url('modules'));
+    // }
+}
+
+function warehouse_preactivate($module_name){
+    if ($module_name['system_name'] == WAREHOUSE_MODULE_NAME) {
+        require_once 'libraries/gtsslib.php';
+        $warehouse_api = new WarehouseLic();
+        // $warehouse_gtssres = $warehouse_api->verify_license();
+        // if(!$warehouse_gtssres || ($warehouse_gtssres && isset($warehouse_gtssres['status']) && !$warehouse_gtssres['status'])){
+        //      $CI = & get_instance();
+        //     $data['submit_url'] = $module_name['system_name'].'/gtsverify/activate';
+        //     $data['original_url'] = admin_url('modules/activate/'.WAREHOUSE_MODULE_NAME); 
+        //     $data['module_name'] = WAREHOUSE_MODULE_NAME;
+        //     $data['title'] = "Module License Activation";
+        //     echo $CI->load->view($module_name['system_name'].'/activate', $data, true);
+        //     exit();
+        // }
+    }
+}
+
+function warehouse_predeactivate($module_name){
+    if ($module_name['system_name'] == WAREHOUSE_MODULE_NAME) {
+        require_once 'libraries/gtsslib.php';
+        $warehouse_api = new WarehouseLic();
+        $warehouse_api->deactivate_license();
+    }
+}
+
+function warehouse_uninstall($module_name){
+    if ($module_name['system_name'] == WAREHOUSE_MODULE_NAME) {
+        require_once 'libraries/gtsslib.php';
+        $warehouse_api = new WarehouseLic();
+        $warehouse_api->deactivate_license();
+    }
 }

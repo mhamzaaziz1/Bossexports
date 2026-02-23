@@ -12,9 +12,6 @@ namespace Twilio\Rest\Sync\V1\Service;
 use Twilio\Options;
 use Twilio\Values;
 
-/**
- * PLEASE NOTE that this class contains beta products that are subject to change. Use them with caution.
- */
 abstract class SyncStreamOptions {
     /**
      * @param string $uniqueName An application-defined string that uniquely
@@ -23,7 +20,7 @@ abstract class SyncStreamOptions {
      *                 deleted
      * @return CreateSyncStreamOptions Options builder
      */
-    public static function create($uniqueName = Values::NONE, $ttl = Values::NONE) {
+    public static function create(string $uniqueName = Values::NONE, int $ttl = Values::NONE): CreateSyncStreamOptions {
         return new CreateSyncStreamOptions($uniqueName, $ttl);
     }
 
@@ -32,7 +29,7 @@ abstract class SyncStreamOptions {
      *                 deleted
      * @return UpdateSyncStreamOptions Options builder
      */
-    public static function update($ttl = Values::NONE) {
+    public static function update(int $ttl = Values::NONE): UpdateSyncStreamOptions {
         return new UpdateSyncStreamOptions($ttl);
     }
 }
@@ -44,7 +41,7 @@ class CreateSyncStreamOptions extends Options {
      * @param int $ttl How long, in seconds, before the Stream expires and is
      *                 deleted
      */
-    public function __construct($uniqueName = Values::NONE, $ttl = Values::NONE) {
+    public function __construct(string $uniqueName = Values::NONE, int $ttl = Values::NONE) {
         $this->options['uniqueName'] = $uniqueName;
         $this->options['ttl'] = $ttl;
     }
@@ -56,19 +53,19 @@ class CreateSyncStreamOptions extends Options {
      *                           identifies the resource
      * @return $this Fluent Builder
      */
-    public function setUniqueName($uniqueName) {
+    public function setUniqueName(string $uniqueName): self {
         $this->options['uniqueName'] = $uniqueName;
         return $this;
     }
 
     /**
-     * How long, in seconds, before the Stream expires and is deleted (time-to-live). Can be an integer from 0 to 31,536,000 (1 year). The default value is `0`, which means the Stream does not expire. The Stream will be deleted automatically after it expires, but there can be a delay between the expiration time and the resources's deletion.
+     * How long, [in seconds](https://www.twilio.com/docs/sync/limits#sync-payload-limits), before the Stream expires and is deleted (time-to-live).
      *
      * @param int $ttl How long, in seconds, before the Stream expires and is
      *                 deleted
      * @return $this Fluent Builder
      */
-    public function setTtl($ttl) {
+    public function setTtl(int $ttl): self {
         $this->options['ttl'] = $ttl;
         return $this;
     }
@@ -78,14 +75,9 @@ class CreateSyncStreamOptions extends Options {
      *
      * @return string Machine friendly representation
      */
-    public function __toString() {
-        $options = array();
-        foreach ($this->options as $key => $value) {
-            if ($value != Values::NONE) {
-                $options[] = "$key=$value";
-            }
-        }
-        return '[Twilio.Sync.V1.CreateSyncStreamOptions ' . \implode(' ', $options) . ']';
+    public function __toString(): string {
+        $options = \http_build_query(Values::of($this->options), '', ' ');
+        return '[Twilio.Sync.V1.CreateSyncStreamOptions ' . $options . ']';
     }
 }
 
@@ -94,18 +86,18 @@ class UpdateSyncStreamOptions extends Options {
      * @param int $ttl How long, in seconds, before the Stream expires and is
      *                 deleted
      */
-    public function __construct($ttl = Values::NONE) {
+    public function __construct(int $ttl = Values::NONE) {
         $this->options['ttl'] = $ttl;
     }
 
     /**
-     * How long, in seconds, before the Stream expires and is deleted (time-to-live). Can be an integer from 0 to 31,536,000 (1 year). The default value is `0`, which means the Stream does not expire. The Stream will be deleted automatically after it expires, but there can be a delay between the expiration time and the resources's deletion.
+     * How long, [in seconds](https://www.twilio.com/docs/sync/limits#sync-payload-limits), before the Stream expires and is deleted (time-to-live).
      *
      * @param int $ttl How long, in seconds, before the Stream expires and is
      *                 deleted
      * @return $this Fluent Builder
      */
-    public function setTtl($ttl) {
+    public function setTtl(int $ttl): self {
         $this->options['ttl'] = $ttl;
         return $this;
     }
@@ -115,13 +107,8 @@ class UpdateSyncStreamOptions extends Options {
      *
      * @return string Machine friendly representation
      */
-    public function __toString() {
-        $options = array();
-        foreach ($this->options as $key => $value) {
-            if ($value != Values::NONE) {
-                $options[] = "$key=$value";
-            }
-        }
-        return '[Twilio.Sync.V1.UpdateSyncStreamOptions ' . \implode(' ', $options) . ']';
+    public function __toString(): string {
+        $options = \http_build_query(Values::of($this->options), '', ' ');
+        return '[Twilio.Sync.V1.UpdateSyncStreamOptions ' . $options . ']';
     }
 }

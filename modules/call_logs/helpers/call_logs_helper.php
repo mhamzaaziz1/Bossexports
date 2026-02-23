@@ -17,10 +17,10 @@ if (staff_can('view', 'settings')) {
 function call_logs_add_settings_tab()
 {
     $CI = &get_instance();
-    $CI->app_tabs->add_settings_tab('call_logs', [
+    $CI->app->add_settings_section('call_logs', [
         'name'     => '' . _l('call_logs_settings_name') . '',
         'view'     => 'call_logs/admin/call_logs_settings',
-        'position' => 36,
+        'position' => 6,
     ]);
 }
 

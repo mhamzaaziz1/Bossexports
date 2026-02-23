@@ -10,6 +10,7 @@
 namespace Twilio\Rest\IpMessaging\V2\Service\User;
 
 use Twilio\ListResource;
+use Twilio\Stream;
 use Twilio\Values;
 use Twilio\Version;
 
@@ -18,16 +19,14 @@ class UserChannelList extends ListResource {
      * Construct the UserChannelList
      *
      * @param Version $version Version that contains the resource
-     * @param string $serviceSid The SID of the Service that the resource is
-     *                           associated with
-     * @param string $userSid The SID of the User the User Channel belongs to
-     * @return \Twilio\Rest\IpMessaging\V2\Service\User\UserChannelList
+     * @param string $serviceSid The service_sid
+     * @param string $userSid The user_sid
      */
-    public function __construct(Version $version, $serviceSid, $userSid) {
+    public function __construct(Version $version, string $serviceSid, string $userSid) {
         parent::__construct($version);
 
         // Path Solution
-        $this->solution = array('serviceSid' => $serviceSid, 'userSid' => $userSid, );
+        $this->solution = ['serviceSid' => $serviceSid, 'userSid' => $userSid, ];
 
         $this->uri = '/Services/' . \rawurlencode($serviceSid) . '/Users/' . \rawurlencode($userSid) . '/Channels';
     }
@@ -48,9 +47,9 @@ class UserChannelList extends ListResource {
      *                        page_size is defined but a limit is defined, stream()
      *                        will attempt to read the limit with the most
      *                        efficient page size, i.e. min(limit, 1000)
-     * @return \Twilio\Stream stream of results
+     * @return Stream stream of results
      */
-    public function stream($limit = null, $pageSize = null) {
+    public function stream(int $limit = null, $pageSize = null): Stream {
         $limits = $this->version->readLimits($limit, $pageSize);
 
         $page = $this->page($limits['pageSize']);
@@ -73,7 +72,7 @@ class UserChannelList extends ListResource {
      *                        efficient page size, i.e. min(limit, 1000)
      * @return UserChannelInstance[] Array of results
      */
-    public function read($limit = null, $pageSize = null) {
+    public function read(int $limit = null, $pageSize = null): array {
         return \iterator_to_array($this->stream($limit, $pageSize), false);
     }
 
@@ -84,20 +83,12 @@ class UserChannelList extends ListResource {
      * @param mixed $pageSize Number of records to return, defaults to 50
      * @param string $pageToken PageToken provided by the API
      * @param mixed $pageNumber Page Number, this value is simply for client state
-     * @return \Twilio\Page Page of UserChannelInstance
+     * @return UserChannelPage Page of UserChannelInstance
      */
-    public function page($pageSize = Values::NONE, $pageToken = Values::NONE, $pageNumber = Values::NONE) {
-        $params = Values::of(array(
-            'PageToken' => $pageToken,
-            'Page' => $pageNumber,
-            'PageSize' => $pageSize,
-        ));
+    public function page($pageSize = Values::NONE, string $pageToken = Values::NONE, $pageNumber = Values::NONE): UserChannelPage {
+        $params = Values::of(['PageToken' => $pageToken, 'Page' => $pageNumber, 'PageSize' => $pageSize, ]);
 
-        $response = $this->version->page(
-            'GET',
-            $this->uri,
-            $params
-        );
+        $response = $this->version->page('GET', $this->uri, $params);
 
         return new UserChannelPage($this->version, $response, $this->solution);
     }
@@ -107,9 +98,9 @@ class UserChannelList extends ListResource {
      * Request is executed immediately
      *
      * @param string $targetUrl API-generated URL for the requested results page
-     * @return \Twilio\Page Page of UserChannelInstance
+     * @return UserChannelPage Page of UserChannelInstance
      */
-    public function getPage($targetUrl) {
+    public function getPage(string $targetUrl): UserChannelPage {
         $response = $this->version->getDomain()->getClient()->request(
             'GET',
             $targetUrl
@@ -121,11 +112,9 @@ class UserChannelList extends ListResource {
     /**
      * Constructs a UserChannelContext
      *
-     * @param string $channelSid The SID of the Channel that has the User Channel
-     *                           to fetch
-     * @return \Twilio\Rest\IpMessaging\V2\Service\User\UserChannelContext
+     * @param string $channelSid The channel_sid
      */
-    public function getContext($channelSid) {
+    public function getContext(string $channelSid): UserChannelContext {
         return new UserChannelContext(
             $this->version,
             $this->solution['serviceSid'],
@@ -139,7 +128,7 @@ class UserChannelList extends ListResource {
      *
      * @return string Machine friendly representation
      */
-    public function __toString() {
+    public function __toString(): string {
         return '[Twilio.IpMessaging.V2.UserChannelList]';
     }
 }

@@ -32,7 +32,7 @@ function get_dashboard_widgets()
             'container' => 'left-8',
         ],
         [
-            'path'      => 'admin/dashboard/widgets/weekly_payments_chart',
+            'path'      => 'admin/dashboard/widgets/payments_chart',
             'container' => 'left-8',
         ],
         [
@@ -57,6 +57,14 @@ function get_dashboard_widgets()
         ],
         [
             'path'      => 'admin/dashboard/widgets/contracts_expiring',
+            'container' => 'left-8',
+        ],
+        [
+            'path'      => 'admin/dashboard/widgets/tickets_report',
+            'container' => 'left-8',
+        ],
+        [
+            'path'      => 'admin/dashboard/widgets/recent_activity',
             'container' => 'left-8',
         ],
     ];

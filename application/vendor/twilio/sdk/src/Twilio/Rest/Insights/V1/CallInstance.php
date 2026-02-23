@@ -11,49 +11,51 @@ namespace Twilio\Rest\Insights\V1;
 
 use Twilio\Exceptions\TwilioException;
 use Twilio\InstanceResource;
+use Twilio\Rest\Insights\V1\Call\AnnotationList;
+use Twilio\Rest\Insights\V1\Call\CallSummaryList;
+use Twilio\Rest\Insights\V1\Call\EventList;
+use Twilio\Rest\Insights\V1\Call\MetricList;
 use Twilio\Values;
 use Twilio\Version;
 
 /**
- * PLEASE NOTE that this class contains preview products that are subject to change. Use them with caution. If you currently do not have developer preview access, please contact help@twilio.com.
- *
  * @property string $sid
  * @property string $url
  * @property array $links
  */
 class CallInstance extends InstanceResource {
-    protected $_events = null;
-    protected $_metrics = null;
-    protected $_summary = null;
+    protected $_events;
+    protected $_metrics;
+    protected $_summary;
+    protected $_annotation;
 
     /**
      * Initialize the CallInstance
      *
-     * @param \Twilio\Version $version Version that contains the resource
+     * @param Version $version Version that contains the resource
      * @param mixed[] $payload The response payload
      * @param string $sid The sid
-     * @return \Twilio\Rest\Insights\V1\CallInstance
      */
-    public function __construct(Version $version, array $payload, $sid = null) {
+    public function __construct(Version $version, array $payload, string $sid = null) {
         parent::__construct($version);
 
         // Marshaled Properties
-        $this->properties = array(
+        $this->properties = [
             'sid' => Values::array_get($payload, 'sid'),
             'url' => Values::array_get($payload, 'url'),
             'links' => Values::array_get($payload, 'links'),
-        );
+        ];
 
-        $this->solution = array('sid' => $sid ?: $this->properties['sid'], );
+        $this->solution = ['sid' => $sid ?: $this->properties['sid'], ];
     }
 
     /**
      * Generate an instance context for the instance, the context is capable of
      * performing various actions.  All instance actions are proxied to the context
      *
-     * @return \Twilio\Rest\Insights\V1\CallContext Context for this CallInstance
+     * @return CallContext Context for this CallInstance
      */
-    protected function proxy() {
+    protected function proxy(): CallContext {
         if (!$this->context) {
             $this->context = new CallContext($this->version, $this->solution['sid']);
         }
@@ -62,40 +64,41 @@ class CallInstance extends InstanceResource {
     }
 
     /**
-     * Fetch a CallInstance
+     * Fetch the CallInstance
      *
      * @return CallInstance Fetched CallInstance
      * @throws TwilioException When an HTTP error occurs.
      */
-    public function fetch() {
+    public function fetch(): CallInstance {
         return $this->proxy()->fetch();
     }
 
     /**
      * Access the events
-     *
-     * @return \Twilio\Rest\Insights\V1\Call\EventList
      */
-    protected function getEvents() {
+    protected function getEvents(): EventList {
         return $this->proxy()->events;
     }
 
     /**
      * Access the metrics
-     *
-     * @return \Twilio\Rest\Insights\V1\Call\MetricList
      */
-    protected function getMetrics() {
+    protected function getMetrics(): MetricList {
         return $this->proxy()->metrics;
     }
 
     /**
      * Access the summary
-     *
-     * @return \Twilio\Rest\Insights\V1\Call\CallSummaryList
      */
-    protected function getSummary() {
+    protected function getSummary(): CallSummaryList {
         return $this->proxy()->summary;
+    }
+
+    /**
+     * Access the annotation
+     */
+    protected function getAnnotation(): AnnotationList {
+        return $this->proxy()->annotation;
     }
 
     /**
@@ -105,7 +108,7 @@ class CallInstance extends InstanceResource {
      * @return mixed The requested property
      * @throws TwilioException For unknown properties
      */
-    public function __get($name) {
+    public function __get(string $name) {
         if (\array_key_exists($name, $this->properties)) {
             return $this->properties[$name];
         }
@@ -123,8 +126,8 @@ class CallInstance extends InstanceResource {
      *
      * @return string Machine friendly representation
      */
-    public function __toString() {
-        $context = array();
+    public function __toString(): string {
+        $context = [];
         foreach ($this->solution as $key => $value) {
             $context[] = "$key=$value";
         }

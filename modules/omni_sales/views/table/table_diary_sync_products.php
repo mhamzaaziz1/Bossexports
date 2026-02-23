@@ -12,13 +12,14 @@ $aColumns = [
     'date_on_sale_from',
     'date_on_sale_to',
     'short_description',
+    'chanel',
     'sku',
     ];
 $sIndexColumn = 'id';
 $sTable       = db_prefix().'omni_log_sync_woo';
 $join         = [];
 $where = [];
-array_push($where, ' where type = "products"');
+array_push($where, 'AND type = "products"');
 
 $result = data_tables_init($aColumns, $sIndexColumn, $sTable, $join, $where, ['date_sync']);
 
@@ -35,6 +36,7 @@ foreach ($rResult as $aRow) {
     $row[] = $aRow['date_on_sale_from'];
     $row[] = $aRow['date_on_sale_to'];
     $row[] = $aRow['short_description'];
+    $row[] = $aRow['chanel'];
     $row[] = $aRow['sku'];
     $row[] = _dt($aRow['date_sync']);
 

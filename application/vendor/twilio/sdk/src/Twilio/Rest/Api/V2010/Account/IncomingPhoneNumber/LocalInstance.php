@@ -38,6 +38,7 @@ use Twilio\Version;
  * @property string $statusCallbackMethod
  * @property string $trunkSid
  * @property string $uri
+ * @property string $voiceReceiveMode
  * @property string $voiceApplicationSid
  * @property bool $voiceCallerIdLookup
  * @property string $voiceFallbackMethod
@@ -46,22 +47,23 @@ use Twilio\Version;
  * @property string $voiceUrl
  * @property string $emergencyStatus
  * @property string $emergencyAddressSid
+ * @property string $emergencyAddressStatus
  * @property string $bundleSid
+ * @property string $status
  */
 class LocalInstance extends InstanceResource {
     /**
      * Initialize the LocalInstance
      *
-     * @param \Twilio\Version $version Version that contains the resource
+     * @param Version $version Version that contains the resource
      * @param mixed[] $payload The response payload
      * @param string $accountSid The SID of the Account that created the resource
-     * @return \Twilio\Rest\Api\V2010\Account\IncomingPhoneNumber\LocalInstance
      */
-    public function __construct(Version $version, array $payload, $accountSid) {
+    public function __construct(Version $version, array $payload, string $accountSid) {
         parent::__construct($version);
 
         // Marshaled Properties
-        $this->properties = array(
+        $this->properties = [
             'accountSid' => Values::array_get($payload, 'account_sid'),
             'addressSid' => Values::array_get($payload, 'address_sid'),
             'addressRequirements' => Values::array_get($payload, 'address_requirements'),
@@ -84,6 +86,7 @@ class LocalInstance extends InstanceResource {
             'statusCallbackMethod' => Values::array_get($payload, 'status_callback_method'),
             'trunkSid' => Values::array_get($payload, 'trunk_sid'),
             'uri' => Values::array_get($payload, 'uri'),
+            'voiceReceiveMode' => Values::array_get($payload, 'voice_receive_mode'),
             'voiceApplicationSid' => Values::array_get($payload, 'voice_application_sid'),
             'voiceCallerIdLookup' => Values::array_get($payload, 'voice_caller_id_lookup'),
             'voiceFallbackMethod' => Values::array_get($payload, 'voice_fallback_method'),
@@ -92,10 +95,12 @@ class LocalInstance extends InstanceResource {
             'voiceUrl' => Values::array_get($payload, 'voice_url'),
             'emergencyStatus' => Values::array_get($payload, 'emergency_status'),
             'emergencyAddressSid' => Values::array_get($payload, 'emergency_address_sid'),
+            'emergencyAddressStatus' => Values::array_get($payload, 'emergency_address_status'),
             'bundleSid' => Values::array_get($payload, 'bundle_sid'),
-        );
+            'status' => Values::array_get($payload, 'status'),
+        ];
 
-        $this->solution = array('accountSid' => $accountSid, );
+        $this->solution = ['accountSid' => $accountSid, ];
     }
 
     /**
@@ -105,7 +110,7 @@ class LocalInstance extends InstanceResource {
      * @return mixed The requested property
      * @throws TwilioException For unknown properties
      */
-    public function __get($name) {
+    public function __get(string $name) {
         if (\array_key_exists($name, $this->properties)) {
             return $this->properties[$name];
         }
@@ -123,7 +128,7 @@ class LocalInstance extends InstanceResource {
      *
      * @return string Machine friendly representation
      */
-    public function __toString() {
+    public function __toString(): string {
         return '[Twilio.Api.V2010.LocalInstance]';
     }
 }

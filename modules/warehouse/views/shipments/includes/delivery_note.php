@@ -28,7 +28,7 @@
 									?>
 
 									<tr>
-										<td ><a href="<?php echo admin_url('warehouse/manage_delivery/' . $delivery_note['id'] ) ?>" ><?php echo html_entity_decode($delivery_note['goods_delivery_code']) ?></a></td>
+										<td ><a href="<?php echo admin_url('warehouse/manage_delivery/' . $delivery_note['id'] ) ?>" ><?php echo new_html_entity_decode($delivery_note['goods_delivery_code']) ?></a></td>
 										<td ><?php echo get_company_name($delivery_note['customer_code']) ?></td>
 										<td class="text-right"><?php echo app_format_money($delivery_note['sub_total'], '') ?></td>
 										<td class="text-right"><?php echo app_format_money($total_discount, '') ?></td>
@@ -50,7 +50,7 @@
 											$approve_data = '<span class="label label-tag tag-id-1 label-tab3"><span class="tag">'._l('reject').'</span><span class="hide">, </span></span>&nbsp';
 										}
 										?>
-										<td class="text-right"><?php echo html_entity_decode($approve_data); ?></td>
+										<td class="text-right"><?php echo new_html_entity_decode($approve_data); ?></td>
 										<td class="text-right"><?php echo render_delivery_status_html($delivery_note['id'], 'delivery', $delivery_note['delivery_status'], false); ?></td>
 									</tr>
 								<?php  } ?>

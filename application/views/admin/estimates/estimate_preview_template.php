@@ -80,10 +80,12 @@
          <div class="row mtop10">
             <div class="col-md-3">
                <?php echo format_estimate_status($estimate->status,'mtop5');  ?>
+                    <?php if (get_option('show_shipping_on_sales') == 1) { ?>
                     <?php if($estimate->retained == 1){?>
                     <span class="label label-default mtop5 s-status estimate-status-1 estimate-status-default">Retained Released</span>
                   <?php }else{?>
                   <span class="label label-default mtop5 s-status estimate-status-1 estimate-status-default">Retained Onhold</span>
+                  <?php } ?>
                   <?php } ?>
             </div>
             <div class="col-md-9">
@@ -179,10 +181,12 @@
                            ?>
                      </ul>
                   </div>
+                  <?php if (get_option('show_shipping_on_sales') == 1) { ?>
                   <?php if($estimate->retained == 0){?>
                   <a href="<?php echo admin_url('estimates/release_retainer/'.$estimate->id); ?>"><button type="button" class="btn btn-success" >
-                     <?php echo _l('Release Retained Amount'); ?>
+                      <?php echo _l('Release Retained Amount'); ?>
                   </button></a>
+                  <?php } ?>
                   <?php } ?>
                   <br><br>
                   <?php if($estimate->invoiceid == NULL){ ?>
@@ -313,243 +317,548 @@
                         <?php } ?>
                      </div>
                   </div>
+
+                  <?php
+                     $CI =& get_instance();
+                     $linked_proposal = null;
+                     $linked_invoice = null;
+
+                     // 1. Fetch Linked Proposal
+                     $CI->db->where('estimate_id', $estimate->id);
+                     $proposal_short = $CI->db->get(db_prefix().'proposals')->row();
+                     if($proposal_short){
+                        $CI->load->model('proposals_model');
+                        $linked_proposal = $CI->proposals_model->get($proposal_short->id);
+                     }
+
+                     // 2. Fetch Linked Invoice
+                     if(isset($estimate->invoiceid) && $estimate->invoiceid != NULL){
+                        $CI->load->model('invoices_model');
+                        $linked_invoice = $CI->invoices_model->get($estimate->invoiceid);
+                     }
+
+                     // Helper Functions
+                     if (!function_exists('get_recon_status_numeric')) {
+                         function get_recon_status_numeric($val1, $val2) {
+                             if (abs($val1 - $val2) < 0.01) {
+                                 return '<i class="fa fa-check-circle text-success" data-toggle="tooltip" title="Match"></i>';
+                             } else {
+                                 return '<i class="fa fa-times-circle text-danger" data-toggle="tooltip" title="Mismatch"></i>';
+                             }
+                         }
+                     }
+                     if (!function_exists('get_recon_status_strict')) {
+                         function get_recon_status_strict($val1, $val2) {
+                             if ($val1 == $val2) {
+                                 return '<i class="fa fa-check-circle text-success" data-toggle="tooltip" title="Match"></i>';
+                             } else {
+                                 return '<i class="fa fa-times-circle text-danger" data-toggle="tooltip" title="Mismatch"></i>';
+                             }
+                         }
+                     }
+                  ?>
+
                   <div class="row">
                      <div class="col-md-12">
-                        <div class="table-responsive">
-                              <?php
-                                 $items = get_items_table_data($estimate, 'estimate', 'html', true);
-                                 echo $items->table();
-                              ?>
-                        </div>
-                     </div>
-                     <?php
-                    $CI = & get_instance();
-                    $CI->load->model('invoices_model');
-                    $sum_custom = $CI->invoices_model->sumcustom($estimate->id);
-                    foreach ($sum_custom as $custom){
-                      $CI->db->select("fieldid,sum(value) as total");
-                            $CI->db->from('tblitemable');
-                            $CI->db->join('tblcustomfieldsvalues', 'tblcustomfieldsvalues.relid = tblitemable.id', 'right outer');
-                            $CI->db->where('tblitemable.rel_id',$estimate->id);
-                            $CI->db->where('tblcustomfieldsvalues.fieldid',$custom->id);
-                            $CI->db->where('tblitemable.rel_type',"estimate");
-                            $CI->db->where('tblcustomfieldsvalues.value!=1');
-                            $CI->db->order_by("fieldid","asc");
-                            $query = $CI->db->get()->result();
+                        <div class="panel-group mtop15" id="estimate_accordion" role="tablist" aria-multiselectable="true">
                             
-                            if($query[0]->total==""){
-                                $query[0]->total=0;
-                            }
-                            
-                      echo '<p><strong>Total ' .  $custom->name . '=</strong>' .  $query[0]->total . '</p>';
-                    }?>
-                     <div class="col-md-5 col-md-offset-7">
-                        <table class="table text-right">
-                           <tbody>
-                              <tr id="subtotal">
-                                 <td><span class="bold"><?php echo _l('estimate_subtotal'); ?></span>
-                                 </td>
-                                 <td class="subtotal">
-                                    <?php echo app_format_money($estimate->subtotal, $estimate->currency_name); ?>
-                                 </td>
-                              </tr>
-                              <?php if(is_sale_discount_applied($estimate)){ ?>
-                              <tr>
-                                 <td>
-                                    <span class="bold"><?php echo _l('estimate_discount'); ?>
-                                    <?php if(is_sale_discount($estimate,'percent')){ ?>
-                                    (<?php echo app_format_number($estimate->discount_percent,true); ?>%)
-                                    <?php } ?></span>
-                                 </td>
-                                 <td class="discount">
-                                    <?php echo '-' . app_format_money($estimate->discount_total, $estimate->currency_name); ?>
-                                 </td>
-                              </tr>
-                              <?php } ?>
-                              <?php
-                              $taxto=0;
-                                foreach ($items->taxes() as $tax) {
-                                    $taxto= $taxto+ $tax['total_tax'];
-                                     echo '<tr class="tax-area"><td class="bold">'.$tax['taxname'].' ('.app_format_number($tax['taxrate']).'%)</td><td>'.app_format_money($tax['total_tax'], $estimate->currency_name).'</td></tr>';
-                                 }
-                                 ?>
-                              <?php if((int)$estimate->adjustment >=0){ ?>
-                              <tr>
-                                 <td>
-                                    <span class="bold"><?php echo _l('estimate_adjustment'); ?></span>
-                                 </td>
-                                 <td class="adjustment">
-                                    <?php echo app_format_money($estimate->total-($taxto-$estimate->discount_total+$estimate->subtotal), $estimate->currency_name); ?>
-                                 </td>
-                              </tr>
-                              <?php } ?>
-                              <tr>
-                                 <td><span class="bold"><?php echo _l('estimate_total'); ?></span>
-                                 </td>
-                                 <td class="total">
-                                    <?php echo app_format_money($estimate->total, $estimate->currency_name); ?>
-                                 </td>
-                              </tr>
-                              <tr>
-                                   <td><span class="bold"><?php echo _l('Shipping Expense'); ?></span>
-                                   </td>
-                                   <td class="total">
-                                      <?php echo app_format_money($estimate->ship_expense, $proposal->currency_name); ?>
-                                   </td>
-                                </tr>
-                                <tr>
-                                   <td><span class="bold"><?php echo _l('Other Expense'); ?></span>
-                                   </td>
-                                   <td class="total">
-                                      <?php echo app_format_money($estimate->other_expense, $proposal->currency_name); ?>
-                                   </td>
-                                </tr>
-                                <tr>
-                                   <td><span class="bold"><?php echo _l('Total All'); ?></span>
-                                   </td>
-                                   <td class="total">
-                                      <?php echo app_format_money(($estimate->total+$estimate->ship_expense+$estimate->other_expense), $proposal->currency_name); ?>
-                                   </td>
-                                </tr>
-                              <?php
-                              $CI =&get_instance();
-                                      // Invoiced amount during the period
-        $result['invoiced_amount'] = $CI->db->query('SELECT
-        SUM(' . db_prefix() . 'invoices.total) as invoiced_amount
-        FROM ' . db_prefix() . 'invoices
-        WHERE clientid = ' . $estimate->clientid . '
-        AND status != ' . Invoices_model::STATUS_DRAFT . ' AND status != ' . Invoices_model::STATUS_CANCELLED . '')
-            ->row()->invoiced_amount;
+                           <div class="panel panel-default">
+                                <div class="panel-heading" role="tab" id="headingEstimateItems" style="background-color: #f9f9f9;">
+                                    <h4 class="panel-title">
+                                        <a role="button" data-toggle="collapse" data-parent="#estimate_accordion" href="#collapseEstimateItems" aria-expanded="true" aria-controls="collapseEstimateItems" class="bold">
+                                            <i class="fa fa-list"></i> <?php echo _l('estimate_items'); ?>
+                                        </a>
+                                    </h4>
+                                </div>
+                                <div id="collapseEstimateItems" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="headingEstimateItems">
+                                    <div class="panel-body">
+                                        <?php if(count($estimate->attachments) > 0){ ?>
+                                             <div class="col-md-12">
+                                                <p class="bold text-muted"><?php echo _l('estimate_files'); ?></p>
+                                             </div>
+                                             <?php foreach($estimate->attachments as $attachment){
+                                                $attachment_url = site_url('download/file/sales_attachment/'.$attachment['attachment_key']);
+                                                if(!empty($attachment['external'])){
+                                                  $attachment_url = $attachment['external_link'];
+                                                }
+                                                ?>
+                                             <div class="mbot15 row col-md-12" data-attachment-id="<?php echo $attachment['id']; ?>">
+                                                <div class="col-md-8">
+                                                   <div class="pull-left"><i class="<?php echo get_mime_class($attachment['filetype']); ?>"></i></div>
+                                                   <a href="<?php echo $attachment_url; ?>" target="_blank"><?php echo $attachment['file_name']; ?></a>
+                                                   <br />
+                                                   <small class="text-muted"> <?php echo $attachment['filetype']; ?></small>
+                                                </div>
+                                                <div class="col-md-4 text-right">
+                                                   <?php if($attachment['visible_to_customer'] == 0){
+                                                      $icon = 'fa fa-toggle-off';
+                                                      $tooltip = _l('show_to_customer');
+                                                      } else {
+                                                      $icon = 'fa fa-toggle-on';
+                                                      $tooltip = _l('hide_from_customer');
+                                                      }
+                                                      ?>
+                                                   <a href="#" data-toggle="tooltip" onclick="toggle_file_visibility(<?php echo $attachment['id']; ?>,<?php echo $estimate->id; ?>,this); return false;" data-title="<?php echo $tooltip; ?>"><i class="<?php echo $icon; ?>" aria-hidden="true"></i></a>
+                                                   <?php if($attachment['staffid'] == get_staff_user_id() || is_admin()){ ?>
+                                                   <a href="#" class="text-danger" onclick="delete_estimate_attachment(<?php echo $attachment['id']; ?>); return false;"><i class="fa fa-times"></i></a>
+                                                   <?php } ?>
+                                                </div>
+                                             </div>
+                                             <?php } ?>
+                                             <div class="clearfix"></div>
+                                             <hr />
+                                         <?php } ?>
+                                         
+                                        <div class="table-responsive">
+                                            <?php
+                                                $items = get_items_table_data($estimate, 'estimate', 'html', true);
+                                                echo $items->table();
+                                            ?>
+                                        </div>
+                                        
+                                        <?php
+                                            $CI = & get_instance();
+                                            $CI->load->model('invoices_model');
+                                            $sum_custom = $CI->invoices_model->sumcustom($estimate->id);
+                                            foreach ($sum_custom as $custom){
+                                              $CI->db->select("fieldid,sum(value) as total");
+                                                    $CI->db->from('tblitemable');
+                                                    $CI->db->join('tblcustomfieldsvalues', 'tblcustomfieldsvalues.relid = tblitemable.id', 'right outer');
+                                                    $CI->db->where('tblitemable.rel_id',$estimate->id);
+                                                    $CI->db->where('tblcustomfieldsvalues.fieldid',$custom->id);
+                                                    $CI->db->where('tblitemable.rel_type',"estimate");
+                                                    $CI->db->where('tblcustomfieldsvalues.value!=1');
+                                                    $CI->db->order_by("fieldid","asc");
+                                                    $query = $CI->db->get()->result();
+                                                    
+                                                    if($query[0]->total==""){
+                                                        $query[0]->total=0;
+                                                    }
+                                                    
+                                              echo '<p><strong>Total ' .  $custom->name . '=</strong>' .  $query[0]->total . '</p>';
+                                            }
+                                        ?>
+                                        
+                                        <div class="col-md-5 col-md-offset-7">
+                                            <table class="table text-right">
+                                               <tbody>
+                                                  <tr id="subtotal">
+                                                     <td><span class="bold"><?php echo _l('estimate_subtotal'); ?></span>
+                                                     </td>
+                                                     <td class="subtotal">
+                                                        <?php echo app_format_money($estimate->subtotal, $estimate->currency_name); ?>
+                                                     </td>
+                                                  </tr>
+                                                  <?php if(is_sale_discount_applied($estimate)){ ?>
+                                                  <tr>
+                                                     <td>
+                                                        <span class="bold"><?php echo _l('estimate_discount'); ?>
+                                                        <?php if(is_sale_discount($estimate,'percent')){ ?>
+                                                        (<?php echo app_format_number($estimate->discount_percent,true); ?>%)
+                                                        <?php } ?></span>
+                                                     </td>
+                                                     <td class="discount">
+                                                        <?php echo '-' . app_format_money($estimate->discount_total, $estimate->currency_name); ?>
+                                                     </td>
+                                                  </tr>
+                                                  <?php } ?>
+                                                  <?php
+                                                  $taxto=0;
+                                                    foreach ($items->taxes() as $tax) {
+                                                        $taxto= $taxto+ $tax['total_tax'];
+                                                         echo '<tr class="tax-area"><td class="bold">'.$tax['taxname'].' ('.app_format_number($tax['taxrate']).'%)</td><td>'.app_format_money($tax['total_tax'], $estimate->currency_name).'</td></tr>';
+                                                     }
+                                                     ?>
+                                                  <?php if (get_option('show_shipping_on_sales') == 1 && (int)$estimate->adjustment >=0) { ?>
+                                                  <tr>
+                                                     <td>
+                                                        <span class="bold"><?php echo _l('estimate_adjustment'); ?></span>
+                                                     </td>
+                                                     <td class="adjustment">
+                                                        <?php echo app_format_money($estimate->total-($taxto-$estimate->discount_total+$estimate->subtotal), $estimate->currency_name); ?>
+                                                     </td>
+                                                  </tr>
+                                                  <?php } ?>
+                                                  <tr>
+                                                     <td><span class="bold"><?php echo _l('estimate_total'); ?></span>
+                                                     </td>
+                                                     <td class="total">
+                                                        <?php echo app_format_money($estimate->total, $estimate->currency_name); ?>
+                                                     </td>
+                                                  </tr>
+                                                  <?php if (get_option('show_shipping_on_sales') == 1) { ?><tr>
+                                                        <td><span class="bold"><?php echo _l('Shipping Expense'); ?></span>
+                                                        </td>
+                                                        <td class="total">
+                                                           <?php echo isset($estimate) ? app_format_money($estimate->ship_expense, $estimate->currency_name) : ''; ?>
+                                                        </td>
+                                                     </tr>
+                                                     <tr>
+                                                        <td><span class="bold"><?php echo _l('Other Expense'); ?></span>
+                                                        </td>
+                                                        <td class="total">
+                                                           <?php echo isset($estimate) ? app_format_money($estimate->other_expense, $estimate->currency_name) : ''; ?>
+                                                        </td>
+                                                     </tr>
+                                                     <tr>
+                                                        <td><span class="bold"><?php echo _l('Total All'); ?></span>
+                                                        </td>
+                                                        <td class="total">
+                                                           <?php echo isset($estimate) ? app_format_money(($estimate->total+$estimate->ship_expense+$estimate->other_expense), $estimate->currency_name) : ''; ?>
+                                                        </td>
+                                                     </tr><?php } ?>
+                                                  <?php
+                                                  $CI =&get_instance();
+                                                          // Invoiced amount during the period
+                    $result['invoiced_amount'] = $CI->db->query('SELECT
+                    SUM(' . db_prefix() . 'invoices.total) as invoiced_amount
+                    FROM ' . db_prefix() . 'invoices
+                    WHERE clientid = ' . $estimate->clientid . '
+                    AND status != ' . Invoices_model::STATUS_DRAFT . ' AND status != ' . Invoices_model::STATUS_CANCELLED . '')
+                        ->row()->invoiced_amount;
+            
+                    if ($result['invoiced_amount'] === null) {
+                        $result['invoiced_amount'] = 0;
+                    }
+            
+                    $result['credit_notes_amount'] = $CI->db->query('SELECT
+                    SUM(' . db_prefix() . 'creditnotes.total) as credit_notes_amount
+                    FROM ' . db_prefix() . 'creditnotes
+                    WHERE clientid = ' . $estimate->clientid . '
+                    AND status != 3')
+                        ->row()->credit_notes_amount;
+            
+                    if ($result['credit_notes_amount'] === null) {
+                        $result['credit_notes_amount'] = 0;
+                    }
+                    
+                    
+            
+                    $result['refunds_amount'] = $CI->db->query('SELECT
+                    SUM(' . db_prefix() . 'creditnote_refunds.amount) as refunds_amount
+                    FROM ' . db_prefix() . 'creditnote_refunds
+                    WHERE credit_note_id IN (SELECT id FROM ' . db_prefix() . 'creditnotes WHERE clientid=' . $estimate->clientid . ')')->row()->refunds_amount;
+            
+                    if ($result['refunds_amount'] === null) {
+                        $result['refunds_amount'] = 0;
+                    }
+            
+                    $result['invoiced_amount'] = $result['invoiced_amount'];
+            
+                    // Amount paid during the period
+                    $result['amount_paid'] = $CI->db->query('SELECT
+                    SUM(' . db_prefix() . 'invoicepaymentrecords.amount) as amount_paid
+                    FROM ' . db_prefix() . 'invoicepaymentrecords
+                    JOIN ' . db_prefix() . 'invoices ON ' . db_prefix() . 'invoices.id = ' . db_prefix() . 'invoicepaymentrecords.invoiceid
+                    WHERE ' . db_prefix() . 'invoices.clientid = ' . $estimate->clientid)
+                        ->row()->amount_paid;
+            
+                    if ($result['amount_paid'] === null) {
+                        $result['amount_paid'] = 0;
+                    }
+                    
+                    
+                    $result['direct_paid'] = $CI->db->query('SELECT
+                    SUM(' . db_prefix() . 'invoicepaymentrecords.amount) as amount_paid
+                    FROM ' . db_prefix() . 'invoicepaymentrecords
+                    WHERE client_id = ' . $estimate->clientid)
+                        ->row()->amount_paid;
+                    if ($result['direct_paid'] === null) {
+                        $result['direct_paid'] = 0;
+                    }
+            
+            
+                        $result['beginning_balance'] = 0;
+                    $abc =  ($CI->db->select("balance")->from('tblclients')->where('userid', $estimate->clientid)->get()->result());
+                    if(isset($abc[0])){
+                        $result['beginning_balance'] += (float)$abc[0]->balance;
+                    }
+                    
+                    $sql_expense = 'SELECT
+                    SUM(' . db_prefix() . 'expenses.amount) as invoice_amount
+                    FROM ' . db_prefix() . 'expenses
+                    WHERE '. db_prefix() . 'expenses.clientid = ' . $estimate->clientid . ' AND tblexpenses.billable !=1
+                    ORDER by ' . db_prefix() . 'expenses.date DESC';
+            
+                    $result['sumexpense'] = $CI->db->query($sql_expense)->row()->invoice_amount;
+            
+                    $dec = get_decimal_places();
+                    
+                        $result['balance_due_'] = number_format($result['invoiced_amount'] - $result['amount_paid'], $dec, '.', '');
+                        $result['balance_due_'] = $result['balance_due_'] + number_format($result['beginning_balance'], $dec, '.', '');
+                        $result['balance_due_'] = $result['balance_due_'] - number_format($result['direct_paid'], $dec, '.', '');
+                        // var_dump($result);die;
+                        $result['balance_due_'] = $result['balance_due_'] - number_format($result['refunds_amount'], $dec, '.', '');
+                    $result['balance_due_']=$result['balance_due_'] + $result['sumexpense'];
+                        // var_dump($result);die;
+                                          
+                                          ?>
+                                          <tr>
+                                             <td><span class="bold">Balance:</span></td>
+                                             <td>
+                                                <div class="input-group input-group-sm pull-right" style="width: 150px;">
+                                                    <input type="password" class="form-control" style="background: transparent; border: 0; box-shadow: none; text-align: right; padding-right: 10px; height: 30px;" value="<?php echo round($result['balance_due_'],2)?>" id="balanceInput" readonly>
+                                                    <span class="input-group-btn">
+                                                        <button class="btn btn-default" type="button" onclick="toggleBalanceVisibility()" id="balanceBtn" data-toggle="tooltip" title="Show Balance" style="height: 30px;">
+                                                            <i class="fa fa-eye"></i>
+                                                        </button>
+                                                    </span>
+                                                </div>
+                                                <script>
+                                                   function toggleBalanceVisibility() {
+                                                      var x = document.getElementById("balanceInput");
+                                                      var btn = document.getElementById("balanceBtn");
+                                                      var icon = btn.querySelector('i');
+                                                      if (x.type === "password") {
+                                                         x.type = "text";
+                                                         icon.classList.remove('fa-eye');
+                                                         icon.classList.add('fa-eye-slash');
+                                                      } else {
+                                                         x.type = "password";
+                                                         icon.classList.remove('fa-eye-slash');
+                                                         icon.classList.add('fa-eye');
+                                                      }
+                                                   }
+                                                </script>
+                                             </td>
+                                          </tr>
+                                       </tbody>
+                                    </table>
+                                 </div>
+                                    </div>
+                                </div>
+                           </div>
 
-        if ($result['invoiced_amount'] === null) {
-            $result['invoiced_amount'] = 0;
-        }
-
-        $result['credit_notes_amount'] = $CI->db->query('SELECT
-        SUM(' . db_prefix() . 'creditnotes.total) as credit_notes_amount
-        FROM ' . db_prefix() . 'creditnotes
-        WHERE clientid = ' . $estimate->clientid . '
-        AND status != 3')
-            ->row()->credit_notes_amount;
-
-        if ($result['credit_notes_amount'] === null) {
-            $result['credit_notes_amount'] = 0;
-        }
-        
-        
-
-        $result['refunds_amount'] = $CI->db->query('SELECT
-        SUM(' . db_prefix() . 'creditnote_refunds.amount) as refunds_amount
-        FROM ' . db_prefix() . 'creditnote_refunds
-        WHERE credit_note_id IN (SELECT id FROM ' . db_prefix() . 'creditnotes WHERE clientid=' . $estimate->clientid . ')')->row()->refunds_amount;
-
-        if ($result['refunds_amount'] === null) {
-            $result['refunds_amount'] = 0;
-        }
-
-        $result['invoiced_amount'] = $result['invoiced_amount'];
-
-        // Amount paid during the period
-        $result['amount_paid'] = $CI->db->query('SELECT
-        SUM(' . db_prefix() . 'invoicepaymentrecords.amount) as amount_paid
-        FROM ' . db_prefix() . 'invoicepaymentrecords
-        JOIN ' . db_prefix() . 'invoices ON ' . db_prefix() . 'invoices.id = ' . db_prefix() . 'invoicepaymentrecords.invoiceid
-        WHERE ' . db_prefix() . 'invoices.clientid = ' . $estimate->clientid)
-            ->row()->amount_paid;
-
-        if ($result['amount_paid'] === null) {
-            $result['amount_paid'] = 0;
-        }
-        
-        
-        $result['direct_paid'] = $CI->db->query('SELECT
-        SUM(' . db_prefix() . 'invoicepaymentrecords.amount) as amount_paid
-        FROM ' . db_prefix() . 'invoicepaymentrecords
-        WHERE client_id = ' . $estimate->clientid)
-            ->row()->amount_paid;
-        if ($result['direct_paid'] === null) {
-            $result['direct_paid'] = 0;
-        }
-
-
-            $result['beginning_balance'] = 0;
-        $abc =  ($CI->db->select("balance")->from('tblclients')->where('userid', $estimate->clientid)->get()->result());
-        $result['beginning_balance'] += (float)$abc[0]->balance;
-        
-        $sql_expense = 'SELECT
-        SUM(' . db_prefix() . 'expenses.amount) as invoice_amount
-        FROM ' . db_prefix() . 'expenses
-        WHERE '. db_prefix() . 'expenses.clientid = ' . $estimate->clientid . ' AND tblexpenses.billable !=1
-        ORDER by ' . db_prefix() . 'expenses.date DESC';
-
-        $result['sumexpense'] = $CI->db->query($sql_expense)->row()->invoice_amount;
-
-        $dec = get_decimal_places();
-        
-            $result['balance_due_'] = number_format($result['invoiced_amount'] - $result['amount_paid'], $dec, '.', '');
-            $result['balance_due_'] = $result['balance_due_'] + number_format($result['beginning_balance'], $dec, '.', '');
-            $result['balance_due_'] = $result['balance_due_'] - number_format($result['direct_paid'], $dec, '.', '');
-            // var_dump($result);die;
-            $result['balance_due_'] = $result['balance_due_'] - number_format($result['refunds_amount'], $dec, '.', '');
-        $result['balance_due_']=$result['balance_due_'] + $result['sumexpense'];
-            // var_dump($result);die;
-                              
-                              ?>
-                              <tr>
-                                 <td>Balance: <input type="password" value="<?php echo round($result['balance_due_'],2)?>" id="myInput" disabled></td>
-                                <td><button onclick="myFunction()">Show Balance</button></td>
-                                
-                                <script>
-                                function myFunction() {
-                                  var x = document.getElementById("myInput");
-                                  if (x.type === "password") {
-                                    x.type = "text";
-                                  } else {
-                                    x.type = "password";
-                                  }
-                                }
-                                </script>
-                                 
-                              </tr>
-                           </tbody>
-                        </table>
-                     </div>
-                     <?php if(count($estimate->attachments) > 0){ ?>
-                     <div class="clearfix"></div>
-                     <hr />
-                     <div class="col-md-12">
-                        <p class="bold text-muted"><?php echo _l('estimate_files'); ?></p>
-                     </div>
-                     <?php foreach($estimate->attachments as $attachment){
-                        $attachment_url = site_url('download/file/sales_attachment/'.$attachment['attachment_key']);
-                        if(!empty($attachment['external'])){
-                          $attachment_url = $attachment['external_link'];
-                        }
-                        ?>
-                     <div class="mbot15 row col-md-12" data-attachment-id="<?php echo $attachment['id']; ?>">
-                        <div class="col-md-8">
-                           <div class="pull-left"><i class="<?php echo get_mime_class($attachment['filetype']); ?>"></i></div>
-                           <a href="<?php echo $attachment_url; ?>" target="_blank"><?php echo $attachment['file_name']; ?></a>
-                           <br />
-                           <small class="text-muted"> <?php echo $attachment['filetype']; ?></small>
-                        </div>
-                        <div class="col-md-4 text-right">
-                           <?php if($attachment['visible_to_customer'] == 0){
-                              $icon = 'fa fa-toggle-off';
-                              $tooltip = _l('show_to_customer');
-                              } else {
-                              $icon = 'fa fa-toggle-on';
-                              $tooltip = _l('hide_from_customer');
-                              }
-                              ?>
-                           <a href="#" data-toggle="tooltip" onclick="toggle_file_visibility(<?php echo $attachment['id']; ?>,<?php echo $estimate->id; ?>,this); return false;" data-title="<?php echo $tooltip; ?>"><i class="<?php echo $icon; ?>" aria-hidden="true"></i></a>
-                           <?php if($attachment['staffid'] == get_staff_user_id() || is_admin()){ ?>
-                           <a href="#" class="text-danger" onclick="delete_estimate_attachment(<?php echo $attachment['id']; ?>); return false;"><i class="fa fa-times"></i></a>
+                           <?php if($linked_proposal) { ?>
+                              <div class="panel panel-default">
+                                 <div class="panel-heading" role="tab" id="headingProposal" style="background-color: #f9f9f9;">
+                                    <h4 class="panel-title">
+                                       <a class="collapsed bold" role="button" data-toggle="collapse" data-parent="#estimate_accordion" href="#collapseProposal" aria-expanded="false" aria-controls="collapseProposal">
+                                       <i class="fa fa-file-powerpoint-o"></i> Linked Proposal: <?php echo format_proposal_number($linked_proposal->id); ?> 
+                                       <?php echo format_proposal_status($linked_proposal->status,'',true); ?>
+                                       </a>
+                                       <a href="<?php echo admin_url('proposals/list_proposals/'.$linked_proposal->id); ?>" target="_blank" class="pull-right btn btn-info btn-xs" data-toggle="tooltip" title="Go to Proposal">
+                                       <i class="fa fa-arrow-right"></i>
+                                       </a>
+                                    </h4>
+                                 </div>
+                                 <div id="collapseProposal" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingProposal">
+                                    <div class="panel-body">
+                                       <div class="row">
+                                          <div class="col-md-6">
+                                             <p><b>Date:</b> <?php echo _d($linked_proposal->date); ?></p>
+                                             <p><b>Open Till:</b> <?php echo _d($linked_proposal->open_till); ?></p>
+                                          </div>
+                                          <div class="col-md-6 text-right">
+                                             <p><b>Total:</b> <?php echo app_format_money($linked_proposal->total, $linked_proposal->currency_name); ?></p>
+                                          </div>
+                                          <div class="col-md-12 mtop15">
+                                             <div class="table-responsive">
+                                                <table class="table items items-preview proposal-items-preview">
+                                                   <thead>
+                                                      <tr>
+                                                         <th align="left">Item</th>
+                                                         <th align="right">Qty</th>
+                                                         <th align="right">Rate</th>
+                                                         <th align="right">Amount</th>
+                                                      </tr>
+                                                   </thead>
+                                                   <tbody>
+                                                      <?php foreach($linked_proposal->items as $item) { ?>
+                                                      <tr>
+                                                         <td><?php echo $item['description']; ?></td>
+                                                         <td align="right"><?php echo $item['qty']; ?></td>
+                                                         <td align="right"><?php echo app_format_money($item['rate'], $linked_proposal->currency_name); ?></td>
+                                                         <td align="right"><?php echo app_format_money($item['qty'] * $item['rate'], $linked_proposal->currency_name); ?></td>
+                                                      </tr>
+                                                      <?php } ?>
+                                                   </tbody>
+                                                </table>
+                                             </div>
+                                          </div>
+                                       </div>
+                                    </div>
+                                 </div>
+                              </div>
                            <?php } ?>
+
+                           <?php if($linked_invoice) { ?>
+                              <div class="panel panel-default">
+                                 <div class="panel-heading" role="tab" id="headingInvoice" style="background-color: #f9f9f9;">
+                                    <h4 class="panel-title">
+                                       <a class="collapsed bold" role="button" data-toggle="collapse" data-parent="#estimate_accordion" href="#collapseInvoice" aria-expanded="false" aria-controls="collapseInvoice">
+                                       <i class="fa fa-file-text"></i> Linked Invoice: <?php echo format_invoice_number($linked_invoice->id); ?> 
+                                       <?php echo format_invoice_status($linked_invoice->status,'',true); ?>
+                                       </a>
+                                       <a href="<?php echo admin_url('invoices/list_invoices/'.$linked_invoice->id); ?>" target="_blank" class="pull-right btn btn-info btn-xs" data-toggle="tooltip" title="Go to Invoice">
+                                       <i class="fa fa-arrow-right"></i>
+                                       </a>
+                                    </h4>
+                                 </div>
+                                 <div id="collapseInvoice" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingInvoice">
+                                    <div class="panel-body">
+                                       <div class="row">
+                                          <div class="col-md-6">
+                                             <p><b>Date:</b> <?php echo _d($linked_invoice->date); ?></p>
+                                             <p><b>Due Date:</b> <?php echo _d($linked_invoice->duedate); ?></p>
+                                          </div>
+                                          <div class="col-md-6 text-right">
+                                             <p><b>Total:</b> <?php echo app_format_money($linked_invoice->total, $linked_invoice->currency_name); ?></p>
+                                             <p class="text-danger"><b>Balance Due:</b> <?php echo app_format_money($linked_invoice->total_left_to_pay, $linked_invoice->currency_name); ?></p>
+                                          </div>
+                                          <div class="col-md-12 mtop15">
+                                             <div class="table-responsive">
+                                                <table class="table items items-preview invoice-items-preview">
+                                                   <thead>
+                                                      <tr>
+                                                         <th align="left">Item</th>
+                                                         <th align="right">Qty</th>
+                                                         <th align="right">Rate</th>
+                                                         <th align="right">Amount</th>
+                                                      </tr>
+                                                   </thead>
+                                                   <tbody>
+                                                      <?php foreach($linked_invoice->items as $item) { ?>
+                                                      <tr>
+                                                         <td><?php echo $item['description']; ?></td>
+                                                         <td align="right"><?php echo $item['qty']; ?></td>
+                                                         <td align="right"><?php echo app_format_money($item['rate'], $linked_invoice->currency_name); ?></td>
+                                                         <td align="right"><?php echo app_format_money($item['qty'] * $item['rate'], $linked_invoice->currency_name); ?></td>
+                                                      </tr>
+                                                      <?php } ?>
+                                                   </tbody>
+                                                </table>
+                                             </div>
+                                          </div>
+                                       </div>
+                                    </div>
+                                 </div>
+                              </div>
+                           <?php } ?>
+
+                           <div class="panel panel-default">
+                              <div class="panel-heading" role="tab" id="headingReconciliation" style="background-color: #f9f9f9;">
+                                 <h4 class="panel-title">
+                                    <a class="collapsed bold" role="button" data-toggle="collapse" data-parent="#estimate_accordion" href="#collapseReconciliation" aria-expanded="false" aria-controls="collapseReconciliation">
+                                    <i class="fa fa-balance-scale"></i> Estimate Reconciliation
+                                    </a>
+                                 </h4>
+                              </div>
+                              <div id="collapseReconciliation" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingReconciliation">
+                                 <div class="panel-body">
+                                    <?php if(!$linked_proposal && !$linked_invoice) { ?>
+                                       <p class="text-muted">No linked Proposal or Invoice found for reconciliation.</p>
+                                    <?php } else { ?>
+                                       <div class="table-responsive">
+                                          <table class="table table-bordered table-striped">
+                                             <thead>
+                                                <tr>
+                                                   <th>Metric</th>
+                                                   <th>Estimate Data (Current)</th>
+                                                   <?php if($linked_proposal){ ?> <th>Proposal Data</th> <?php } ?>
+                                                   <?php if($linked_invoice){ ?> <th>Invoice Data</th> <?php } ?>
+                                                </tr>
+                                             </thead>
+                                             <tbody>
+                                                <tr>
+                                                   <td class="bold">Customer ID</td>
+                                                   <td><?php echo $estimate->clientid; ?></td>
+                                                   <?php if($linked_proposal){ ?> 
+                                                      <td>
+                                                         <?php 
+                                                            $p_client = ($linked_proposal->rel_type == 'customer') ? $linked_proposal->rel_id : 'Lead: '.$linked_proposal->rel_id;
+                                                            echo $p_client; 
+                                                         ?>
+                                                         <span class="pull-right">
+                                                            <?php echo get_recon_status_strict($estimate->clientid, $p_client); ?>
+                                                         </span>
+                                                      </td> 
+                                                   <?php } ?>
+                                                   <?php if($linked_invoice){ ?> 
+                                                      <td>
+                                                         <?php echo $linked_invoice->clientid; ?>
+                                                         <span class="pull-right">
+                                                            <?php echo get_recon_status_strict($estimate->clientid, $linked_invoice->clientid); ?>
+                                                         </span>
+                                                      </td> 
+                                                   <?php } ?>
+                                                </tr>
+
+                                                <tr>
+                                                   <td class="bold">Item Count</td>
+                                                   <td><?php echo count($estimate->items); ?> Items</td>
+                                                   <?php if($linked_proposal){ ?> 
+                                                      <td>
+                                                         <?php echo count($linked_proposal->items); ?> Items
+                                                         <span class="pull-right">
+                                                            <?php echo get_recon_status_strict(count($estimate->items), count($linked_proposal->items)); ?>
+                                                         </span>
+                                                      </td> 
+                                                   <?php } ?>
+                                                   <?php if($linked_invoice){ ?> 
+                                                      <td>
+                                                         <?php echo count($linked_invoice->items); ?> Items
+                                                         <span class="pull-right">
+                                                            <?php echo get_recon_status_strict(count($estimate->items), count($linked_invoice->items)); ?>
+                                                         </span>
+                                                      </td> 
+                                                   <?php } ?>
+                                                </tr>
+
+                                                <tr>
+                                                   <td class="bold">Subtotal</td>
+                                                   <td><?php echo app_format_money($estimate->subtotal, $estimate->currency_name); ?></td>
+                                                   <?php if($linked_proposal){ ?> 
+                                                      <td>
+                                                         <?php echo app_format_money($linked_proposal->subtotal, $linked_proposal->currency_name); ?>
+                                                         <span class="pull-right">
+                                                            <?php echo get_recon_status_numeric($estimate->subtotal, $linked_proposal->subtotal); ?>
+                                                         </span>
+                                                      </td> 
+                                                   <?php } ?>
+                                                   <?php if($linked_invoice){ ?> 
+                                                      <td>
+                                                         <?php echo app_format_money($linked_invoice->subtotal, $linked_invoice->currency_name); ?>
+                                                         <span class="pull-right">
+                                                            <?php echo get_recon_status_numeric($estimate->subtotal, $linked_invoice->subtotal); ?>
+                                                         </span>
+                                                      </td> 
+                                                   <?php } ?>
+                                                </tr>
+
+                                                <tr>
+                                                   <td class="bold">Grand Total</td>
+                                                   <td><?php echo app_format_money($estimate->total, $estimate->currency_name); ?></td>
+                                                   <?php if($linked_proposal){ ?> 
+                                                      <td>
+                                                         <?php echo app_format_money($linked_proposal->total, $linked_proposal->currency_name); ?>
+                                                         <span class="pull-right">
+                                                            <?php echo get_recon_status_numeric($estimate->total, $linked_proposal->total); ?>
+                                                         </span>
+                                                      </td> 
+                                                   <?php } ?>
+                                                   <?php if($linked_invoice){ ?> 
+                                                      <td>
+                                                         <?php echo app_format_money($linked_invoice->total, $linked_invoice->currency_name); ?>
+                                                         <span class="pull-right">
+                                                            <?php echo get_recon_status_numeric($estimate->total, $linked_invoice->total); ?>
+                                                         </span>
+                                                      </td> 
+                                                   <?php } ?>
+                                                </tr>
+
+                                             </tbody>
+                                          </table>
+                                       </div>
+                                    <?php } ?>
+                                 </div>
+                              </div>
+                           </div>
                         </div>
                      </div>
-                     <?php } ?>
-                     <?php } ?>
+                  </div>
+                  <div class="row">
+                     
                      <?php if($estimate->clientnote != ''){ ?>
                      <div class="col-md-12 mtop15">
                         <p class="bold text-muted"><?php echo _l('estimate_note'); ?></p>

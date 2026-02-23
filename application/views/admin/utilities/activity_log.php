@@ -21,6 +21,12 @@
 							_l('utility_activity_log_dt_description'),
 							_l('utility_activity_log_dt_date'),
 							_l('utility_activity_log_dt_staff'),
+                            'IP',
+                            'Device',
+                            'Location',
+                            'Type',
+                            'Module',
+                            'Method',
 							),'activity-log'); ?>
 						</div>
 					</div>

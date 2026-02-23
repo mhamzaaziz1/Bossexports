@@ -14,75 +14,57 @@ use Twilio\Values;
 
 abstract class UserChannelOptions {
     /**
-     * @param string $notificationLevel The push notification level to assign to
-     *                                  the User Channel
-     * @param int $lastConsumedMessageIndex The index of the last Message that the
-     *                                      Member has read within the Channel
-     * @param \DateTime $lastConsumptionTimestamp The ISO 8601 based timestamp
-     *                                            string that represents the
-     *                                            datetime of the last Message read
-     *                                            event for the Member within the
-     *                                            Channel
+     * @param string $notificationLevel The notification_level
+     * @param int $lastConsumedMessageIndex The last_consumed_message_index
+     * @param \DateTime $lastConsumptionTimestamp The last_consumption_timestamp
      * @return UpdateUserChannelOptions Options builder
      */
-    public static function update($notificationLevel = Values::NONE, $lastConsumedMessageIndex = Values::NONE, $lastConsumptionTimestamp = Values::NONE) {
+    public static function update(string $notificationLevel = Values::NONE, int $lastConsumedMessageIndex = Values::NONE, \DateTime $lastConsumptionTimestamp = Values::NONE): UpdateUserChannelOptions {
         return new UpdateUserChannelOptions($notificationLevel, $lastConsumedMessageIndex, $lastConsumptionTimestamp);
     }
 }
 
 class UpdateUserChannelOptions extends Options {
     /**
-     * @param string $notificationLevel The push notification level to assign to
-     *                                  the User Channel
-     * @param int $lastConsumedMessageIndex The index of the last Message that the
-     *                                      Member has read within the Channel
-     * @param \DateTime $lastConsumptionTimestamp The ISO 8601 based timestamp
-     *                                            string that represents the
-     *                                            datetime of the last Message read
-     *                                            event for the Member within the
-     *                                            Channel
+     * @param string $notificationLevel The notification_level
+     * @param int $lastConsumedMessageIndex The last_consumed_message_index
+     * @param \DateTime $lastConsumptionTimestamp The last_consumption_timestamp
      */
-    public function __construct($notificationLevel = Values::NONE, $lastConsumedMessageIndex = Values::NONE, $lastConsumptionTimestamp = Values::NONE) {
+    public function __construct(string $notificationLevel = Values::NONE, int $lastConsumedMessageIndex = Values::NONE, \DateTime $lastConsumptionTimestamp = Values::NONE) {
         $this->options['notificationLevel'] = $notificationLevel;
         $this->options['lastConsumedMessageIndex'] = $lastConsumedMessageIndex;
         $this->options['lastConsumptionTimestamp'] = $lastConsumptionTimestamp;
     }
 
     /**
-     * The push notification level to assign to the User Channel. Can be: `default` or `muted`.
+     * The notification_level
      *
-     * @param string $notificationLevel The push notification level to assign to
-     *                                  the User Channel
+     * @param string $notificationLevel The notification_level
      * @return $this Fluent Builder
      */
-    public function setNotificationLevel($notificationLevel) {
+    public function setNotificationLevel(string $notificationLevel): self {
         $this->options['notificationLevel'] = $notificationLevel;
         return $this;
     }
 
     /**
-     * The index of the last [Message](https://www.twilio.com/docs/chat/rest/message-resource) in the [Channel](https://www.twilio.com/docs/chat/channels) that the Member has read.
+     * The last_consumed_message_index
      *
-     * @param int $lastConsumedMessageIndex The index of the last Message that the
-     *                                      Member has read within the Channel
+     * @param int $lastConsumedMessageIndex The last_consumed_message_index
      * @return $this Fluent Builder
      */
-    public function setLastConsumedMessageIndex($lastConsumedMessageIndex) {
+    public function setLastConsumedMessageIndex(int $lastConsumedMessageIndex): self {
         $this->options['lastConsumedMessageIndex'] = $lastConsumedMessageIndex;
         return $this;
     }
 
     /**
-     * The [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601) timestamp of the last [Message](https://www.twilio.com/docs/chat/rest/message-resource) read event for the Member within the [Channel](https://www.twilio.com/docs/chat/channels).
+     * The last_consumption_timestamp
      *
-     * @param \DateTime $lastConsumptionTimestamp The ISO 8601 based timestamp
-     *                                            string that represents the
-     *                                            datetime of the last Message read
-     *                                            event for the Member within the
-     *                                            Channel
+     * @param \DateTime $lastConsumptionTimestamp The last_consumption_timestamp
      * @return $this Fluent Builder
      */
-    public function setLastConsumptionTimestamp($lastConsumptionTimestamp) {
+    public function setLastConsumptionTimestamp(\DateTime $lastConsumptionTimestamp): self {
         $this->options['lastConsumptionTimestamp'] = $lastConsumptionTimestamp;
         return $this;
     }
@@ -92,13 +74,8 @@ class UpdateUserChannelOptions extends Options {
      *
      * @return string Machine friendly representation
      */
-    public function __toString() {
-        $options = array();
-        foreach ($this->options as $key => $value) {
-            if ($value != Values::NONE) {
-                $options[] = "$key=$value";
-            }
-        }
-        return '[Twilio.IpMessaging.V2.UpdateUserChannelOptions ' . \implode(' ', $options) . ']';
+    public function __toString(): string {
+        $options = \http_build_query(Values::of($this->options), '', ' ');
+        return '[Twilio.IpMessaging.V2.UpdateUserChannelOptions ' . $options . ']';
     }
 }

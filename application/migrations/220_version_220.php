@@ -28,7 +28,7 @@ class Migration_Version_220 extends CI_Migration
         $this->db->query('ALTER TABLE `tblcontacts` ADD `email_verification_sent_at` DATETIME NULL AFTER `email_verification_key`;');
 
         $this->db->query("INSERT INTO `tblemailtemplates` (`type`, `slug`, `language`, `name`, `subject`, `message`, `fromname`, `fromemail`, `plaintext`, `active`, `order`) VALUES
-('client', 'contact-verification-email', 'english', 'Email Verification (Sent to Contact After Registration)', 'Verify Email Address', '<p>Hello&nbsp;{contact_firstname}<br /><br />Please click the button below to verify your email address.<br /><br /><a href=\"{email_verification_url}\">Verify Email Address</a><br /><br />If you did not create an account, no further action is required</p>\r\n<p><br />{email_signature}</p>', '{companyname} | CRM', '', 0, 1, 0);");
+('client', 'contact-verification-email', 'english', 'Email Verification (Sent to Contact After Registration)', 'Please Verify Your Email Address', '<p>Hello&nbsp;{contact_firstname}<br /><br />Please click the button below to verify your email address.<br /><br /><a href=\"{email_verification_url}\">Verify Email Address</a><br /><br />If you did not create an account, no further action is required</p>\r\n<p><br />{email_signature}</p>', '{companyname} | CRM', '', 0, 1, 0);");
 
         $this->db->query('UPDATE tblcontacts SET email_verified_at = datecreated;');
 

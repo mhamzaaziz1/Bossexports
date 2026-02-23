@@ -88,5 +88,8 @@
 </div>
 </div>
 <?php init_tail(); ?>
+<script>
+<?php require 'modules/omni_sales/assets/js/trade_discount/trade_discount.js';?>
+</script>
 </body>
 </html>

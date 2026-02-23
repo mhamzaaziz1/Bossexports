@@ -1,8 +1,5 @@
 <?php
 
-use GuzzleHttp\Client;
-use GuzzleHttp\Exception\RequestException;
-
 defined('BASEPATH') or exit('No direct script access allowed');
 
 /**
@@ -25,18 +22,20 @@ function get_contract_shortlink($contract)
 
     // Create short link and return the newly created short link
     $short_link = app_generate_short_link([
-        'long_url'  => $long_url,
-        'title'     => 'Contract #'. $contract->id
+        'long_url' => $long_url,
+        'title'    => 'Contract #' . $contract->id,
     ]);
 
     if ($short_link) {
         $CI = &get_instance();
         $CI->db->where('id', $contract->id);
         $CI->db->update(db_prefix() . 'contracts', [
-            'short_link' => $short_link
+            'short_link' => $short_link,
         ]);
+
         return $short_link;
     }
+
     return $long_url;
 }
 
@@ -159,7 +158,7 @@ function count_recently_created_contracts($days = 7, $staffId = null)
     $staffId   = is_null($staffId) ? get_staff_user_id() : $staffId;
     $where_own = [];
 
-    if (!staff_can('view', 'contracts')) {
+    if (staff_cant('view', 'contracts')) {
         $where_own = ['addedfrom' => $staffId];
     }
 
@@ -178,7 +177,7 @@ function count_active_contracts($staffId = null)
     $where_own = [];
     $staffId   = is_null($staffId) ? get_staff_user_id() : $staffId;
 
-    if (!has_permission('contracts', '', 'view')) {
+    if (staff_cant('view', 'contracts')) {
         $where_own = ['addedfrom' => $staffId];
     }
 
@@ -197,7 +196,7 @@ function count_expired_contracts($staffId = null)
     $where_own = [];
     $staffId   = is_null($staffId) ? get_staff_user_id() : $staffId;
 
-    if (!has_permission('contracts', '', 'view')) {
+    if (staff_cant('view', 'contracts')) {
         $where_own = ['addedfrom' => $staffId];
     }
 
@@ -216,7 +215,7 @@ function count_trash_contracts($staffId = null)
     $where_own = [];
     $staffId   = is_null($staffId) ? get_staff_user_id() : $staffId;
 
-    if (!has_permission('contracts', '', 'view')) {
+    if (staff_cant('view', 'contracts')) {
         $where_own = ['addedfrom' => $staffId];
     }
 

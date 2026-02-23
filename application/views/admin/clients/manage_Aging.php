@@ -226,7 +226,7 @@
                   </div>
                   <?php } ?>
                   <hr class="hr-panel-heading" />
-    
+
                   <div class="modal fade bulk_actions" id="customers_bulk_action" tabindex="-1" role="dialog">
                      <div class="modal-dialog" role="document">
                         <div class="modal-content">
@@ -262,6 +262,10 @@
                      <label for="exclude_inactive"><?php echo _l('exclude_inactive'); ?> <?php echo _l('clients'); ?></label>
                   </div>
                   <div class="clearfix mtop20"></div>
+                  <div class="col-md-12">
+                    <h4 class="no-margin bold">Aging Summary</h4>
+                    <p class="text-muted">Outstanding invoices by age</p>
+                    <hr />
                   <?php
                      $table_data = array();
                      $_table_data = array(
@@ -275,45 +279,85 @@
                          'th_attrs'=>array('class'=>'toggleable', 'id'=>'th-company')
                         ),
                         array(
-                         'name'=>_l('Current Balance'),
-                         'th_attrs'=>array('class'=>'toggleable', 'id'=>'th-company')
+                         'name'=>_l('Current'),
+                         'th_attrs'=>array('class'=>'toggleable text-center', 'id'=>'th-current')
                         ),
                          array(
-                         'name'=>_l('7 Days'),
-                         'th_attrs'=>array('class'=>'toggleable', 'id'=>'th-primary-contact')
+                         'name'=>_l('1-30 Days'),
+                         'th_attrs'=>array('class'=>'toggleable text-center', 'id'=>'th-1-30-days')
                         ),
                          array(
-                         'name'=>_l('14 Days'),
-                         'th_attrs'=>array('class'=>'toggleable', 'id'=>'th-primary-contact-email')
+                         'name'=>_l('31-60 Days'),
+                         'th_attrs'=>array('class'=>'toggleable text-center', 'id'=>'th-31-60-days')
                         ),
                         array(
-                         'name'=>_l('21 Days'),
-                         'th_attrs'=>array('class'=>'toggleable', 'id'=>'th-phone')
+                         'name'=>_l('61-90 Days'),
+                         'th_attrs'=>array('class'=>'toggleable text-center', 'id'=>'th-61-90-days')
                         ),
                          array(
-                         'name'=>_l('1 month'),
-                         'th_attrs'=>array('class'=>'toggleable', 'id'=>'th-active')
+                         'name'=>_l('Over 90 Days'),
+                         'th_attrs'=>array('class'=>'toggleable text-center', 'id'=>'th-over-90-days')
                         ),
                         array(
-                         'name'=>_l('2 month'),
-                         'th_attrs'=>array('class'=>'toggleable', 'id'=>'th-groups')
-                        ),
-                        array(
-                         'name'=>_l('3 months'),
-                         'th_attrs'=>array('class'=>'toggleable', 'id'=>'th-date-created')
+                         'name'=>_l('Total'),
+                         'th_attrs'=>array('class'=>'toggleable text-center', 'id'=>'th-total')
                         ),
                       );
-                     foreach($_table_data as $_t){
-                      array_push($table_data,$_t);
-                     }
+                          foreach($_table_data as $_t){
+                           array_push($table_data,$_t);
+                          }
 
-                     $table_data = hooks()->apply_filters('customers_table_columns', $table_data);
-
-                     render_datatable($table_data,'clients',[],[
-                           'data-last-order-identifier' => 'customers',
-                           'data-default-order'         => get_table_last_order('customers'),
-                     ]);
-                     ?>
+                          $table_data = hooks()->apply_filters('customers_table_columns', $table_data);
+                          
+                          // Custom render of table to include tfoot
+                          $class = 'clients';
+                          $table_attributes = [
+                                'data-last-order-identifier' => 'customers',
+                                'data-default-order'         => get_table_last_order('customers'),
+                          ];
+                          
+                          $_table_attributes = ' ';
+                          foreach ($table_attributes as $key => $val) {
+                              $_table_attributes .= $key . '="' . $val . '" ';
+                          }
+                          ?>
+                          <div class="ie-dt-fix">
+                              <table <?php echo $_table_attributes; ?> class="dt-table-loading table table-<?php echo $class; ?>">
+                                  <thead>
+                                      <tr>
+                                          <?php foreach($table_data as $heading) {
+                                              if (!is_array($heading)) {
+                                                  echo '<th>' . $heading . '</th>';
+                                              } else {
+                                                  $th_attrs = '';
+                                                  if (isset($heading['th_attrs'])) {
+                                                      foreach ($heading['th_attrs'] as $key => $val) {
+                                                          $th_attrs .= $key . '="' . $val . '" ';
+                                                      }
+                                                  }
+                                                  echo '<th' . ($th_attrs != '' ? ' ' . $th_attrs : '') . '>' . $heading['name'] . '</th>';
+                                              }
+                                          } ?>
+                                      </tr>
+                                  </thead>
+                                  <tbody></tbody>
+                                  <tfoot>
+                                      <tr style="background-color: #f0f0f0; font-weight: bold;">
+                                          <td></td>
+                                          <td></td>
+                                          <td class="text-right">Total:</td>
+                                          <td class="text-center" id="total_current"></td>
+                                          <td class="text-center" id="total_1_30"></td>
+                                          <td class="text-center" id="total_31_60"></td>
+                                          <td class="text-center" id="total_61_90"></td>
+                                          <td class="text-center" id="total_over_90"></td>
+                                          <td class="text-center" id="total_all"></td>
+                                      </tr>
+                                  </tfoot>
+                              </table>
+                          </div>
+                    </div>
+                  </div>
                </div>
             </div>
          </div>
@@ -330,9 +374,40 @@
        CustomersServerParams['exclude_inactive'] = '[name="exclude_inactive"]:checked';
 
        var tAPI = initDataTable('.table-clients', admin_url+'clients/aging_table', [0], [0], CustomersServerParams,<?php echo hooks()->apply_filters('customers_table_default_order', json_encode(array(2,'asc'))); ?>);
+       
        $('input[name="exclude_inactive"]').on('change',function(){
            tAPI.ajax.reload();
        });
+
+       tAPI.on('draw', function () {
+            var api = $(this).DataTable();
+            
+            // Function to strip HTML and commas and parse float
+            var intVal = function ( i ) {
+                return typeof i === 'string' ?
+                    i.replace(/<[^>]+>/g, "").replace(/,/g, "")*1 :
+                    typeof i === 'number' ?
+                        i : 0;
+            };
+ 
+            // Calculate totals for columns 3 to 8
+            var columns = [3, 4, 5, 6, 7, 8];
+            var ids = ['total_current', 'total_1_30', 'total_31_60', 'total_61_90', 'total_over_90', 'total_all'];
+            
+            for(var x = 0; x < columns.length; x++) {
+                var colIdx = columns[x];
+                var total = api
+                    .column( colIdx, { page: 'current'} ) // Calculate per page or all? 'current' for page, empty for all. User usually wants visible page? Or all? "add total of each coloumn in the last". Usually implies page total or grand total? DataTables footerCallback example usually calls page total. But for aging report, grand total might be better. But server-side processing makes grand total hard without server support. Let's do page total for now as it is available on client side.
+                    .data()
+                    .reduce( function (a, b) {
+                        return intVal(a) + intVal(b);
+                    }, 0 );
+                    
+                $( '#' + ids[x] ).html(
+                    format_money(total)
+                );
+            }
+        });
    });
    function customers_bulk_action(event) {
        var r = confirm(app.lang.confirm_action_prompt);

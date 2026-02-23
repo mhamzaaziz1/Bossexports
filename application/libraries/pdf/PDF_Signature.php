@@ -2,17 +2,97 @@
 
 defined('BASEPATH') or exit('No direct script access allowed');
 
+/**
+ * @mixin TCPDF
+ */
 trait PDF_Signature
 {
+    public function processSignature()
+    {
+        return $this->process_signature();
+    }
+
     public function process_signature()
     {
         $dimensions       = $this->getPageDimensions();
         $leftColumnExists = false;
+        $lineBreaksBefore = hooks()->apply_filters('pdf_signature_line_breaks_before', 1);
+        $companySignature = $this->getCompanySignature($lineBreaksBefore);
 
+        $this->Ln(10);
+
+        if ($companySignature) {
+            $companySignatureHtml = '<div nobr="true">' . _l('authorized_signature_text') . ' ' . $companySignature . '</div>';
+
+            $this->MultiCell(($dimensions['wk'] / 2) - $dimensions['lm'], 0, $companySignatureHtml, 0, 'J', 0, 0, '', '', true, 0, true, true, 0);
+
+            $leftColumnExists = true;
+        }
+
+        // Customer signature
+        $record = $this->getSignatureableInstance();
+        $path   = $this->getSignaturePath();
+
+        if (! empty($path) && file_exists($path)) {
+            $signature = _l('document_customer_signature_text');
+
+            if ($this->type() == 'contract') {
+                $signature .= '<br /><br /><span style="font-weight:bold;text-align: right;">';
+                $signature .= _l('contract_signed_by') . ": {$record->acceptance_firstname} {$record->acceptance_lastname}<br />";
+                $signature .= _l('contract_signed_date') . ': ' . _dt($record->acceptance_date) . '<br />';
+                $signature .= _l('contract_signed_ip') . ": {$record->acceptance_ip}";
+                $signature .= '</span><br />';
+            }
+
+            if ($this->type() == 'proposal' || $this->type() == 'estimate') {
+                $signature .= '<br /><br /><span style="font-weight:bold;text-align: right;">';
+                $signature .= _l('proposal_signed_by') . ": {$record->acceptance_firstname} {$record->acceptance_lastname}<br />";
+                $signature .= _l('proposal_signed_date') . ': ' . _dt($record->acceptance_date) . '<br />';
+                $signature .= _l('proposal_signed_ip') . ": {$record->acceptance_ip}";
+                $signature .= '</span><br />';
+            }
+
+            $signature .= str_repeat(
+                '<br />',
+                hooks()->apply_filters('pdf_signature_break_lines', 1)
+            );
+
+            $width = ($dimensions['wk'] / 2) - $dimensions['rm'];
+
+            if (! $leftColumnExists) {
+                $width = $dimensions['wk'] - ($dimensions['rm'] + $dimensions['lm']);
+            }
+
+            $hookData = [
+                'pdf_instance'       => $this,
+                'type'               => $this->type(),
+                'signatureCellWidth' => $width,
+            ];
+
+            hooks()->do_action('before_customer_pdf_signature', $hookData);
+
+            $customerSignatureSize = hooks()->apply_filters('customer_pdf_signature_size', 0);
+            if (is_int($customerSignatureSize) && $customerSignatureSize > 0) {
+                $customerSignatureSize = $customerSignatureSize . 'px';
+            }
+
+            $imageData = base64_encode(file_get_contents($path));
+            $signature .= str_repeat('<br />', $lineBreaksBefore) . '<img src="@' . $imageData . '" width="' . $customerSignatureSize . '" />';
+
+            $this->MultiCell($width, 0, '<div nobr="true">' . $signature . '</div>', 0, 'R', 0, 1, '', '', true, 0, true, false, 0);
+
+            hooks()->do_action('after_customer_pdf_signature', $hookData);
+        }
+    }
+
+    public function getCompanySignature($lineBreaksBefore = 1)
+    {
         if (($this->type() == 'invoice' && get_option('show_pdf_signature_invoice') == 1)
         || ($this->type() == 'estimate' && get_option('show_pdf_signature_estimate') == 1)
         || ($this->type() == 'contract' && get_option('show_pdf_signature_contract') == 1)
-        || ($this->type() == 'credit_note') && get_option('show_pdf_signature_credit_note') == 1) {
+        || ($this->type() == 'proposal' && get_option('show_pdf_signature_proposal') == 1)
+        || ($this->type() == 'credit_note') && get_option('show_pdf_signature_credit_note') == 1
+        || ($this->type() == 'payment' && get_option('show_pdf_signature_payment') == 1)) {
             $signatureImage = get_option('signature_image');
 
             $signaturePath   = FCPATH . 'uploads/company/' . $signatureImage;
@@ -24,55 +104,51 @@ trait PDF_Signature
                 $blankSignatureLine = '';
             }
 
-            $this->ln(13);
+            // $this->ln(13);
 
             if ($signatureImage != '' && $signatureExists) {
                 $imageData = base64_encode(file_get_contents($signaturePath));
-                $blankSignatureLine .= str_repeat('<br />', hooks()->apply_filters('pdf_signature_break_lines', 1)) . '<img src="@' . $imageData . '" />';
+                $blankSignatureLine .= str_repeat('<br />', $lineBreaksBefore) . '<img src="@' . $imageData . '" />';
             }
 
-            $this->MultiCell(($dimensions['wk'] / 2) - $dimensions['lm'], 0, _l('authorized_signature_text') . ' ' . $blankSignatureLine, 0, 'J', 0, 0, '', '', true, 0, true, true, 0);
-
-            $leftColumnExists = true;
+            return $blankSignatureLine;
         }
 
-        $customerSignaturePath = '';
+        return false;
+    }
 
-        if (isset($GLOBALS['estimate_pdf']) && !empty($GLOBALS['estimate_pdf']->signature)) {
-            $estimate              = $GLOBALS['estimate_pdf'];
-            $customerSignaturePath = get_upload_path_by_type('estimate') . $estimate->id . '/' . $estimate->signature;
-        } elseif (isset($GLOBALS['proposal_pdf']) && !empty($GLOBALS['proposal_pdf']->signature)) {
-            $proposal              = $GLOBALS['proposal_pdf'];
-            $customerSignaturePath = get_upload_path_by_type('proposal') . $proposal->id . '/' . $proposal->signature;
-        } elseif (isset($GLOBALS['contract_pdf']) && !empty($GLOBALS['contract_pdf']->signature)) {
-            $contract              = $GLOBALS['contract_pdf'];
-            $customerSignaturePath = get_upload_path_by_type('contract') . $contract->id . '/' . $contract->signature;
+    public function getSignaturePath()
+    {
+        $instance = $this->getSignatureableInstance();
+
+        if (! $instance) {
+            return '';
         }
 
-        $customerSignaturePath = hooks()->apply_filters(
+        $path = get_upload_path_by_type($this->type()) . $instance->id . '/' . $instance->signature;
+
+        return hooks()->apply_filters(
             'pdf_customer_signature_image_path',
-            $customerSignaturePath,
+            $path,
             $this->type()
         );
+    }
 
-        if (!empty($customerSignaturePath) && file_exists($customerSignaturePath)) {
-            $customerSignature = _l('document_customer_signature_text');
-
-            $imageData = base64_encode(file_get_contents($customerSignaturePath));
-
-            $customerSignature .= str_repeat('<br />', hooks()->apply_filters('pdf_signature_break_lines', 1)) . '<img src="@' . $imageData . '">';
-            $width = ($dimensions['wk'] / 2) - $dimensions['rm'];
-
-            if (!$leftColumnExists) {
-                $width = $dimensions['wk'] - ($dimensions['rm'] + $dimensions['lm']);
-                $this->ln(13);
-            }
-
-            $hookData = ['pdf_instance' => $this, 'type' => $this->type(), 'signatureCellWidth' => $width];
-
-            hooks()->do_action('before_customer_pdf_signature', $hookData);
-            $this->MultiCell($width, 0, $customerSignature, 0, 'R', 0, 1, '', '', true, 0, true, false, 0);
-            hooks()->do_action('after_customer_pdf_signature', $hookData);
+    public function getSignatureableInstance()
+    {
+        if (isset($GLOBALS['estimate_pdf']) && ! empty($GLOBALS['estimate_pdf']->signature)) {
+            return $GLOBALS['estimate_pdf'];
         }
+        if (isset($GLOBALS['proposal_pdf']) && ! empty($GLOBALS['proposal_pdf']->signature)) {
+            return $GLOBALS['proposal_pdf'];
+        }
+        if (isset($GLOBALS['contract_pdf']) && ! empty($GLOBALS['contract_pdf']->signature)) {
+            return $GLOBALS['contract_pdf'];
+        }
+    }
+
+    public function hasAnySignature()
+    {
+        return $this->getSignaturePath() || $this->getCompanySignature();
     }
 }

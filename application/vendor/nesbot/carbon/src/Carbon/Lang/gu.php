@@ -18,7 +18,7 @@
 return [
     'year' => 'એક વર્ષ|:count વર્ષ',
     'y' => ':countવર્ષ|:countવર્ષો',
-    'month' => 'એક મહિનો|:count મહિનો',
+    'month' => 'એક મહિનો|:count મહિના',
     'm' => ':countમહિનો|:countમહિના',
     'week' => ':count અઠવાડિયું|:count અઠવાડિયા',
     'w' => ':countઅઠ.|:countઅઠ.',
@@ -54,7 +54,7 @@ return [
         'lastWeek' => '[પાછલા] dddd, LT',
         'sameElse' => 'L',
     ],
-    'meridiem' => function ($hour) {
+    'meridiem' => static function ($hour) {
         if ($hour < 4) {
             return 'રાત';
         }

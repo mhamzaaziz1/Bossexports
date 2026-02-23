@@ -15,14 +15,14 @@
 									<div class="card-header pb-0">
 										<div class="row">
 											<div class="col-md-6">
-												<h4><?php  echo html_entity_decode(_l('wh_shipment_tooltip')); ?></h4>
+												<h4><?php  echo new_html_entity_decode(_l('wh_shipment_tooltip')); ?></h4>
 											</div>
 											
 											<div class="col-md-6 ">
 
 												<a href="<?php echo site_url('warehouse/update_shipment_status/product_dispatched/'.$shipment->id.'/'.$cart->id); ?>" class="btn btn-info pull-right ml-2 <?php if($shipment_staus_order == 3){ echo '';}else{ echo ' hide';} ?>" ><?php echo _l('product_dispatched'); ?></a>
 												<a href="<?php echo site_url('warehouse/update_shipment_status/product_delivered/'.$shipment->id.'/'.$cart->id); ?>" class="btn btn-info pull-right ml-2 <?php if($shipment_staus_order == 4){ echo '';}else{ echo ' hide';} ?> "><?php echo _l('product_delivered'); ?></a>
-												<h4 class="pull-right mright5"><?php  echo html_entity_decode( $shipment->shipment_number); ?></h4>&nbsp;
+												<h4 class="pull-right mright5"><?php  echo new_html_entity_decode( $shipment->shipment_number); ?></h4>&nbsp;
 
 											</div>
 										</div>
@@ -39,7 +39,7 @@
 								<div class="row">
 									<div class="col-md-12 padding-bottom-3x mb-1">
 										<div class="card mb-3">
-											<div class="p-4 text-center text-white text-lg bg-dark rounded-top"><span class="text-uppercase"><?php echo _l('wh_shipment_number'); ?> - </span><span class="text-medium"><?php echo html_entity_decode($shipment->shipment_number); ?></span></div>
+											<div class="p-4 text-center text-white text-lg bg-dark rounded-top"><span class="text-uppercase"><?php echo _l('wh_shipment_number'); ?> - </span><span class="text-medium"><?php echo new_html_entity_decode($shipment->shipment_number); ?></span></div>
 											<div class="d-flex flex-wrap flex-sm-nowrap justify-content-between py-3 px-2 bg-secondary">
 												<div class="w-100 text-center py-1 px-2"><span class="text-medium"></span></div>
 												<div class="w-100 text-center py-1 px-2"><span class="text-medium">Status: </span><?php echo _l($shipment->shipment_status); ?></div>
@@ -48,31 +48,31 @@
 											
 											<div class="card-body">
 												<div class="steps d-flex flex-wrap flex-sm-nowrap justify-content-between padding-top-2x padding-bottom-1x">
-													<div class="step <?php echo html_entity_decode($confirmed_order); ?>">
+													<div class="step <?php echo new_html_entity_decode($confirmed_order); ?>">
 														<div class="step-icon-wrap">
 															<div class="step-icon"><i class="fa fa-cart-arrow-down mtop-18"></i></div>
 														</div>
 														<h4 class="step-title"><?php echo _l('confirmed_order'); ?></h4>
 													</div>
-													<div class="step <?php echo html_entity_decode($processing_order); ?>">
+													<div class="step <?php echo new_html_entity_decode($processing_order); ?>">
 														<div class="step-icon-wrap">
 															<div class="step-icon"><i class="fa fa-gear mtop-18"></i></div>
 														</div>
 														<h4 class="step-title"><?php echo _l('processing_order'); ?></h4>
 													</div>
-													<div class="step <?php echo html_entity_decode($quality_check); ?>">
+													<div class="step <?php echo new_html_entity_decode($quality_check); ?>">
 														<div class="step-icon-wrap">
 															<div class="step-icon"><i class="fa fa-edit mtop-18"></i></div>
 														</div>
 														<h4 class="step-title"><?php echo _l('quality_check'); ?></h4>
 													</div>
-													<div class="step <?php echo html_entity_decode($product_dispatched); ?>">
+													<div class="step <?php echo new_html_entity_decode($product_dispatched); ?>">
 														<div class="step-icon-wrap">
 															<div class="step-icon"><i class="fa fa-car mtop-18"></i></div>
 														</div>
 														<h4 class="step-title"><?php echo _l('product_dispatched'); ?></h4>
 													</div>
-													<div class="step <?php echo html_entity_decode($product_delivered); ?>">
+													<div class="step <?php echo new_html_entity_decode($product_delivered); ?>">
 														<div class="step-icon-wrap">
 															<div class="step-icon"><i class="fa fa-home mtop-18"></i></div>
 														</div>
@@ -87,7 +87,7 @@
 								<hr class="no-mtop">
 								<div class="row mbot15">
 									<div class="col-md-12">
-										<a href="javascript:void(0)" class="btn btn-sm btn-info pull-right " onclick="wh_activity_log_modal('add', '' ,'<?php echo html_entity_decode($shipment->id); ?>', '<?php echo html_entity_decode($cart->id); ?>'); return false;"><?php echo _l('wh_add_activity_log'); ?></a>
+										<a href="javascript:void(0)" class="btn btn-sm btn-info pull-right " onclick="wh_activity_log_modal('add', '' ,'<?php echo new_html_entity_decode($shipment->id); ?>', '<?php echo new_html_entity_decode($cart->id); ?>'); return false;"><?php echo _l('wh_add_activity_log'); ?></a>
 									</div>
 								</div>
 								<div class="row">
@@ -97,7 +97,7 @@
 											<div class="col-md-6 col-sm-6">
 												<h4 class="bold">
 													<span id="invoice-number">
-														<?php echo $shipment->shipment_number; ?>
+														<?php echo new_html_entity_decode($shipment->shipment_number); ?>
 													</span>
 												</h4>
 												<address>
@@ -118,7 +118,7 @@
 											<div class="col-md-6 col-sm-6 text-right">
 												<span class="bold"><?php echo _l('invoice_bill_to'); ?>:</span>
 												<address class="invoice-html-customer-shipping-info">
-													<b><?php echo html_entity_decode($cart->company); ?></b>
+													<b><?php echo new_html_entity_decode($cart->company); ?></b>
 													<br>
 													<?php echo isset($cart) ? $cart->billing_street : ''; ?>
 													<br><?php echo isset($cart) ? $cart->billing_city : ''; ?> <?php echo isset($cart) ? $cart->billing_state : ''; ?>
@@ -137,24 +137,24 @@
 													<?php echo _dt($shipment->datecreated); ?>
 												</p>
 											</div>
-											<?php if(strlen($cart->staff_note) > 0){ ?>
+											<?php if(new_strlen($cart->staff_note ?? '') > 0){ ?>
 												<div class="col-md-12">
 													<p class="no-mbot">
 														<span class="bold">
 															<?php echo _l('client_note'); ?>
 														</span>
-														<?php echo html_entity_decode($cart->staff_note); ?>
+														<?php echo new_html_entity_decode($cart->staff_note); ?>
 													</p>
 												</div>
 											<?php } ?>
 
-											<?php if(strlen($cart->notes) > 0){ ?>
+											<?php if(new_strlen($cart->notes ?? '') > 0){ ?>
 												<div class="col-md-12">
 													<p class="no-mbot">
 														<span class="bold">
 															<?php echo _l('admin_note'); ?>
 														</span>
-														<?php echo html_entity_decode($cart->notes); ?>
+														<?php echo new_html_entity_decode($cart->notes); ?>
 													</p>
 												</div>
 											<?php } ?>
@@ -176,8 +176,8 @@
 												</ul>
 												<!-- Tab panes -->
 												<div class="tab-content tabs mt-4">
-													<?php echo $this->load->view('warehouse/shipments/includes/delivery_note'); ?>
-													<?php echo $this->load->view('warehouse/shipments/includes/packing_list'); ?>
+													<?php echo  $this->load->view('warehouse/shipments/includes/delivery_note'); ?>
+													<?php echo  $this->load->view('warehouse/shipments/includes/packing_list'); ?>
 												</div>
 											</div>
 
@@ -194,28 +194,28 @@
 														<div class="row">
 															<div class="col-md-8 col-sm-8">
 																<span class="text-has-action <?php if($key == 0){ echo ' text-info';} ?>" ><?php echo _dt($activity_log['date']).' '; ?> </span>
-																<span class="text-has-action <?php if($key == 0){ echo ' text-info';} ?>" ><?php echo html_entity_decode($activity_log['description']).' '; ?></span>
-																<?php if($activity_log['rel_type'] == 'shipment' && (is_admin() || has_permission('warehouse', '', 'delete') ) ){ ?>
+																<span class="text-has-action <?php if($key == 0){ echo ' text-info';} ?>" ><?php echo new_html_entity_decode($activity_log['description']).' '; ?></span>
+																<?php if($activity_log['rel_type'] == 'shipment' && (is_admin() || has_permission('wh_stock_export', '', 'delete') || has_permission('wh_packing_list', '', 'delete') ) ){ ?>
 																</div>
 
 																<div class="col-md-4 col-sm-4">
 
-																	<?php echo icon_btn('#', 'remove', 'btn-danger pull-right', ['data-original-title' => _l('wh_delete_shipment_log'), 'data-toggle' => 'tooltip', 'data-placement' => 'top', 'onclick' => "delete_wh_activitylog(this,".$activity_log['id'].");return false;" ]); ?>
+																	<?php echo icon_btn('#', 'fa fa-remove', 'btn-danger pull-right', ['data-original-title' => _l('wh_delete_shipment_log'), 'data-toggle' => 'tooltip', 'data-placement' => 'top', 'onclick' => "delete_wh_activitylog(this,".$activity_log['id'].");return false;" ]); ?>
 																<?php } ?>
 
-																<?php if($activity_log['rel_type'] == 'shipment' && ( has_permission('warehouse', '', 'edit') )){ ?>
+																<?php if($activity_log['rel_type'] == 'shipment' && ( has_permission('wh_stock_export', '', 'edit') || has_permission('wh_packing_list', '', 'edit') )){ ?>
 
-																	<?php echo icon_btn('#', 'pencil-square-o', 'btn-warning pull-right', ['data-original-title' => _l('wh_edit_shipment_log'), 'data-toggle' => 'tooltip', 'data-placement' => 'top', 'onclick' => "wh_activity_log_modal('edit',".$activity_log['id'].",".$shipment->id.", ".$cart->id."); return false;"]); ?>
+																	<?php echo icon_btn('#', 'fa-regular fa-pen-to-square', 'btn-warning pull-right', ['data-original-title' => _l('wh_edit_shipment_log'), 'data-toggle' => 'tooltip', 'data-placement' => 'top', 'onclick' => "wh_activity_log_modal('edit',".$activity_log['id'].",".$shipment->id.", ".$cart->id."); return false;"]); ?>
 																<?php } ?>
 
-																<?php if($activity_log['rel_type'] == 'shipment' && ( has_permission('warehouse', '', 'edit') )){ ?>
-																	<?php echo icon_btn('warehouse/asm_shipment_change_activity_log_status/' . $activity_log['id'].'/1', 'eye-slash', 'btn-primary pull-right hide', ['data-original-title' => _l('edit'), 'data-toggle' => 'tooltip', 'data-placement' => 'top']); ?>
+																<?php if($activity_log['rel_type'] == 'shipment' && ( has_permission('wh_stock_export', '', 'edit') || has_permission('wh_packing_list', '', 'edit') )){ ?>
+																	<?php echo icon_btn('warehouse/asm_shipment_change_activity_log_status/' . $activity_log['id'].'/1', 'fa-solid fa-eye-slash', 'btn-primary pull-right hide', ['data-original-title' => _l('edit'), 'data-toggle' => 'tooltip', 'data-placement' => 'top']); ?>
 
 																<?php } ?>
 
 																<?php if($activity_log['rel_type'] == 'shipment'){ ?>
 
-																	<?php echo icon_btn('warehouse/asm_shipment_change_activity_log_status/' . $activity_log['id'].'/1', 'eye', 'btn-primary pull-right hide', ['data-original-title' => _l('edit'), 'data-toggle' => 'tooltip', 'data-placement' => 'top']); ?>
+																	<?php echo icon_btn('warehouse/asm_shipment_change_activity_log_status/' . $activity_log['id'].'/1', 'fa-solid fa-eye', 'btn-primary pull-right hide', ['data-original-title' => _l('edit'), 'data-toggle' => 'tooltip', 'data-placement' => 'top']); ?>
 
 																<?php } ?>
 															</div>

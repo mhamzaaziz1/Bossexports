@@ -8,19 +8,20 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
 $months = [
-    'ޖެނުއަރީ',
-    'ފެބްރުއަރީ',
+    'ޖަނަވަރީ',
+    'ފެބުރުވަރީ',
     'މާރިޗު',
-    'އޭޕްރީލު',
+    'އެޕްރީލް',
     'މޭ',
     'ޖޫން',
     'ޖުލައި',
-    'އޯގަސްޓު',
-    'ސެޕްޓެމްބަރު',
-    'އޮކްޓޯބަރު',
-    'ނޮވެމްބަރު',
-    'ޑިސެމްބަރު',
+    'އޮގަސްޓު',
+    'ސެޕްޓެންބަރު',
+    'އޮކްޓޫބަރު',
+    'ނޮވެންބަރު',
+    'ޑިސެންބަރު',
 ];
 
 $weekdays = [
@@ -37,6 +38,7 @@ $weekdays = [
  * Authors:
  * - Josh Soref
  * - Jawish Hameed
+ * - Saiph Muhammad
  */
 return [
     'year' => ':count '.'އަހަރު',

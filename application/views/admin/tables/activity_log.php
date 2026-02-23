@@ -6,6 +6,12 @@ $aColumns = [
     'description',
     'date',
     db_prefix().'activity_log.staffid',
+    'ip',
+    'device',
+    'location',
+    'type',
+    'module',
+    'method',
     ];
 
 $sWhere = [];
@@ -24,7 +30,8 @@ foreach ($rResult as $aRow) {
         if ($aColumns[$i] == 'date') {
             $_data = _dt($_data);
         }
-        $row[] = $_data;
+  
+        $row[] = e($_data);
     }
     $output['aaData'][] = $row;
 }

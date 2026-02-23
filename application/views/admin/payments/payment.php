@@ -220,7 +220,7 @@
     function loadUnpaidInvoices(clientId) {
         if (clientId != "") {
             $.ajax({
-                url: 'https://app.bossexports.co.za/admin/payments/get_invoice_unpaid',
+                url: admin_url + 'payments/get_invoice_unpaid',
                 type: 'POST',
                 cache: false,
                 data: {

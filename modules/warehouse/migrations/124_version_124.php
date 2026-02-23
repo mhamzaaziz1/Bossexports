@@ -27,9 +27,9 @@ class Migration_Version_124 extends App_module_migration
 				`clientid` INT(11) NULL,
 				`subtotal` DECIMAL(15,2) NULL DEFAULT '0.00',
 				`total_amount` DECIMAL(15,2) NULL DEFAULT '0.00',
-				`discount_total` DECIMAL(11) NULL DEFAULT '0.00',
-				`additional_discount` DECIMAL(11) NULL DEFAULT '0.00',
-				`total_after_discount` DECIMAL(11) NULL DEFAULT '0.00',
+				`discount_total` DECIMAL(15,2) NULL DEFAULT '0.00',
+				`additional_discount` DECIMAL(15,2) NULL DEFAULT '0.00',
+				`total_after_discount` DECIMAL(15,2) NULL DEFAULT '0.00',
 				`billing_street` varchar(200) DEFAULT NULL,
 				`billing_city` varchar(100) DEFAULT NULL,
 				`billing_state` varchar(100) DEFAULT NULL,
@@ -66,9 +66,9 @@ class Migration_Version_124 extends App_module_migration
 					`tax_rate`  TEXT NULL,
 					`tax_name`  TEXT NULL,
 					`total_amount` DECIMAL(15,2) NULL DEFAULT '0.00',
-					`discount` DECIMAL(11) NULL DEFAULT '0.00',
-					`discount_total` DECIMAL(11) NULL DEFAULT '0.00',
-					`total_after_discount` DECIMAL(11) NULL DEFAULT '0.00',
+					`discount` DECIMAL(15,2) NULL DEFAULT '0.00',
+					`discount_total` DECIMAL(15,2) NULL DEFAULT '0.00',
+					`total_after_discount` DECIMAL(15,2) NULL DEFAULT '0.00',
 
 					PRIMARY KEY (`id`)
 					) ENGINE=InnoDB DEFAULT CHARSET=" . $CI->db->char_set . ';');

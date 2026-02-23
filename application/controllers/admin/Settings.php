@@ -47,6 +47,13 @@ class Settings extends AdminController
                 $post_data['settings']['smtp_password'] = $tmpData['settings']['smtp_password'];
             }
 
+            if (isset($post_data['dev_mode_environment'])) {
+                $envData     = trim($post_data['dev_mode_environment']);
+                $currentFile = file_get_contents(FCPATH . 'index.php');
+                $newPage     = str_replace("define('ENVIRONMENT', '" . ENVIRONMENT . "');", "define('ENVIRONMENT', '" . $envData . "');", $currentFile);
+                file_put_contents(FCPATH . 'index.php', $newPage);
+            }
+
             $success = $this->settings_model->update($post_data);
 
             if ($success > 0) {
@@ -89,7 +96,20 @@ class Settings extends AdminController
             $tab = 'general';
         }
 
-        $data['tabs'] = $this->app_tabs->get_settings_tabs();
+        $data['tabs'] = $this->app->get_settings_sections();
+        foreach ($data['tabs'] as $key => $section) {
+            $data['tabs'][$key]['slug'] = $key;
+            if (isset($section['title']) && !isset($section['name'])) {
+                $data['tabs'][$key]['name'] = $section['title'];
+            }
+            if (isset($section['children'])) {
+                foreach ($section['children'] as $childKey => $child) {
+                    if (!isset($child['slug'])) {
+                        $data['tabs'][$key]['children'][$childKey]['slug'] = $child['id'] ?? $childKey;
+                    }
+                }
+            }
+        }
         if (!in_array($tab, $data['admin_tabs'])) {
             $data['tab'] = $this->app_tabs->filter_tab($data['tabs'], $tab);
         } else {
@@ -100,6 +120,10 @@ class Settings extends AdminController
 
         if (!$data['tab']) {
             show_404();
+        }
+
+        if (!isset($data['tab']['view']) && isset($data['tab']['children']) && count($data['tab']['children']) > 0) {
+            $data['tab']['view'] = $data['tab']['children'][0]['view'];
         }
 
         if ($data['tab']['slug'] == 'update') {

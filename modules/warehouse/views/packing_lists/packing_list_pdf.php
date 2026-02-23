@@ -51,6 +51,32 @@ $pdf->Ln(hooks()->apply_filters('pdf_info_and_table_separator', 6));
 
 // The items table
 // $items = get_items_table_data($invoice, 'invoice', 'pdf');
+$item_description_width = 15;
+$pdf_display_rate = get_option('packing_list_pdf_display_rate');
+$pdf_display_tax = get_option('packing_list_pdf_display_tax');
+$pdf_display_subtotal = get_option('packing_list_pdf_display_subtotal');
+$pdf_display_discount_percent = get_option('packing_list_pdf_display_discount_percent');
+$pdf_display_discount_amount = get_option('packing_list_pdf_display_discount_amount');
+$pdf_display_totalpayment = get_option('packing_list_pdf_display_totalpayment');
+$pdf_display_summary = get_option('packing_list_pdf_display_summary');
+if($pdf_display_rate == 0){
+	$item_description_width += 10;
+}
+if($pdf_display_tax == 0){
+	$item_description_width += 10;
+}
+if($pdf_display_subtotal == 0){
+	$item_description_width += 15;
+}
+if($pdf_display_discount_percent == 0){
+	$item_description_width += 10;
+}
+if($pdf_display_discount_amount == 0){
+	$item_description_width += 10;
+}
+if($pdf_display_totalpayment == 0){
+	$item_description_width += 10;
+}
 
 $table_font_size = 'font-size:12px;';
 $items = '';
@@ -58,15 +84,28 @@ $items .='<table class="table invoice-items-table items table-main-invoice-edit 
 <thead>';
 $items .= '<tr height="30" bgcolor="' . get_option('pdf_table_heading_color') . '" style="color:' . get_option('pdf_table_heading_text_color') . '; ">';
 $items.='<th width="5%"  >#</th>
-<th width="15%" align="left" style="font-size:12px;" >'. _l('commodity_code').'</th>
-<th width="10%" align="right" style="font-size:12px;" class="qty">'. _l('quantity').'</th>
-<th width="10%" align="right" style="font-size:12px;">'. _l('rate').'</th>
-<th width="12%" align="right" style="font-size:12px;">'. _l('invoice_table_tax_heading').'</th>
-<th width="15%" align="right" style="font-size:12px;">'. _l('subtotal').'</th>
-<th width="10%" align="right" style="font-size:12px;">'. _l('discount').'(%)'.'</th>
-<th width="10%" align="right" style="font-size:12px;">'. _l('discount(money)').'</th>
-<th width="15%" align="right" style="font-size:12px;">'. _l('total_money').'</th>
-</tr>
+<th width="'.$item_description_width.'%" align="left" style="font-size:12px;" >'. _l('commodity_code').'</th>
+<th width="10%" align="right" style="font-size:12px;" class="qty">'. _l('quantity').'</th>';
+if($pdf_display_rate == 1){
+	$items.='<th width="10%" align="right" style="font-size:12px;">'. _l('rate').'</th>';
+}
+if($pdf_display_tax == 1){
+	$items .='<th width="10%" align="right" style="font-size:12px;">'. _l('invoice_table_tax_heading').'</th>';
+}
+if($pdf_display_subtotal == 1){
+	$items .='<th width="15%" align="right" style="font-size:12px;">'. _l('subtotal').'</th>';
+}
+if($pdf_display_discount_percent == 1){
+	$items .='<th width="10%" align="right" style="font-size:12px;">'. _l('discount').'(%)'.'</th>';
+}
+if($pdf_display_discount_amount == 1){
+	$items .='<th width="10%" align="right" style="font-size:12px;">'. _l('discount(money)').'</th>';
+}
+if($pdf_display_totalpayment == 1){
+	$items .='<th width="15%" align="right" style="font-size:12px;">'. _l('total_money').'</th>';
+}
+
+$items .='</tr>
 </thead>
 <tbody class="tbody-main" style="'.$table_font_size.'">';
 
@@ -80,7 +119,7 @@ foreach ($packing_list->packing_list_detail as $key => $packing_list_detail) {
 			// Table data number
 	$itemHTML .= '<td align="center" width="5%">' . ($key+1) . '</td>';
 
-	$itemHTML .= '<td class="description" align="left;" width="20%">';
+	$itemHTML .= '<td class="description" align="left;" width="'.$item_description_width.'%">';
 
 			/**
 			 * Item description
@@ -118,52 +157,66 @@ foreach ($packing_list->packing_list_detail as $key => $packing_list_detail) {
 			 * @var string
 			 */
 
-
-			$itemHTML .= '<td align="right" width="10%">' . app_format_money($packing_list_detail['unit_price'], '') . '</td>';
+			if($pdf_display_rate == 1){
+				$itemHTML .= '<td align="right" width="10%">' . app_format_money($packing_list_detail['unit_price'], '') . '</td>';
+			}
 
 			/**
 			 * Items table taxes HTML custom function because it's too general for all features/options
 			 * @var string
 			 */
-			
-			$item_tax = wh_convert_item_taxes($packing_list_detail['tax_id'], $packing_list_detail['tax_rate'], $packing_list_detail['tax_name']);
-			$itemHTML .= '<td align="right" width="10%">';
+			if($pdf_display_tax == 1){
 
-			if(is_array($item_tax) && isset($item_tax)){
-				if (count($item_tax) > 0) {
-					foreach ($item_tax as $tax) {
+				$item_tax = wh_convert_item_taxes($packing_list_detail['tax_id'], $packing_list_detail['tax_rate'], $packing_list_detail['tax_name']);
+				$itemHTML .= '<td align="right" width="10%">';
 
-						$item_tax = '';
-						if ( get_option('remove_tax_name_from_item_table') == false || multiple_taxes_found_for_item($item_tax)) {
-							$tmp      = explode('|', $tax['taxname']);
-							$item_tax = $tmp[0] . ' ' . app_format_number($tmp[1]) . '%<br />';
-						} else {
-							$item_tax .= app_format_number($tax['taxrate']) . '%';
+				if(is_array($item_tax) && isset($item_tax)){
+					if (count($item_tax) > 0) {
+						foreach ($item_tax as $tax) {
+
+							$item_tax = '';
+							if ( get_option('remove_tax_name_from_item_table') == false || multiple_taxes_found_for_item($item_tax)) {
+								$tmp      = new_explode('|', $tax['taxname']);
+								$item_tax = $tmp[0] . ' ' . app_format_number($tmp[1]) . '%<br />';
+							} else {
+								$item_tax .= app_format_number($tax['taxrate']) . '%';
+							}
+							$itemHTML .= $item_tax;
 						}
-						$itemHTML .= $item_tax;
+					} else {
+						$itemHTML .=  app_format_number(0) . '%';
 					}
-				} else {
-					$itemHTML .=  app_format_number(0) . '%';
 				}
+				$itemHTML .= '</td>';
 			}
-			$itemHTML .= '</td>';
 			
 			// sub total
-			$itemHTML .= '<td class="amount" align="right" width="12%">' . app_format_money($packing_list_detail['sub_total'], '') . '</td>';
+			if($pdf_display_subtotal == 1){
+
+				$itemHTML .= '<td class="amount" align="right" width="15%">' . app_format_money($packing_list_detail['sub_total'], '') . '</td>';
+			}
 			
 			// sub total
-			$itemHTML .= '<td class="amount" align="right" width="10%">' . $packing_list_detail['discount'] . '</td>';
+			if($pdf_display_discount_percent == 1){
+
+				$itemHTML .= '<td class="amount" align="right" width="10%">' . $packing_list_detail['discount'] . '</td>';
+			}
 			
 			// sub total
-			$itemHTML .= '<td class="amount" align="right" width="10%">' . app_format_money($packing_list_detail['discount_total'], '') . '</td>';
+			if($pdf_display_discount_amount == 1){
+
+				$itemHTML .= '<td class="amount" align="right" width="10%">' . app_format_money($packing_list_detail['discount_total'], '') . '</td>';
+			}
 
 
 			/**
 			 * Possible action hook user to include tax in item total amount calculated with the quantiy
 			 * eq Rate * QTY + TAXES APPLIED
 			 */
+			if($pdf_display_totalpayment == 1){
 
-			$itemHTML .= '<td class="amount" align="right" width="15%">' . app_format_money($packing_list_detail['total_after_discount'], '') . '</td>';
+				$itemHTML .= '<td class="amount" align="right" width="15%">' . app_format_money($packing_list_detail['total_after_discount'], '') . '</td>';
+			}
 
 			// Close table row
 			$itemHTML .= '</tr>';
@@ -201,6 +254,11 @@ $items.= '</tbody>
 		<td align="right" width="15%">' . app_format_money($discount_total, $packing_list->base_currency) . '</td>
 		</tr>';
 
+		$tbltotal .= '<tr>
+		<td align="right" width="85%"><strong>' . _l('wh_shipping_fee') . '</strong></td>
+		<td align="right" width="15%">' . app_format_money($packing_list->shipping_fee, $packing_list->base_currency) . '</td>
+		</tr>';
+
 		$tbltotal .= '
 		<tr style="background-color:#f0f0f0;">
 		<td align="right" width="85%"><strong>' . _l('total_money') . '</strong></td>
@@ -209,7 +267,9 @@ $items.= '</tbody>
 
 
 		$tbltotal .= '</table>';
-		$pdf->writeHTML($tbltotal, true, false, false, false, '');
+		if($pdf_display_summary == 1){
+			$pdf->writeHTML($tbltotal, true, false, false, false, '');
+		}
 
 		if (!empty($packing_list->client_note)) {
 			$pdf->Ln(4);

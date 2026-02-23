@@ -14,11 +14,11 @@ class Purchase_model extends App_Model
     public function __construct()
     {
         parent::__construct();
-        
+
         $this->contact_columns = hooks()->apply_filters('contact_columns', ['firstname', 'lastname', 'email', 'phonenumber', 'title', 'password', 'send_set_password_email', 'donotsendwelcomeemail', 'permissions', 'direction', 'invoice_emails', 'estimate_emails', 'credit_note_emails', 'contract_emails', 'task_emails', 'project_emails', 'ticket_emails', 'is_primary']);
     }
-    
-    
+
+
     public function check_order_name($order_name)
   {
     $this->db->where('pur_order_name', $order_name);
@@ -67,12 +67,12 @@ class Purchase_model extends App_Model
 
         return $this->db->get(db_prefix() . 'pur_vendor')->result_array();
     }
-    
-    
-    
-    
+
+
+
+
     //
-    
+
 
     /**
      * Gets the contacts.
@@ -174,7 +174,7 @@ class Purchase_model extends App_Model
             $this->db->insert(db_prefix() . 'pur_vendor', $data);
             $userid = $this->db->insert_id();    
         }
-        
+
         if ($userid) {
             if (isset($custom_fields)) {
                 $_custom_fields = $custom_fields;
@@ -186,14 +186,14 @@ class Purchase_model extends App_Model
 
                 handle_custom_fields_post($userid, $custom_fields);
             }
-                
+
             /**
              * Used in Import, Lead Convert, Register
              */
             if ($client_or_lead_convert_request == true) {
                 $contact_id = $this->add_contact($contact_data, $userid, $client_or_lead_convert_request);
             }
-            
+
             /**
              * Used in Import, Lead Convert, Register
              */        
@@ -205,6 +205,9 @@ class Purchase_model extends App_Model
                 $log .= ', From Staff: ' . get_staff_user_id();
                 $isStaff = get_staff_user_id();
             }
+
+            // Log activity
+            log_activity('New Vendor Added [' . $log . ']', $isStaff);
 
             hooks()->do_action('after_client_added', $userid);
         }
@@ -362,12 +365,14 @@ class Purchase_model extends App_Model
             }
         }
         if ($affectedRows > 0) {
+            // Log activity
+            log_activity('Vendor Updated [ID: ' . $id . ']', get_staff_user_id());
             return true;
         }
 
         return false;
     }
-    
+
     /**
      * { delete vendor }
      *
@@ -405,6 +410,9 @@ class Purchase_model extends App_Model
         }
         if ($affectedRows > 0) {
             hooks()->do_action('after_client_deleted', $id);
+
+            // Log activity
+            log_activity('Vendor Deleted [ID: ' . $id . ', Name: ' . $company . ']');
 
             return true;
         }
@@ -478,7 +486,10 @@ class Purchase_model extends App_Model
             if (isset($custom_fields)) {
                 handle_custom_fields_post($contact_id, $custom_fields);
             }
-           
+
+            // Log activity
+            log_activity('New Vendor Contact Added [ID: ' . $contact_id . ', Name: ' . $data['firstname'] . ' ' . $data['lastname'] . ']');
+
             if ($not_manual_request == true) {
                 // update all email notifications to 0
                 $this->db->where('id', $contact_id);
@@ -524,7 +535,7 @@ class Purchase_model extends App_Model
 
         $send_set_password_email = isset($data['send_set_password_email']) ? true : false;
         $set_password_email_sent = false;
-      
+
         $data['is_primary'] = isset($data['is_primary']) ? 1 : 0;
 
         // Contact cant change if is primary or not
@@ -566,8 +577,10 @@ class Purchase_model extends App_Model
             }
         }
 
-       
+
         if ($affectedRows > 0 ) {
+            // Log activity
+            log_activity('Vendor Contact Updated [ID: ' . $id . ', Name: ' . $data['firstname'] . ' ' . $data['lastname'] . ']');
             return true;
         } 
 
@@ -593,8 +606,11 @@ class Purchase_model extends App_Model
         $this->db->delete(db_prefix() . 'pur_contacts');
 
         if ($this->db->affected_rows() > 0) {
-            
+
             hooks()->do_action('contact_deleted', $id, $result);
+
+            // Log activity
+            log_activity('Vendor Contact Deleted [ID: ' . $id . ', Name: ' . $result->firstname . ' ' . $result->lastname . ']');
 
             return true;
         }
@@ -768,7 +784,7 @@ class Purchase_model extends App_Model
 
         $rs->unit = $unit->unit_name;
 
-        
+
         if(get_status_modules_pur('warehouse') == true){
             $this->db->where('commodity_id',$code);
             $commo = $this->db->get(db_prefix().'inventory_manage')->result_array();
@@ -800,7 +816,7 @@ class Purchase_model extends App_Model
             return $this->db->get(db_prefix().'pur_request')->row();
         }
     }
-    
+
     public function get_purchase_order($id = ''){
         if($id == ''){
             return $this->db->get(db_prefix().'pur_estimates')->result_array();
@@ -809,8 +825,8 @@ class Purchase_model extends App_Model
             return $this->db->get(db_prefix().'pur_estimates')->row();
         }
     }
-    
-    
+
+
     public function get_last_purchase_request(){
             return $this->db->limit(1)->order_by('id',"DESC")->get(db_prefix().'pur_request')->row();
     }
@@ -826,8 +842,8 @@ class Purchase_model extends App_Model
         $this->db->where('pur_request',$pur_request);
         return $this->db->get(db_prefix().'pur_request_detail')->result_array();
     }
-    
-    
+
+
     // public function get_pur_order_detail($pur_request){
     //     $this->db->where('pur_order',$pur_request);
     //     return $this->db->get(db_prefix().'tblpur_order_detail')->result_array();
@@ -849,8 +865,8 @@ class Purchase_model extends App_Model
         $this->db->select('into_money');
         return $this->db->get(db_prefix().'pur_request_detail')->result_array();
     }
-    
-    
+
+
     /**
      * Gets the SO request detail in estimate.
      *
@@ -922,7 +938,7 @@ class Purchase_model extends App_Model
      * @return     boolean  
      */
     public function add_pur_request($data){
-        
+
 
         $data['requester'] = get_staff_user_id();
         $data['request_date'] = date('Y-m-d H:i:s');
@@ -957,7 +973,7 @@ class Purchase_model extends App_Model
                 }
             }
         }
-      
+
         $this->db->insert(db_prefix().'pur_request',$data);
         $insert_id = $this->db->insert_id();
         if($insert_id){
@@ -965,12 +981,16 @@ class Purchase_model extends App_Model
                 $rq_detail[$key]['pur_request'] = $insert_id;
             }
             $this->db->insert_batch(db_prefix().'pur_request_detail',$rq_detail);
+
+            // Log activity
+            log_activity('New Purchase Request Added [ID: ' . $insert_id . ']', $data['requester']);
+
             return $insert_id;
         }
         return false;
     }
-    
-    
+
+
 
     /**
      * { update pur request }
@@ -1006,7 +1026,7 @@ class Purchase_model extends App_Model
                 }
             }
         }
-        
+
         $this->db->where('id',$id);
         $this->db->update(db_prefix().'pur_request',$data);
         if($this->db->affected_rows() > 0){
@@ -1051,6 +1071,8 @@ class Purchase_model extends App_Model
 
 
         if($affectedRows > 0){
+            // Log activity
+            log_activity('Purchase Request Updated [ID: ' . $id . ']', get_staff_user_id());
             return true;
         }
         return false;
@@ -1078,6 +1100,8 @@ class Purchase_model extends App_Model
         }
 
          if($affectedRows > 0){
+            // Log activity
+            log_activity('Purchase Request Deleted [ID: ' . $id . ']', get_staff_user_id());
             return true;
         }
         return false;
@@ -1095,6 +1119,8 @@ class Purchase_model extends App_Model
         $this->db->where('id',$id);
         $this->db->update(db_prefix().'pur_request',['status' => $status]);
         if($this->db->affected_rows() > 0){
+            // Log activity
+            log_activity('Purchase Request Status Changed [ID: ' . $id . ', Status: ' . $status . ']');
             return true;
         }
         return false;
@@ -1111,7 +1137,7 @@ class Purchase_model extends App_Model
         $this->db->where('status',$status);
         return $this->db->get(db_prefix().'pur_request')->result_array();
     }
-    
+
      public function get_po_by_status($status){
         $this->db->where('status!='.$status);
         return $this->db->get(db_prefix().'estimates')->result_array();
@@ -1165,13 +1191,13 @@ class Purchase_model extends App_Model
             $this->db->where(db_prefix() . 'pur_estimates.id', $id);
             $estimate = $this->db->get()->row();
             if ($estimate) {
-                
+
                 $estimate->visible_attachments_to_customer_found = false;
-                
+
                 $estimate->items = get_items_by_type('pur_estimate', $id);
 
                 if ($estimate->pur_request != 0) {
-                   
+
                     $estimate->pur_request = $this->get_purchase_request($estimate->pur_request);
                 }else{
                     $estimate->pur_request = '';
@@ -1202,7 +1228,7 @@ class Purchase_model extends App_Model
         $this->db->where('id',$id);
         return $this->db->get(db_prefix().'pur_orders')->row();
     }
-    
+
     //get unpaid po
     public function get_pur_order_unpaid($vid){
         $this->db->select(db_prefix() . 'pur_orders.id, pur_order_number,Date(order_date) as date' );
@@ -1249,7 +1275,7 @@ class Purchase_model extends App_Model
 
         while($check_exist_number) {
           $data['number'] = $data['number'] + 1;
-          
+
           $this->db->where('prefix',$data['prefix']);
           $this->db->where('number',$data['number']);
           $check_exist_number = $this->db->get(db_prefix().'pur_estimates')->row();
@@ -1306,7 +1332,7 @@ class Purchase_model extends App_Model
                 }
             }
         }
-        
+
 
         $this->db->insert(db_prefix() . 'pur_estimates', $data);
         $insert_id = $this->db->insert_id();
@@ -1316,7 +1342,7 @@ class Purchase_model extends App_Model
             $total['total'] = 0;
             $total['total_tax'] = 0;
             $total['subtotal'] = 0;
-            
+
             foreach($es_detail as $key => $rqd){
                 $es_detail[$key]['pur_estimate'] = $insert_id;
                 $total['total'] += $rqd['total_money'];
@@ -1336,8 +1362,11 @@ class Purchase_model extends App_Model
             if (isset($custom_fields)) {
                 handle_custom_fields_post($insert_id, $custom_fields);
             }
-            
+
             hooks()->do_action('after_estimate_added', $insert_id);
+
+            // Log activity
+            log_activity('New Purchase Quotation Added [ID: ' . $insert_id . ']');
 
             return $insert_id;
         }
@@ -1370,7 +1399,7 @@ class Purchase_model extends App_Model
         $original_number_formatted = format_estimate_number($id);
 
         $data = $this->map_shipping_columns($data);
-        
+
         unset($data['isedit']);
 
         if(isset($data['estimate_detail'])){
@@ -1424,7 +1453,7 @@ class Purchase_model extends App_Model
             $affectedRows++;
         }
 
-        
+
 
         $row = [];
         $row['update'] = []; 
@@ -1434,7 +1463,7 @@ class Purchase_model extends App_Model
         $total['total'] = 0;
         $total['total_tax'] = 0;
         $total['subtotal'] = 0;
-        
+
         foreach ($es_detail as $key => $value) {
             if($value['id'] != ''){
                 $row['delete'][] = $value['id'];
@@ -1448,7 +1477,7 @@ class Purchase_model extends App_Model
             $total['total'] += $value['total_money'];
             $total['total_tax'] += ($value['total']-$value['into_money']);
             $total['subtotal'] += $value['into_money'];
-            
+
         }
 
         if($data['discount_total'] > 0){
@@ -1469,7 +1498,7 @@ class Purchase_model extends App_Model
             if($this->db->affected_rows() > 0){
                 $affectedRows++;
             }
-        
+
         if(count($row['insert']) != 0){
             $this->db->insert_batch(db_prefix().'pur_estimate_detail', $row['insert']);
             if($this->db->affected_rows() > 0){
@@ -1483,9 +1512,11 @@ class Purchase_model extends App_Model
             }
         }
 
-        
+
         if ($affectedRows > 0) {
-           
+
+            // Log activity
+            log_activity('Purchase Quotation Updated [ID: ' . $id . ']');
 
             return true;
         }
@@ -1517,8 +1548,8 @@ class Purchase_model extends App_Model
      */
     public function delete_estimate($id, $simpleDelete = false)
     {
-        
-        
+
+
         hooks()->do_action('before_estimate_deleted', $id);
 
         $number = format_estimate_number($id);
@@ -1527,7 +1558,7 @@ class Purchase_model extends App_Model
         $this->db->delete(db_prefix() . 'pur_estimates');
 
         if ($this->db->affected_rows() > 0) {
-           
+
             $this->db->where('pur_estimate', $id);
             $this->db->delete(db_prefix() . 'pur_estimate_detail');
 
@@ -1550,6 +1581,9 @@ class Purchase_model extends App_Model
             $this->db->where('rel_id', $id);
             $this->db->where('rel_type', 'pur_estimate');
             $this->db->delete(db_prefix() . 'sales_activity');
+
+            // Log activity
+            log_activity('Purchase Quotation Deleted [ID: ' . $id . ', Number: ' . $number . ']');
 
             return true;
         }
@@ -1597,6 +1631,8 @@ class Purchase_model extends App_Model
         $this->db->where('id',$id);
         $this->db->update(db_prefix().'pur_estimates',['status' => $status]);
         if($this->db->affected_rows() > 0){
+            // Log activity
+            log_activity('Purchase Quotation Status Changed [ID: ' . $id . ', Status: ' . $status . ']');
             return true;
         }
         return false;
@@ -1616,6 +1652,10 @@ class Purchase_model extends App_Model
         if($this->db->affected_rows() > 0){
 
             hooks()->apply_filters('create_goods_receipt',['status' => $status,'id' => $id]);
+
+            // Log activity
+            log_activity('Purchase Order Status Changed [ID: ' . $id . ', Status: ' . $status . ']');
+
             return true;
         }
         return false;
@@ -1737,7 +1777,7 @@ class Purchase_model extends App_Model
             $header[] = 'discount_money';
             $header[] = 'total_money';
             foreach ($pur_order_detail as $key => $value) {
-                
+
                 if($value[0] != ''){
                     if($data['return']==1){
                         $data['returns'] = 1;
@@ -1749,7 +1789,7 @@ class Purchase_model extends App_Model
                 }
             }
         }
-        
+
         if(isset($data['dc_total'])){
             $data['discount_total'] = reformat_currency_pur($data['dc_total']);
             unset($data['dc_total']);
@@ -1768,7 +1808,7 @@ class Purchase_model extends App_Model
             $total['total'] = 0;
             $total['total_tax'] = 0;
             $total['subtotal'] = 0;
-           
+
             foreach($es_detail as $key => $rqd){
                 $es_detail[$key]['pur_order'] = $insert_id;
                 if($data['return']==1){
@@ -1793,6 +1833,9 @@ class Purchase_model extends App_Model
             $this->db->insert_batch(db_prefix().'pur_order_detail',$es_detail);
             $this->db->where('id',$insert_id);
             $this->db->update(db_prefix().'pur_orders',$total);
+
+            // Log activity
+            log_activity('New Purchase Order Added [ID: ' . $insert_id . ']');
 
             return $insert_id;
         }
@@ -1825,8 +1868,8 @@ class Purchase_model extends App_Model
         if(isset($data['clients']) && count($data['clients']) > 0){
             $data['clients'] = implode(',', $data['clients']);
         }
-        
-        
+
+
 
         if(isset($data['pur_order_detail'])){
             $pur_order_detail = json_decode($data['pur_order_detail']);
@@ -1895,7 +1938,7 @@ class Purchase_model extends App_Model
         $total['total'] = 0;
         $total['total_tax'] = 0;
         $total['subtotal'] = 0;
-        
+
         foreach ($es_detail as $key => $value) {
             if($value['id'] != ''){
                 $row['delete'][] = $value['id'];
@@ -1909,7 +1952,7 @@ class Purchase_model extends App_Model
             $total['total'] += $value['total_money'];
             $total['total_tax'] += ($value['total']-$value['into_money']);
             $total['subtotal'] += $value['into_money'];
-            
+
         }
 
         if($data['discount_total'] > 0){
@@ -1931,7 +1974,7 @@ class Purchase_model extends App_Model
             if($this->db->affected_rows() > 0){
                 $affectedRows++;
             }
-        
+
         if(count($row['insert']) != 0){
             $this->db->insert_batch(db_prefix().'pur_order_detail', $row['insert']);
             if($this->db->affected_rows() > 0){
@@ -1945,9 +1988,11 @@ class Purchase_model extends App_Model
             }
         }
 
-        
+
         if ($affectedRows > 0) {
-           
+
+            // Log activity
+            log_activity('Purchase Order Updated [ID: ' . $id . ']');
 
             return true;
         }
@@ -2004,6 +2049,8 @@ class Purchase_model extends App_Model
         }
 
         if($affectedRows > 0){
+            // Log activity
+            log_activity('Purchase Order Deleted [ID: ' . $id . ']');
             return true;
         }
         return false;
@@ -2027,7 +2074,7 @@ class Purchase_model extends App_Model
      * @return     boolean  ( false) or int id contract
      */
     public function add_contract($data){
-        
+
         $data['contract_value'] = reformat_currency_pur($data['contract_value']);
         $data['add_from'] = get_staff_user_id();
         $data['start_date'] = to_sql_date($data['start_date']);
@@ -2037,10 +2084,12 @@ class Purchase_model extends App_Model
         $this->db->insert(db_prefix().'pur_contracts',$data);
         $insert_id = $this->db->insert_id();
         if($insert_id){
+            // Log activity
+            log_activity('New Purchase Contract Added [ID: ' . $insert_id . ']');
             return $insert_id;
         }
         return false;
-        
+
     }
 
     /**
@@ -2061,6 +2110,8 @@ class Purchase_model extends App_Model
         $this->db->where('id',$id);
         $this->db->update(db_prefix().'pur_contracts',$data);
         if($this->db->affected_rows() > 0){
+            // Log activity
+            log_activity('Purchase Contract Updated [ID: ' . $id . ']');
             return true;
         }
         return false;
@@ -2090,7 +2141,7 @@ class Purchase_model extends App_Model
      * @return     string  The html vendor.
      */
     public function get_html_vendor($vendor){
-        
+
         $vendors = $this->get_vendor($vendor);
         $html = '<table class="table border table-striped ">
                             <tbody>
@@ -2220,15 +2271,15 @@ class Purchase_model extends App_Model
         $list = [];
         $staff_addedfrom = $data['addedfrom'];
         $sender = get_staff_user_id();
-        
+
         foreach ($data_new as $value) {
             $row = [];
-            
+
             if($value->approver !== 'staff'){
             $value->staff_addedfrom = $staff_addedfrom;
             $value->rel_type = $data['rel_type'];
             $value->rel_id = $data['rel_id'];
-            
+
                 $approve_value = $this->get_staff_id_by_approve_value($value, $value->approver);
 
                 if(is_numeric($approve_value)){
@@ -2243,9 +2294,9 @@ class Purchase_model extends App_Model
                     return $value->approver;
                 }
                 $row['approve_value'] = $approve_value;
-            
+
             $staffid = $this->get_staff_id_by_approve_value($value, $value->approver);
-            
+
             if(empty($staffid)){
                 $this->db->where('rel_id', $data['rel_id']);
                 $this->db->where('rel_type', $data['rel_type']);
@@ -2327,13 +2378,13 @@ class Purchase_model extends App_Model
         $list_staff = $this->staff_model->get();
         $list = [];
         $staffid = [];
-        
+
         if($approve_value == 'department_manager'){
             $staffid = $this->departments_model->get_staff_departments($data->staff_addedfrom)[0]['manager_id'];
         }elseif($approve_value == 'direct_manager'){
             $staffid = $this->staff_model->get($data->staff_addedfrom)->team_manage;
         }
-        
+
         return $staffid;
     }
 
@@ -2401,7 +2452,7 @@ class Purchase_model extends App_Model
                 break;    
 
             default:
-                
+
                 break;
         }
 
@@ -2438,7 +2489,7 @@ class Purchase_model extends App_Model
                 $mail_template = 'send_rejected';
             }
 
-            
+
             $staff = $this->staff_model->get($staff_addedfrom);
             $notified = add_notification([
             'description'     => $mes,
@@ -2456,7 +2507,7 @@ class Purchase_model extends App_Model
             $value['staffid'] = explode(', ',$value['staffid']);
                 if($value['approve'] == 1 && !in_array(get_staff_user_id(),$value['staffid'])){
                     foreach ($value['staffid'] as $staffid) {
-                      
+
                     $staff = $this->staff_model->get($staffid);
                     $notified = add_notification([
                     'description'     => $mes,
@@ -2469,7 +2520,7 @@ class Purchase_model extends App_Model
                     if ($notified) {
                         pusher_trigger_notification([$staff->staffid]);
                     }
-        
+
                     }
                 }
             }
@@ -2487,7 +2538,7 @@ class Purchase_model extends App_Model
      */
     public function update_approve_request($rel_id , $rel_type, $status){ 
         $data_update = [];
-        
+
         switch ($rel_type) {
             case 'pur_request':
                 $data_update['status'] = $status;
@@ -2551,30 +2602,30 @@ class Purchase_model extends App_Model
         $pur_request_detail = $this->get_pur_estimate_detail($pur_request_id);
         $list_approve_status = $this->get_list_approval_details($pur_request_id,'pur_request');
         // var_dump($pur_request); die;
-    
+
         $organization_info = '<div style="color:#424242; font-size:14px" border="1px">';
         $organization_info .= format_organization_info();
         $organization_info .= '</div>';
-        
+
         $info_right_column ='<span style="font-weight:bold;font-size:24px;" align="right">                                           '.mb_strtoupper(_l('purchase_order')).' ORDER</span><br/>';
         $invoice_number =html_entity_decode($pur_request->number);
-        
+
         $invoice_info1 = '<div style="font-size:14px" border="1px" align="right">Puchase Order: <b style="color:#4e4e4e;">PO#' . $invoice_number.'</b>';
         $invoice_info1 .= '<br />' . _l('invoice_data_date') . ' ' . _d($pur_request->date) . '<br>';
         $invoice_info1 .= '<br> <br> <br> <br> </div>';
-        
-        
+
+
         $html = '<table >
             <tbody border="1px">
               <tr >
                 <td style="width:50%">'.pdf_logo_url().'</td>
                 <td style="width:50%">'.$info_right_column.'</td>
-                
+
               </tr>
               <tr>
                 <td >'. $organization_info .'</td>
                 <td align="right">'.$invoice_info1.'</td>
-                
+
               </tr>
             </tbody>
           </table>
@@ -2584,7 +2635,7 @@ class Purchase_model extends App_Model
                 <td style="width:50%"><b>Vendor:</b><div border="1px">'. get_vendor_company_name($pur_request->vendor).'</div></td>
                 <td style="width:50%"><b>Ship From:</b><div border="1px">'. get_vendor_company_name($pur_request->vendor).'</div></td>
               </tr>
-              
+
             </tbody>
           </table>';
            $html .='</h3>
@@ -2612,8 +2663,8 @@ class Purchase_model extends App_Model
       }  
       $html .=  '</tbody>
       </table>';
-      
-      
+
+
       $html .= '<table class="table text-right" style="font-size:14px"><tbody>';
       if(1){
         $html .= '<tr id="subtotal">
@@ -2663,7 +2714,7 @@ class Purchase_model extends App_Model
         <tbody>
           <tr>';
      if(count($list_approve_status) > 0){
-      
+
         foreach ($list_approve_status as $value) {
      $html .= '<td class="td_appr">';
         if($value['action'] == 'sign'){
@@ -2671,7 +2722,7 @@ class Purchase_model extends App_Model
             if($value['approve'] == 2){ 
                 $html .= '<img src="'.site_url('modules/purchase/uploads/pur_request/signature/'.$pur_request->id.'/signature_'.$value['id'].'.png').'" class="img_style">';
             }
-                
+
         }else{ 
         $html .= '<h3>'.mb_strtoupper(get_staff_full_name($value['staffid'])).'</h3>';
               if($value['approve'] == 2){ 
@@ -2679,13 +2730,13 @@ class Purchase_model extends App_Model
              }elseif($value['approve'] == 3){
         $html .= '<img src="'.site_url('modules/purchase/uploads/approval/rejected.png').'" class="img_style">';
              }
-              
+
                 }
        $html .= '</td>';
         }
-       
-    
-    
+
+
+
      } 
             $html .= '<td class="td_ali_font"><h3>'.mb_strtoupper('Requestor').'</h3></td>
             <td class="td_ali_font"><h3>'.mb_strtoupper('Treasurer').'</h3></td></tr>
@@ -2726,33 +2777,33 @@ class Purchase_model extends App_Model
         $month = date('m',strtotime($pur_request->request_date));
         $year = date('Y',strtotime($pur_request->request_date));
         $list_approve_status = $this->get_list_approval_details($pur_request_id,'pur_request');
-        
-        
+
+
         $organization_info = '<div style="color:#424242; font-size:14px" border="1px">';
-        
+
         $organization_info .= format_organization_info();
         $organization_info .= '</div>';
-        
+
             $info_right_column ='<span style="font-weight:bold;font-size:24px;" align="right">                                           '.mb_strtoupper(_l('request_quotation')).'</span><br/>';
-        
+
             $invoice_number =html_entity_decode($pur_request->pur_rq_code.'-'.$pur_request->pur_rq_name);
-        
+
         $invoice_info1 = '<div style="font-size:14px" border="1px" align="right">Invoice <b style="color:#4e4e4e;">PQ: #' . $invoice_number.'</b>';
         $invoice_info1 .= '<br />' . _l('invoice_data_date') . ': ' .$pur_request->request_date .'<br>';
         $invoice_info1 .= '<br>'. _l('requester').':'. get_staff_full_name($pur_request->requester).'<br>'. _l('department').':'. $dpm_name.'<br> <br> </div>';
-        
-        
+
+
     $html = '<table >
         <tbody border="1px">
           <tr >
             <td style="width:50%">'.pdf_logo_url().'</td>
             <td style="width:50%">'.$info_right_column.'</td>
-            
+
           </tr>
           <tr>
             <td >'. $organization_info .'</td>
             <td align="right">'.$invoice_info1.'</td>
-            
+
           </tr>
         </tbody>
       </table>
@@ -2762,7 +2813,7 @@ class Purchase_model extends App_Model
             <td style="width:50%"><b>Vendor:</b><div border="1px">'.get_vendor_company_name($pur_request->vendor_id).'</div></td>
             <td style="width:50%"><b>Ship From:</b><div border="1px">'.get_vendor_company_name($pur_request->vendor_id).'</div></td>
           </tr>
-          
+
         </tbody>
       </table>';
        $html .='</h3>
@@ -2777,7 +2828,7 @@ class Purchase_model extends App_Model
             <td class="border_td">'._l('unit_price').'</td>
             <td class="border_td">'._l('quantity').'</td>
             <td class="border_td">'._l('Total').'</td>
-            
+
           </tr>';
       foreach($pur_request_detail as $row){
         $items = $this->get_items_by_id($row['item_code']);
@@ -2789,12 +2840,12 @@ class Purchase_model extends App_Model
             <td class="border_td_right">'.app_format_money($row['unit_price'],'').'</td>
             <td class="border_td_right">'.$row['quantity'].'</td>
             <td class="border_td_right">'.app_format_money($row['into_money'],'').'</td>
-            
+
           </tr>';
       }  
       $html .=  '</tbody>
       </table>';
-      
+
       $html .= '<link href="' . module_dir_url(PURCHASE_MODULE_NAME, 'assets/css/pur_order_pdf.css') . '"  rel="stylesheet" type="text/css" />';
       return $html;
     }
@@ -2818,7 +2869,7 @@ class Purchase_model extends App_Model
         $inbox['body'] = nl2br_save_html($inbox['body']);
         $inbox['date_received']      = date('Y-m-d H:i:s');
         $inbox['from_email'] = get_staff_email_by_id_pur($staff_id);
-        
+
         if(strlen(get_option('smtp_host')) > 0 && strlen(get_option('smtp_password')) > 0 && strlen(get_option('smtp_username')) > 0){
 
             $ci = &get_instance();
@@ -2827,16 +2878,16 @@ class Purchase_model extends App_Model
             $ci->email->clear(true);
             $ci->email->from($inbox['from_email'], $inbox['sender_name']);
             $ci->email->to($inbox['to']);
-            
+
             $ci->email->subject($inbox['subject']);
             $ci->email->message($inbox['body']);
-            
+
             $attachment_url = site_url(PURCHASE_PATH.'request_quotation/'.$data['pur_request_id'].'/'.$_FILES['attachment']['name']);
             $ci->email->attach($attachment_url);
 
             $ci->email->send(true);
         }
-        
+
         return true;
     }
 
@@ -2891,7 +2942,7 @@ class Purchase_model extends App_Model
      * @return     <type>  The purchase order attachments.
      */
     public function get_purchase_order_attachments($id){
-   
+
         $this->db->where('rel_id',$id);
         $this->db->where('rel_type','pur_order');
         return $this->db->get(db_prefix().'files')->result_array();
@@ -3051,19 +3102,19 @@ class Purchase_model extends App_Model
      * @return     string  The pur request pdf html.
      */
     public function get_purorder_pdf_html($pur_order_id){
-        
+
 
         $pur_order = $this->get_pur_order($pur_order_id);
         $pur_order_detail = $this->get_pur_order_detail($pur_order_id);
         $company_name = get_option('invoice_company_name'); 
-        
+
         $address = get_option('invoice_company_address'); 
         $day = date('d',strtotime($pur_order->order_date));
         $month = date('m',strtotime($pur_order->order_date));
         $year = date('Y',strtotime($pur_order->order_date));
         // echo pdf_logo_url();
         $organization_info = '<div style="color:#424242; font-size:14px" border="1px">';
-        
+
         $organization_info .= format_organization_info();
         $organization_info .= '</div>';
         if($pur_order->returns==1){  
@@ -3076,24 +3127,24 @@ class Purchase_model extends App_Model
          }else{
             $invoice_number =html_entity_decode($pur_order->pur_order_number.' - '.$pur_order->pur_order_name);
          }
-        
+
         $invoice_info1 = '<div style="font-size:14px" border="1px" align="right">Invoice <b style="color:#4e4e4e;">' . $invoice_number.'</b>';
         $invoice_info1 .= '<br />' . _l('invoice_data_date') . ' ' . _d($pur_order->order_date) . '<br>';
         $invoice_info1 .= '<br />' . _l('Purchase Order') . ': ' . format_pur_estimate_number($pur_order->estimate) . '<br>';
         $invoice_info1 .= '<br> <br> </div>';
-        
-        
+
+
     $html = '<table >
         <tbody border="1px">
           <tr >
             <td style="width:50%">'.pdf_logo_url().'</td>
             <td style="width:50%">'.$info_right_column.'</td>
-            
+
           </tr>
           <tr>
             <td >'. $organization_info .'</td>
             <td align="right">'.$invoice_info1.'</td>
-            
+
           </tr>
         </tbody>
       </table>
@@ -3103,7 +3154,7 @@ class Purchase_model extends App_Model
             <td style="width:50%"><b>Vendor:</b><div border="1px">'. get_vendor_company_name($pur_order->vendor).'</div></td>
             <td style="width:50%"><b>Ship From:</b><div border="1px">'. get_vendor_company_name($pur_order->vendor).'</div></td>
           </tr>
-          
+
         </tbody>
       </table>';
        $html .='</h3>
@@ -3116,7 +3167,7 @@ class Purchase_model extends App_Model
             <th class="thead-dark">'._l('Description').'</th>
             <th class="thead-dark" align="right">'._l('unit_price').'</th>
             <th class="thead-dark" align="right">'._l('quantity').'</th>
-         
+
             <th class="thead-dark" align="right">'._l('tax').'</th>
             <th class="thead-dark" align="right">'._l('total').'</th>
           </tr>
@@ -3132,7 +3183,7 @@ class Purchase_model extends App_Model
             <td>'.$items->description.'</td>
             <td align="right">'.app_format_money($row['unit_price'],'').'</td>
             <td align="right">'.$row['quantity'].'</td>
-         
+
             <td align="right">'.app_format_money($row['total'] - $row['into_money'],'').'</td>
             <td align="right">'.app_format_money($row['total_money'],'').'</td>
           </tr>';
@@ -3186,7 +3237,7 @@ class Purchase_model extends App_Model
       $html .= '<div class="col-md-12 mtop15" style="font-size:14px">
                         <p class="bold">'. _l('terms_and_conditions').':<br> '. html_entity_decode($pur_order->terms).'</p>
                         <p class="bold">'. _l('Note').': <br>'. html_entity_decode($pur_order->vendornote).'</p>
-                       
+
                      </div>';
       $html .= '<br>
       <br>
@@ -3195,7 +3246,7 @@ class Purchase_model extends App_Model
       <table class="table">
         <tbody>
           <tr>';
-     
+
             $html .= '<td class="td_width_55"></td><td class="td_ali_font"></td>
             </tr>
         </tbody>
@@ -3413,7 +3464,7 @@ class Purchase_model extends App_Model
         }else{
             $data['sku_code'] = $this->create_sku_code('', '');
         }
-        
+
         /*create sku code*/
 
         $this->db->insert(db_prefix().'items', $data);
@@ -3436,10 +3487,10 @@ class Purchase_model extends App_Model
         $data['rate'] = reformat_currency_pur($data['rate']);
         $data['purchase_price'] = reformat_currency_pur($data['purchase_price']);
 
-        
+
         $this->db->where('id',$id);
         $this->db->update(db_prefix().'items',$data);
-        
+
 
         return true;
     }
@@ -3471,7 +3522,7 @@ class Purchase_model extends App_Model
 
         //get sku code from sku id
         $sub_code = '';
-        
+
 
 
 
@@ -3504,10 +3555,10 @@ class Purchase_model extends App_Model
                 break;
         }
 
- 
+
         return  $group_character.$sub_code.$commodity_str_betwen.$next_commodity_id; // X_X_000.id auto increment
 
-        
+
     }
 
 
@@ -3611,21 +3662,21 @@ class Purchase_model extends App_Model
      * return boolean
      */
     public function add_unit_type($data, $id = false){
-        
+
         $unit_type = str_replace(', ','|/\|',$data['hot_unit_type']);
         $data_unit_type = explode( ',', $unit_type);
         $results = 0;
         $results_update = '';
         $flag_empty = 0;
 
-        
+
         foreach ($data_unit_type as  $unit_type_key => $unit_type_value) {
             if($unit_type_value == ''){
                     $unit_type_value = 0;
                 }
             if(($unit_type_key+1)%6 == 0){
                 $arr_temp['note'] = str_replace('|/\|',', ',$unit_type_value);
-                
+
                 if($id == false && $flag_empty == 1){
                     $this->db->insert(db_prefix().'ware_unit_type', $arr_temp);
                     $insert_id = $this->db->insert_id();
@@ -3849,7 +3900,7 @@ class Purchase_model extends App_Model
             'active' => $status,
         ]);
         if ($this->db->affected_rows() > 0) {
-            
+
             return true;
         }
 
@@ -3911,7 +3962,7 @@ class Purchase_model extends App_Model
         $this->db->where('id',$id);
         $this->db->delete(db_prefix().'pur_vendor_items');
         if ($this->db->affected_rows() > 0) {
-            
+
             return true;
         }
         return false;
@@ -3923,7 +3974,7 @@ class Purchase_model extends App_Model
      * @param      $vendor  The vendor
      */
     public function get_item_by_vendor($vendor){
-        
+
         $this->db->where('vendor',$vendor);
         return $this->db->get(db_prefix().'pur_vendor_items')->result_array();  
     }
@@ -4012,7 +4063,7 @@ class Purchase_model extends App_Model
                         if ($commodity_group_type_value != '0') {
                             $flag_empty = 1;
                         }
-                        
+
                     }
                     break;
                 case 2:
@@ -4277,4 +4328,254 @@ class Purchase_model extends App_Model
         return $deleted;
     }
 
+    public function get_payments_by_transaction_id($transactionid) {
+        $this->db->where('transactionid', $transactionid);
+        return $this->db->get(db_prefix() . 'pur_order_payment')->result_array();
+    }
+
+    public function check_transaction_id_exists($transactionid) {
+        $this->db->where('transactionid', $transactionid);
+        $count = $this->db->count_all_results(db_prefix() . 'pur_order_payment');
+        return $count > 0;
+    }
+
+    public function get_next_transaction_id($date) {
+        $prefix = date('Ymd', strtotime($date));
+        $this->db->like('transactionid', $prefix, 'after');
+        $this->db->select_max('transactionid');
+        $result = $this->db->get(db_prefix() . 'pur_order_payment')->row();
+
+        if ($result && $result->transactionid) {
+            $last_sequence = substr($result->transactionid, 8);
+            $next_sequence = intval($last_sequence) + 1;
+            return $prefix . str_pad($next_sequence, 2, '0', STR_PAD_LEFT);
+        } else {
+            return $prefix . '01';
+        }
+    }
+    /**
+     * Get Vendor Performance Stats
+     * @param  int $vendor_id
+     * @param  string $period
+     * @return array
+     */
+    /**
+     * Get Vendor Performance Stats
+     * @param  int $vendor_id
+     * @param  string $period
+     * @return array
+     */
+    public function get_vendor_performance_stats($vendor_id, $period = 'all_time')
+    {
+        $this->load->model('expenses_model');
+        
+        // Date Filter Helper Closure
+        $apply_filter = function($db, $date_col) use ($period) {
+            switch ($period) {
+                case 'this_month':
+                    $db->where('MONTH('.$date_col.')', date('m'));
+                    $db->where('YEAR('.$date_col.')', date('Y'));
+                    break;
+                case 'last_month':
+                    $db->where('MONTH('.$date_col.')', date('m', strtotime('last month')));
+                    $db->where('YEAR('.$date_col.')', date('Y', strtotime('last month')));
+                    break;
+                case 'this_year':
+                    $db->where('YEAR('.$date_col.')', date('Y'));
+                    break;
+                case 'last_year':
+                    $db->where('YEAR('.$date_col.')', date('Y', strtotime('-1 year')));
+                    break;
+                case 'last_3_months':
+                    $db->where($date_col.' >=', date('Y-m-d', strtotime('-3 months')));
+                    break;
+                case 'last_6_months':
+                    $db->where($date_col.' >=', date('Y-m-d', strtotime('-6 months')));
+                    break;
+                case 'last_12_months':
+                    $db->where($date_col.' >=', date('Y-m-d', strtotime('-12 months')));
+                    break;
+                case 'all_time':
+                default:
+                    // No filter
+                    break;
+            }
+        };
+
+        // --- 1. SPEND METRICS ---
+        
+        // Gross Spend (Approved Orders, Not Returns)
+        // Check if 'returns' column exists, otherwise assume all are orders
+        $has_returns_col = $this->db->field_exists('returns', db_prefix() . 'pur_orders');
+        
+        $this->db->select_sum('total');
+        $this->db->where('vendor', $vendor_id);
+        $this->db->where('approve_status', 2);
+        if($has_returns_col){
+             $this->db->where('returns', 0);
+        }
+        $apply_filter($this->db, 'order_date');
+        $gross_spend = $this->db->get(db_prefix() . 'pur_orders')->row()->total;
+        $gross_spend = $gross_spend ? $gross_spend : 0;
+
+        // Returns Value
+        $returns_value = 0;
+        if($has_returns_col){
+            $this->db->select_sum('total');
+            $this->db->where('vendor', $vendor_id);
+            $this->db->where('approve_status', 2);
+            $this->db->where('returns', 1);
+            $apply_filter($this->db, 'order_date');
+            $returns_value = $this->db->get(db_prefix() . 'pur_orders')->row()->total;
+            $returns_value = $returns_value ? $returns_value : 0;
+        }
+
+        $net_spend = $gross_spend - $returns_value;
+
+        // Spend Growth (YoY)
+        // Current Year Net
+        $this->db->select_sum('total');
+        $this->db->where('vendor', $vendor_id);
+        $this->db->where('approve_status', 2);
+        $this->db->where('YEAR(order_date)', date('Y'));
+        if($has_returns_col) $this->db->where('returns', 0);
+        $gross_this_year = $this->db->get(db_prefix() . 'pur_orders')->row()->total;
+        
+        $returns_this_year = 0;
+        if($has_returns_col){
+             $this->db->select_sum('total');
+             $this->db->where('vendor', $vendor_id);
+             $this->db->where('approve_status', 2);
+             $this->db->where('YEAR(order_date)', date('Y'));
+             $this->db->where('returns', 1);
+             $returns_this_year = $this->db->get(db_prefix() . 'pur_orders')->row()->total;
+        }
+        $net_this_year = ($gross_this_year ? $gross_this_year : 0) - ($returns_this_year ? $returns_this_year : 0);
+
+        // Last Year Net
+        $this->db->select_sum('total');
+        $this->db->where('vendor', $vendor_id);
+        $this->db->where('approve_status', 2);
+        $this->db->where('YEAR(order_date)', date('Y') - 1);
+        if($has_returns_col) $this->db->where('returns', 0);
+        $gross_last_year = $this->db->get(db_prefix() . 'pur_orders')->row()->total;
+
+         $returns_last_year = 0;
+        if($has_returns_col){
+             $this->db->select_sum('total');
+             $this->db->where('vendor', $vendor_id);
+             $this->db->where('approve_status', 2);
+             $this->db->where('YEAR(order_date)', date('Y') - 1);
+             $this->db->where('returns', 1);
+             $returns_last_year = $this->db->get(db_prefix() . 'pur_orders')->row()->total;
+        }
+        $net_last_year = ($gross_last_year ? $gross_last_year : 0) - ($returns_last_year ? $returns_last_year : 0);
+
+        $spend_growth = 0;
+        if($net_last_year > 0){
+             $spend_growth = (($net_this_year - $net_last_year) / $net_last_year) * 100;
+        }
+
+        // --- 2. PAYMENT METRICS ---
+        $this->db->select_sum('amount');
+        $this->db->from(db_prefix() . 'pur_order_payment');
+        $this->db->join(db_prefix() . 'pur_orders', db_prefix() . 'pur_orders.id = ' . db_prefix() . 'pur_order_payment.pur_order');
+        $this->db->where(db_prefix() . 'pur_orders.vendor', $vendor_id);
+        $apply_filter($this->db, db_prefix() . 'pur_order_payment.date');
+        $total_paid = $this->db->get()->row()->amount;
+        $total_paid = $total_paid ? $total_paid : 0;
+        
+        $balance = $net_spend - $total_paid; // Approximate balance for period
+        $payment_rate = $net_spend > 0 ? ($total_paid / $net_spend) * 100 : 0;
+
+        // --- 3. PIPELINE & CONTRACTS ---
+        
+        // Estimates (Quotations)
+        $this->db->where('vendor', $vendor_id);
+        $apply_filter($this->db, 'date');
+        $total_estimates = $this->db->count_all_results(db_prefix().'pur_estimates');
+        
+        // Estimates Value
+        $this->db->select_sum('total');
+        $this->db->where('vendor', $vendor_id);
+        $apply_filter($this->db, 'date');
+        $val_estimates = $this->db->get(db_prefix().'pur_estimates')->row()->total;
+        $val_estimates = $val_estimates ? $val_estimates : 0;
+        
+        // Accepted (Converted) Estimates - approximated by status or link?
+        // Let's us pur_orders.estimate to count converted estimates
+        $this->db->where('vendor', $vendor_id);
+        $this->db->where('estimate >', 0);
+        $this->db->where('approve_status', 2);
+        $apply_filter($this->db, 'order_date');
+        $converted_orders = $this->db->count_all_results(db_prefix().'pur_orders');
+        
+        $conversion_rate = $total_estimates > 0 ? ($converted_orders / $total_estimates) * 100 : 0;
+
+        // Contracts
+        $this->db->where('vendor', $vendor_id);
+        $apply_filter($this->db, 'start_date');
+        $total_contracts = $this->db->count_all_results(db_prefix() . 'pur_contracts');
+
+        // Expenses
+         $this->db->select_sum('amount');
+        $this->db->where('vendor', $vendor_id);
+        $apply_filter($this->db, 'date');
+        $total_expenses = $this->db->get(db_prefix() . 'expenses')->row()->amount;
+        $total_expenses = $total_expenses ? $total_expenses : 0;
+
+
+        // --- 4. ITEM STATS ---
+        $this->db->select('item_code, description, SUM(quantity) as total_qty, SUM('.db_prefix().'pur_order_detail.total) as total_val');
+        $this->db->from(db_prefix() . 'pur_order_detail');
+        $this->db->join(db_prefix() . 'pur_orders', db_prefix() . 'pur_orders.id = ' . db_prefix() . 'pur_order_detail.pur_order');
+        $this->db->where(db_prefix() . 'pur_orders.vendor', $vendor_id);
+        $this->db->where(db_prefix() . 'pur_orders.approve_status', 2); 
+        $apply_filter($this->db, db_prefix() . 'pur_orders.order_date');
+        $this->db->group_by('item_code, description'); 
+        $this->db->order_by('total_val', 'DESC');
+        $this->db->limit(10);
+        $top_items = $this->db->get()->result_array();
+        
+        // --- 5. COMPOSITE SCORES ---
+        // Vendor Health Score (0-100)
+        // Factors: Reliability (Payment/Delivery), Quality (Returns), Stability (Growth)
+        
+        // Quality Score: 100 - (Return Rate * 2)
+        $return_rate = $gross_spend > 0 ? ($returns_value / $gross_spend) * 100 : 0;
+        $quality_score = max(0, 100 - ($return_rate * 5)); // Penalize returns heavily
+        
+        // Reliability Score: 100 (Baseline) - 10 if late?
+        // Simplified: Based on Conversion Rate? No.
+        // Based on "Active Interaction". Let's use Payment Rate as proxy for "Good Standing"
+        $reliability_score = min(100, $payment_rate > 0 ? 80 + ($payment_rate/5) : 80); 
+        
+        // Purchasing Performance Score
+        $purchasing_score = ($quality_score + $reliability_score) / 2;
+
+        return [
+            'scores' => [
+                'health' => $quality_score, // Using Quality as primary Health indicator
+                'performance' => $purchasing_score,
+                'reliability' => $reliability_score
+            ],
+            'spend' => [
+                'gross' => $gross_spend,
+                'returns' => $returns_value,
+                'net' => $net_spend,
+                'growth' => $spend_growth,
+                'payment_rate' => $payment_rate,
+                'balance' => $balance
+            ],
+            'pipeline' => [
+                'estimates_count' => $total_estimates,
+                'estimates_val' => $val_estimates,
+                'converted_orders' => $converted_orders,
+                'conversion_rate' => $conversion_rate,
+                'contracts' => $total_contracts
+            ],
+            'expenses' => $total_expenses,
+            'top_items' => $top_items
+        ];
+    }
 }

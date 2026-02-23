@@ -37,15 +37,25 @@
 		$group_itemss =  explode(',', $discount->group_items);
 		$itemss =  explode(',',$discount->items);
 		$minimum_order_value = app_format_money($discount->minimum_order_value,'');
-		if($clientss != ''){
-			$check1 = 'checked';
-			$hide1 = '';
-			$col1 = 'col-md-6';
+
+		if(isset($clientss[0])){
+			if($clientss[0]!=''){
+				if(count($clientss) > 0){
+					$check1 = 'checked';
+					$hide1 = '';
+					$col1 = 'col-md-6';
+				}	
+			}
 		}
-		if($itemss != ''){
-			$check2 = 'checked';
-			$hide2 = '';
-			$col2 = 'col-md-6';
+
+		if(isset($itemss[0])){
+			if($itemss[0]!=''){
+				if(count($itemss) > 0){
+					$check2 = 'checked';
+					$hide2 = '';
+					$col2 = 'col-md-6';
+				}	
+			}
 		}
 		if($formal== 1){
 			$hide3 = '';
@@ -117,6 +127,8 @@
                 <option value="1" <?php if($channel == 1 ){ echo 'selected';}?> >Pos</option>
                 <option value="2" <?php if($channel == 2 ){ echo 'selected';}?> >Portal</option>
                 <option value="3" <?php if($channel == 3 ){ echo 'selected';}?> >WooCommerce</option>
+                <option value="4" <?php if($channel == 4 ){ echo 'selected';}?> >Manual</option>
+                <option value="6" <?php if($channel == 6 ){ echo 'selected';}?> >Pre-order</option>
             </select>
         </div>
 	</div>

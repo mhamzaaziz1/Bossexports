@@ -21,17 +21,26 @@ abstract class TaskOptions {
      * @param int $priority The Task's new priority value
      * @param string $taskChannel When MultiTasking is enabled, specify the
      *                            TaskChannel with the task to update
+     * @param string $ifMatch The If-Match HTTP request header
      * @return UpdateTaskOptions Options builder
      */
-    public static function update($attributes = Values::NONE, $assignmentStatus = Values::NONE, $reason = Values::NONE, $priority = Values::NONE, $taskChannel = Values::NONE) {
-        return new UpdateTaskOptions($attributes, $assignmentStatus, $reason, $priority, $taskChannel);
+    public static function update(string $attributes = Values::NONE, string $assignmentStatus = Values::NONE, string $reason = Values::NONE, int $priority = Values::NONE, string $taskChannel = Values::NONE, string $ifMatch = Values::NONE): UpdateTaskOptions {
+        return new UpdateTaskOptions($attributes, $assignmentStatus, $reason, $priority, $taskChannel, $ifMatch);
+    }
+
+    /**
+     * @param string $ifMatch The If-Match HTTP request header
+     * @return DeleteTaskOptions Options builder
+     */
+    public static function delete(string $ifMatch = Values::NONE): DeleteTaskOptions {
+        return new DeleteTaskOptions($ifMatch);
     }
 
     /**
      * @param int $priority The priority value of the Tasks to read
-     * @param string $assignmentStatus Returns the list of all Tasks in the
-     *                                 Workspace with the specified
-     *                                 assignment_status
+     * @param string[] $assignmentStatus Returns the list of all Tasks in the
+     *                                   Workspace with the specified
+     *                                   assignment_status
      * @param string $workflowSid The SID of the Workflow with the Tasks to read
      * @param string $workflowName The friendly name of the Workflow with the Tasks
      *                             to read
@@ -44,12 +53,13 @@ abstract class TaskOptions {
      * @param bool $hasAddons Whether to read Tasks with addons
      * @return ReadTaskOptions Options builder
      */
-    public static function read($priority = Values::NONE, $assignmentStatus = Values::NONE, $workflowSid = Values::NONE, $workflowName = Values::NONE, $taskQueueSid = Values::NONE, $taskQueueName = Values::NONE, $evaluateTaskAttributes = Values::NONE, $ordering = Values::NONE, $hasAddons = Values::NONE) {
+    public static function read(int $priority = Values::NONE, array $assignmentStatus = Values::ARRAY_NONE, string $workflowSid = Values::NONE, string $workflowName = Values::NONE, string $taskQueueSid = Values::NONE, string $taskQueueName = Values::NONE, string $evaluateTaskAttributes = Values::NONE, string $ordering = Values::NONE, bool $hasAddons = Values::NONE): ReadTaskOptions {
         return new ReadTaskOptions($priority, $assignmentStatus, $workflowSid, $workflowName, $taskQueueSid, $taskQueueName, $evaluateTaskAttributes, $ordering, $hasAddons);
     }
 
     /**
-     * @param int $timeout The amount of time in seconds the task is allowed to live
+     * @param int $timeout The amount of time in seconds the task can live before
+     *                     being assigned
      * @param int $priority The priority to assign the new task and override the
      *                      default
      * @param string $taskChannel When MultiTasking is enabled specify the
@@ -61,7 +71,7 @@ abstract class TaskOptions {
      *                           attributes of the task
      * @return CreateTaskOptions Options builder
      */
-    public static function create($timeout = Values::NONE, $priority = Values::NONE, $taskChannel = Values::NONE, $workflowSid = Values::NONE, $attributes = Values::NONE) {
+    public static function create(int $timeout = Values::NONE, int $priority = Values::NONE, string $taskChannel = Values::NONE, string $workflowSid = Values::NONE, string $attributes = Values::NONE): CreateTaskOptions {
         return new CreateTaskOptions($timeout, $priority, $taskChannel, $workflowSid, $attributes);
     }
 }
@@ -75,13 +85,15 @@ class UpdateTaskOptions extends Options {
      * @param int $priority The Task's new priority value
      * @param string $taskChannel When MultiTasking is enabled, specify the
      *                            TaskChannel with the task to update
+     * @param string $ifMatch The If-Match HTTP request header
      */
-    public function __construct($attributes = Values::NONE, $assignmentStatus = Values::NONE, $reason = Values::NONE, $priority = Values::NONE, $taskChannel = Values::NONE) {
+    public function __construct(string $attributes = Values::NONE, string $assignmentStatus = Values::NONE, string $reason = Values::NONE, int $priority = Values::NONE, string $taskChannel = Values::NONE, string $ifMatch = Values::NONE) {
         $this->options['attributes'] = $attributes;
         $this->options['assignmentStatus'] = $assignmentStatus;
         $this->options['reason'] = $reason;
         $this->options['priority'] = $priority;
         $this->options['taskChannel'] = $taskChannel;
+        $this->options['ifMatch'] = $ifMatch;
     }
 
     /**
@@ -91,7 +103,7 @@ class UpdateTaskOptions extends Options {
      *                           attributes of the task
      * @return $this Fluent Builder
      */
-    public function setAttributes($attributes) {
+    public function setAttributes(string $attributes): self {
         $this->options['attributes'] = $attributes;
         return $this;
     }
@@ -102,7 +114,7 @@ class UpdateTaskOptions extends Options {
      * @param string $assignmentStatus The new status of the task
      * @return $this Fluent Builder
      */
-    public function setAssignmentStatus($assignmentStatus) {
+    public function setAssignmentStatus(string $assignmentStatus): self {
         $this->options['assignmentStatus'] = $assignmentStatus;
         return $this;
     }
@@ -113,18 +125,18 @@ class UpdateTaskOptions extends Options {
      * @param string $reason The reason that the Task was canceled or complete
      * @return $this Fluent Builder
      */
-    public function setReason($reason) {
+    public function setReason(string $reason): self {
         $this->options['reason'] = $reason;
         return $this;
     }
 
     /**
-     * The Task's new priority value. When supplied, the Task takes on the specified priority unless it matches a Workflow Target with a Priority set.
+     * The Task's new priority value. When supplied, the Task takes on the specified priority unless it matches a Workflow Target with a Priority set. Value can be 0 to 2^31^ (2,147,483,647).
      *
      * @param int $priority The Task's new priority value
      * @return $this Fluent Builder
      */
-    public function setPriority($priority) {
+    public function setPriority(int $priority): self {
         $this->options['priority'] = $priority;
         return $this;
     }
@@ -136,8 +148,19 @@ class UpdateTaskOptions extends Options {
      *                            TaskChannel with the task to update
      * @return $this Fluent Builder
      */
-    public function setTaskChannel($taskChannel) {
+    public function setTaskChannel(string $taskChannel): self {
         $this->options['taskChannel'] = $taskChannel;
+        return $this;
+    }
+
+    /**
+     * If provided, applies this mutation if (and only if) the [ETag](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/ETag) header of the Task matches the provided value. This matches the semantics of (and is implemented with) the HTTP [If-Match header](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/If-Match).
+     *
+     * @param string $ifMatch The If-Match HTTP request header
+     * @return $this Fluent Builder
+     */
+    public function setIfMatch(string $ifMatch): self {
+        $this->options['ifMatch'] = $ifMatch;
         return $this;
     }
 
@@ -146,23 +169,48 @@ class UpdateTaskOptions extends Options {
      *
      * @return string Machine friendly representation
      */
-    public function __toString() {
-        $options = array();
-        foreach ($this->options as $key => $value) {
-            if ($value != Values::NONE) {
-                $options[] = "$key=$value";
-            }
-        }
-        return '[Twilio.Taskrouter.V1.UpdateTaskOptions ' . \implode(' ', $options) . ']';
+    public function __toString(): string {
+        $options = \http_build_query(Values::of($this->options), '', ' ');
+        return '[Twilio.Taskrouter.V1.UpdateTaskOptions ' . $options . ']';
+    }
+}
+
+class DeleteTaskOptions extends Options {
+    /**
+     * @param string $ifMatch The If-Match HTTP request header
+     */
+    public function __construct(string $ifMatch = Values::NONE) {
+        $this->options['ifMatch'] = $ifMatch;
+    }
+
+    /**
+     * If provided, deletes this Task if (and only if) the [ETag](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/ETag) header of the Task matches the provided value. This matches the semantics of (and is implemented with) the HTTP [If-Match header](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/If-Match).
+     *
+     * @param string $ifMatch The If-Match HTTP request header
+     * @return $this Fluent Builder
+     */
+    public function setIfMatch(string $ifMatch): self {
+        $this->options['ifMatch'] = $ifMatch;
+        return $this;
+    }
+
+    /**
+     * Provide a friendly representation
+     *
+     * @return string Machine friendly representation
+     */
+    public function __toString(): string {
+        $options = \http_build_query(Values::of($this->options), '', ' ');
+        return '[Twilio.Taskrouter.V1.DeleteTaskOptions ' . $options . ']';
     }
 }
 
 class ReadTaskOptions extends Options {
     /**
      * @param int $priority The priority value of the Tasks to read
-     * @param string $assignmentStatus Returns the list of all Tasks in the
-     *                                 Workspace with the specified
-     *                                 assignment_status
+     * @param string[] $assignmentStatus Returns the list of all Tasks in the
+     *                                   Workspace with the specified
+     *                                   assignment_status
      * @param string $workflowSid The SID of the Workflow with the Tasks to read
      * @param string $workflowName The friendly name of the Workflow with the Tasks
      *                             to read
@@ -174,7 +222,7 @@ class ReadTaskOptions extends Options {
      * @param string $ordering Controls the order of the Tasks returned
      * @param bool $hasAddons Whether to read Tasks with addons
      */
-    public function __construct($priority = Values::NONE, $assignmentStatus = Values::NONE, $workflowSid = Values::NONE, $workflowName = Values::NONE, $taskQueueSid = Values::NONE, $taskQueueName = Values::NONE, $evaluateTaskAttributes = Values::NONE, $ordering = Values::NONE, $hasAddons = Values::NONE) {
+    public function __construct(int $priority = Values::NONE, array $assignmentStatus = Values::ARRAY_NONE, string $workflowSid = Values::NONE, string $workflowName = Values::NONE, string $taskQueueSid = Values::NONE, string $taskQueueName = Values::NONE, string $evaluateTaskAttributes = Values::NONE, string $ordering = Values::NONE, bool $hasAddons = Values::NONE) {
         $this->options['priority'] = $priority;
         $this->options['assignmentStatus'] = $assignmentStatus;
         $this->options['workflowSid'] = $workflowSid;
@@ -192,20 +240,20 @@ class ReadTaskOptions extends Options {
      * @param int $priority The priority value of the Tasks to read
      * @return $this Fluent Builder
      */
-    public function setPriority($priority) {
+    public function setPriority(int $priority): self {
         $this->options['priority'] = $priority;
         return $this;
     }
 
     /**
-     * The `assignment_status` of the Tasks to read. Can be: `pending`, `reserved`, `assigned`, `canceled`, and `completed`. Returns all Tasks in the Workspace with the specified `assignment_status`.
+     * The `assignment_status` of the Tasks you want to read. Can be: `pending`, `reserved`, `assigned`, `canceled`, `wrapping`, or `completed`. Returns all Tasks in the Workspace with the specified `assignment_status`.
      *
-     * @param string $assignmentStatus Returns the list of all Tasks in the
-     *                                 Workspace with the specified
-     *                                 assignment_status
+     * @param string[] $assignmentStatus Returns the list of all Tasks in the
+     *                                   Workspace with the specified
+     *                                   assignment_status
      * @return $this Fluent Builder
      */
-    public function setAssignmentStatus($assignmentStatus) {
+    public function setAssignmentStatus(array $assignmentStatus): self {
         $this->options['assignmentStatus'] = $assignmentStatus;
         return $this;
     }
@@ -216,7 +264,7 @@ class ReadTaskOptions extends Options {
      * @param string $workflowSid The SID of the Workflow with the Tasks to read
      * @return $this Fluent Builder
      */
-    public function setWorkflowSid($workflowSid) {
+    public function setWorkflowSid(string $workflowSid): self {
         $this->options['workflowSid'] = $workflowSid;
         return $this;
     }
@@ -228,7 +276,7 @@ class ReadTaskOptions extends Options {
      *                             to read
      * @return $this Fluent Builder
      */
-    public function setWorkflowName($workflowName) {
+    public function setWorkflowName(string $workflowName): self {
         $this->options['workflowName'] = $workflowName;
         return $this;
     }
@@ -239,7 +287,7 @@ class ReadTaskOptions extends Options {
      * @param string $taskQueueSid The SID of the TaskQueue with the Tasks to read
      * @return $this Fluent Builder
      */
-    public function setTaskQueueSid($taskQueueSid) {
+    public function setTaskQueueSid(string $taskQueueSid): self {
         $this->options['taskQueueSid'] = $taskQueueSid;
         return $this;
     }
@@ -251,7 +299,7 @@ class ReadTaskOptions extends Options {
      *                              Tasks to read
      * @return $this Fluent Builder
      */
-    public function setTaskQueueName($taskQueueName) {
+    public function setTaskQueueName(string $taskQueueName): self {
         $this->options['taskQueueName'] = $taskQueueName;
         return $this;
     }
@@ -263,7 +311,7 @@ class ReadTaskOptions extends Options {
      *                                       read
      * @return $this Fluent Builder
      */
-    public function setEvaluateTaskAttributes($evaluateTaskAttributes) {
+    public function setEvaluateTaskAttributes(string $evaluateTaskAttributes): self {
         $this->options['evaluateTaskAttributes'] = $evaluateTaskAttributes;
         return $this;
     }
@@ -274,7 +322,7 @@ class ReadTaskOptions extends Options {
      * @param string $ordering Controls the order of the Tasks returned
      * @return $this Fluent Builder
      */
-    public function setOrdering($ordering) {
+    public function setOrdering(string $ordering): self {
         $this->options['ordering'] = $ordering;
         return $this;
     }
@@ -285,7 +333,7 @@ class ReadTaskOptions extends Options {
      * @param bool $hasAddons Whether to read Tasks with addons
      * @return $this Fluent Builder
      */
-    public function setHasAddons($hasAddons) {
+    public function setHasAddons(bool $hasAddons): self {
         $this->options['hasAddons'] = $hasAddons;
         return $this;
     }
@@ -295,20 +343,16 @@ class ReadTaskOptions extends Options {
      *
      * @return string Machine friendly representation
      */
-    public function __toString() {
-        $options = array();
-        foreach ($this->options as $key => $value) {
-            if ($value != Values::NONE) {
-                $options[] = "$key=$value";
-            }
-        }
-        return '[Twilio.Taskrouter.V1.ReadTaskOptions ' . \implode(' ', $options) . ']';
+    public function __toString(): string {
+        $options = \http_build_query(Values::of($this->options), '', ' ');
+        return '[Twilio.Taskrouter.V1.ReadTaskOptions ' . $options . ']';
     }
 }
 
 class CreateTaskOptions extends Options {
     /**
-     * @param int $timeout The amount of time in seconds the task is allowed to live
+     * @param int $timeout The amount of time in seconds the task can live before
+     *                     being assigned
      * @param int $priority The priority to assign the new task and override the
      *                      default
      * @param string $taskChannel When MultiTasking is enabled specify the
@@ -319,7 +363,7 @@ class CreateTaskOptions extends Options {
      * @param string $attributes A URL-encoded JSON string describing the
      *                           attributes of the task
      */
-    public function __construct($timeout = Values::NONE, $priority = Values::NONE, $taskChannel = Values::NONE, $workflowSid = Values::NONE, $attributes = Values::NONE) {
+    public function __construct(int $timeout = Values::NONE, int $priority = Values::NONE, string $taskChannel = Values::NONE, string $workflowSid = Values::NONE, string $attributes = Values::NONE) {
         $this->options['timeout'] = $timeout;
         $this->options['priority'] = $priority;
         $this->options['taskChannel'] = $taskChannel;
@@ -328,24 +372,25 @@ class CreateTaskOptions extends Options {
     }
 
     /**
-     * The amount of time in seconds the new task is allowed to live. Can be up to a maximum of 2 weeks (1,209,600 seconds). The default value is 24 hours (86,400 seconds). On timeout, the `task.canceled` event will fire with description `Task TTL Exceeded`.
+     * The amount of time in seconds the new task can live before being assigned. Can be up to a maximum of 2 weeks (1,209,600 seconds). The default value is 24 hours (86,400 seconds). On timeout, the `task.canceled` event will fire with description `Task TTL Exceeded`.
      *
-     * @param int $timeout The amount of time in seconds the task is allowed to live
+     * @param int $timeout The amount of time in seconds the task can live before
+     *                     being assigned
      * @return $this Fluent Builder
      */
-    public function setTimeout($timeout) {
+    public function setTimeout(int $timeout): self {
         $this->options['timeout'] = $timeout;
         return $this;
     }
 
     /**
-     * The priority to assign the new task and override the default. When supplied, the new Task will have this priority unless it matches a Workflow Target with a Priority set. When not supplied, the new Task will have the priority of the matching Workflow Target.
+     * The priority to assign the new task and override the default. When supplied, the new Task will have this priority unless it matches a Workflow Target with a Priority set. When not supplied, the new Task will have the priority of the matching Workflow Target. Value can be 0 to 2^31^ (2,147,483,647).
      *
      * @param int $priority The priority to assign the new task and override the
      *                      default
      * @return $this Fluent Builder
      */
-    public function setPriority($priority) {
+    public function setPriority(int $priority): self {
         $this->options['priority'] = $priority;
         return $this;
     }
@@ -358,7 +403,7 @@ class CreateTaskOptions extends Options {
      *                            SID
      * @return $this Fluent Builder
      */
-    public function setTaskChannel($taskChannel) {
+    public function setTaskChannel(string $taskChannel): self {
         $this->options['taskChannel'] = $taskChannel;
         return $this;
     }
@@ -370,7 +415,7 @@ class CreateTaskOptions extends Options {
      *                            handle routing for the new Task
      * @return $this Fluent Builder
      */
-    public function setWorkflowSid($workflowSid) {
+    public function setWorkflowSid(string $workflowSid): self {
         $this->options['workflowSid'] = $workflowSid;
         return $this;
     }
@@ -382,7 +427,7 @@ class CreateTaskOptions extends Options {
      *                           attributes of the task
      * @return $this Fluent Builder
      */
-    public function setAttributes($attributes) {
+    public function setAttributes(string $attributes): self {
         $this->options['attributes'] = $attributes;
         return $this;
     }
@@ -392,13 +437,8 @@ class CreateTaskOptions extends Options {
      *
      * @return string Machine friendly representation
      */
-    public function __toString() {
-        $options = array();
-        foreach ($this->options as $key => $value) {
-            if ($value != Values::NONE) {
-                $options[] = "$key=$value";
-            }
-        }
-        return '[Twilio.Taskrouter.V1.CreateTaskOptions ' . \implode(' ', $options) . ']';
+    public function __toString(): string {
+        $options = \http_build_query(Values::of($this->options), '', ' ');
+        return '[Twilio.Taskrouter.V1.CreateTaskOptions ' . $options . ']';
     }
 }

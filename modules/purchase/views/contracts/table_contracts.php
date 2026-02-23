@@ -36,7 +36,7 @@ foreach ($rResult as $aRow) {
         }elseif($aColumns[$i] == 'contract_name'){
             $numberOutput = '';
             $numberOutput = '<a href="' . admin_url('purchase/contract/' . $aRow['contract_id']) . '">' . $aRow['contract_number'].' - '. $aRow['contract_name'] . '</a>';
-    
+
             $numberOutput .= '<div class="row-options">';
 
             if (has_permission('purchase', '', 'view')) {
@@ -46,7 +46,7 @@ foreach ($rResult as $aRow) {
                 $numberOutput .= ' | <a href="' . admin_url('purchase/contract/' . $aRow['contract_id']) . '">' . _l('edit') . '</a>';
             }
             if (has_permission('purchase', '', 'delete')) {
-                $numberOutput .= ' | <a href="' . admin_url('purchase/delete_contract/' . $aRow['contract_id']) . '" class="text-danger">' . _l('delete') . '</a>';
+                $numberOutput .= ' | <a href="' . admin_url('purchase/delete_contract/' . $aRow['contract_id']) . '" class="text-danger _delete">' . _l('delete') . '</a>';
             }
             $numberOutput .= '</div>';
 
@@ -66,7 +66,7 @@ foreach ($rResult as $aRow) {
         }elseif($aColumns[$i] == 'pur_order'){
             $_data = '<a href="' . admin_url('purchase/purchase_order/' . $aRow['pur_order']) . '">' . $aRow['pur_order_number'].' - '. $aRow['pur_order_name'] . '</a>';
         }
-    
+
         $row[] = $_data;
     }
     $output['aaData'][] = $row;

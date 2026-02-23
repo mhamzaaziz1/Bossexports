@@ -3,7 +3,7 @@
 	var lastAddedItemKey = null;
 	(function($) {
 		"use strict";  
-
+		init_packing_list_currency(<?php echo new_html_entity_decode($base_currency_id) ?>);
 		appValidateForm($('#add_edit_packing_list'), {
 			clientid: 'required',
 			packing_list_name: 'required',
@@ -51,6 +51,9 @@ $('.add_packing_list_send').on('click', function() {
 	submit_form(true);
 });
 
+$("body").on('change', 'input[name="shipping_fee"]', function () {
+    wh_calculate_total();
+});
 
 })(jQuery);
 
@@ -199,6 +202,13 @@ function wh_get_item_row_template(name, commodity_name, quantity, unit_name, uni
 function wh_delete_item(row, itemid,parent) {
 	"use strict";
 
+	var shipping_fee = $('input[name="shipping_fee"]').val();
+	var max_shipping_fee = $('input[name="shipping_fee"]').attr('max');
+	if(parseFloat(shipping_fee) == parseFloat(max_shipping_fee)){
+		var new_shipping_fee = parseFloat(max_shipping_fee)/2;
+		$('input[name="shipping_fee"]').val(new_shipping_fee);
+	}
+
 	$(row).parents('tr').addClass('animated fadeOut', function () {
 		setTimeout(function () {
 			$(row).parents('tr').remove();
@@ -248,12 +258,16 @@ function wh_calculate_total(){
 	subtotal_area = $('#subtotal'),
 	discount_area = $('#discount_area'),
 	adjustment = $('input[name="adjustment"]').val(),
+		// discount_percent = $('input[name="discount_percent"]').val(),
 		discount_percent = 'before_tax',
 		discount_fixed = $('input[name="discount_total"]').val(),
 		discount_total_type = $('.discount-total-type.selected'),
 		discount_type = $('select[name="discount_type"]').val(),
 		additional_discount = $('input[name="additional_discount"]').val(),
-		main_additional_discount = $('input[name="main_additional_discount"]').val();
+		main_additional_discount = $('input[name="main_additional_discount"]').val(),
+		shipping_fee = $('input[name="shipping_fee"]').val(),
+		main_shipping_fee = $('input[name="main_shipping_fee"]').val();
+
 
 		$('.wh-tax-area').remove();
 
@@ -359,6 +373,9 @@ function wh_calculate_total(){
 	if (!isNaN(adjustment)) {
 		total = total + adjustment;
 	}
+	if (!isNaN(shipping_fee)) {
+		total = total + parseFloat(shipping_fee);
+	}
 
 	if (!isNaN(parseFloat(total_discount_calculated)) && !isNaN(parseFloat(additional_discount))) {
 		var discount_html = '-' + format_money(parseFloat(total_discount_calculated)+ parseFloat(additional_discount));
@@ -376,6 +393,8 @@ function wh_calculate_total(){
 	$('.adjustment').html(format_money(adjustment));
 
 	$('.wh-additional_discount').html('<input type="number" name="additional_discount" min="0.0" step="any" max="'+main_additional_discount+'" value="' + additional_discount + '">');
+	$('.wh-shipping_fee').html('<input type="number" name="shipping_fee" min="0.0" step="any" max="'+main_shipping_fee+'" value="' + shipping_fee + '">');
+	
 
 	$('.wh-subtotal').html(format_money(subtotal) + hidden_input('subtotal', accounting.toFixed(subtotal, app.options.decimal_places)) + hidden_input('total_amount', accounting.toFixed(total_money, app.options.decimal_places)));
 	$('.wh-total').html(format_money(total) + hidden_input('total_after_discount', accounting.toFixed(total, app.options.decimal_places)));
@@ -490,6 +509,8 @@ $('select[name="delivery_note_id"]').on('change', function() {
 		$('.invoice-item table.invoice-items-table.items tbody').html('');
 		$('.invoice-item table.invoice-items-table.items tbody').append(response.result);
 		$('select[name="clientid"]').val(response.customer_id).change();
+		$('input[name="shipping_fee"]').val((response.shipping_fee));
+		$('input[name="main_shipping_fee"]').val((response.shipping_fee));
 
 		setTimeout(function () {
 			wh_calculate_total();
@@ -579,6 +600,30 @@ function calculate_volume(){
 
 	volume = parseFloat(width) * parseFloat(height) * parseFloat(lenght);
 	$('input[name="volume"]').val(volume);
+}
+
+// Set the currency for accounting
+function init_packing_list_currency(id, callback) {
+	var $accountingTemplate = $("body").find('.accounting-template');
+
+	if ($accountingTemplate.length || id) {
+		var selectedCurrencyId = !id ? $accountingTemplate.find('select[name="currency"]').val() : id;
+
+		requestGetJSON(admin_url + 'misc/get_currency/' + selectedCurrencyId)
+		.done(function (currency) {
+                // Used for formatting money
+                accounting.settings.currency.decimal = currency.decimal_separator;
+                accounting.settings.currency.thousand = currency.thousand_separator;
+                accounting.settings.currency.symbol = currency.symbol;
+                accounting.settings.currency.format = currency.placement == 'after' ? '%v %s' : '%s%v';
+
+                wh_calculate_total();
+
+                if(callback) {
+                	callback();
+                }
+            });
+	}
 }
 
 </script>

@@ -87,6 +87,8 @@
             <?php render_yes_no_option('total_to_words_lowercase','settings_total_to_words_lowercase'); ?>
          </div>
       </div>
+      <hr />
+      <?php render_yes_no_option('show_adjustment_as_retainer', 'settings_show_adjustment_as_retainer', 'settings_show_adjustment_as_retainer_help'); ?>
    </div>
    <div role="tabpanel" class="tab-pane" id="invoice">
       <div class="form-group">

@@ -1,5 +1,7 @@
 <?php
 
+use Carbon\Carbon;
+
 defined('BASEPATH') or exit('No direct script access allowed');
 
 class Backup_module
@@ -13,9 +15,11 @@ class Backup_module
 
     public function make_backup_db($manual = false)
     {
-        if ((get_option('auto_backup_enabled') == '1'
-            && time() > (get_option('last_auto_backup') + get_option('auto_backup_every') * 24 * 60 * 60))
-            || $manual == true) {
+        $auto_backup_hour = intval(get_option('auto_backup_hour')) ? intval(get_option('auto_backup_hour')) : 6;
+        $current_time = Carbon::today()->hour($auto_backup_hour)->timestamp; 
+        $last_backup_time = Carbon::createFromTimestamp(intval(get_option('last_auto_backup')) + intval(get_option('auto_backup_every')) * 24 * 60 * 60)->timestamp;
+
+        if ((get_option('auto_backup_enabled') == '1' && $current_time > $last_backup_time) || $manual == true) {
             $this->create_backup_directory();
 
             $manager = $this->get_backup_manager_name();
@@ -106,7 +110,11 @@ class Backup_module
 
     public function get_backup_manager_name()
     {
-        return defined('APP_DATABASE_BACKUP_MANAGER') ? APP_DATABASE_BACKUP_MANAGER : 'codeigniter';
+        if ( defined('APP_DATABASE_BACKUP_MANAGER') ) {
+            return APP_DATABASE_BACKUP_MANAGER;
+        }
+
+        return extension_loaded('proc_open') ? 'backup_manager' : 'codeigniter';
     }
 
     public function create_backup_directory()

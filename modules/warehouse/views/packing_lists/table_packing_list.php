@@ -44,6 +44,10 @@ if ($this->ci->input->post('delivery_id') && $this->ci->input->post('delivery_id
 	array_push($where, 'AND delivery_note_id IN (' . implode(', ', $this->ci->input->post('delivery_id')) . ')');
 }
 
+if (staff_cant('wh_packing_list', '', 'view')) {
+    array_push($where, 'AND (' . db_prefix() . 'wh_packing_lists.staff_id=' . get_staff_user_id().')');
+}
+
 $result = data_tables_init($aColumns, $sIndexColumn, $sTable, $join, $where, ['id', 'packing_list_name', 'width', 'height', 'lenght', 'volume', 'additional_discount']);
 
 $output  = $result['output'];
@@ -59,11 +63,11 @@ foreach ($rResult as $aRow) {
 		$name .= '<div class="row-options">';
 		$name .= '<a href="' . admin_url('warehouse/manage_packing_list/' . $aRow['id'] ).'" >' . _l('view') . '</a>';
 
-		if((has_permission('warehouse', '', 'edit') || is_admin()) && ($aRow['approval'] == 0)){
+		if((has_permission('wh_packing_list', '', 'edit') || is_admin()) && ($aRow['approval'] == 0)){
 			$name .= ' | <a href="' . admin_url('warehouse/packing_list/' . $aRow['id'] ).'" >' . _l('edit') . '</a>';
 		}
 
-		if ((has_permission('warehouse', '', 'delete') || is_admin()) && ($aRow['approval'] == 0)) {
+		if ((has_permission('wh_packing_list', '', 'delete') || is_admin()) && ($aRow['approval'] == 0)) {
 			$name .= ' | <a href="' . admin_url('warehouse/delete_packing_list/' . $aRow['id'] ).'" class="text-danger _delete" >' . _l('delete') . '</a>';
 		}			
 

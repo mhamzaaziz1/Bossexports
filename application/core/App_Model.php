@@ -2,6 +2,9 @@
 
 defined('BASEPATH') or exit('No direct script access allowed');
 
+/**
+ * @property-read CI_DB_mysql_driver $db
+ */
 class App_Model extends CI_Model
 {
     public function __construct()

@@ -234,7 +234,15 @@
                      <div class="form-group select-placeholder">
                         <label class="control-label"><?php echo _l('estimate_status'); ?></label>
                         <select class="selectpicker display-block mbot15" name="status" data-width="100%" data-none-selected-text="<?php echo _l('dropdown_non_selected_tex'); ?>">
-                           <?php foreach($estimate_statuses as $status){ ?>
+                           <?php foreach($estimate_statuses as $status){ 
+                               if(get_option('show_shipping_on_sales') != 1 && ($status == 3 || $status == 4)){
+                                   if(isset($estimate) && $estimate->status == $status){
+                                       // Keep it if it's already set
+                                   } else {
+                                       continue;
+                                   }
+                               }
+                           ?>
                            <option value="<?php echo $status; ?>" <?php if(isset($estimate) && $estimate->status == $status){echo 'selected';} ?>><?php echo format_estimate_status($status,'',false); ?></option>
                            <?php } ?>
                         </select>

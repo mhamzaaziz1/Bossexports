@@ -22,6 +22,7 @@
                      <?php } ?>
                    
                   
+                     <a href="#" class="btn btn-default pull-right mright5" id="show-all-balances">Show All Balances</a>
                   </div>
                  
                   
@@ -83,5 +84,39 @@
    </div>
 </div>
 <?php init_tail(); ?>
+<script>
+   $(function(){
+       var tAPI = initDataTable('.table-vendors', admin_url+'purchase/table_vendor', [0], [0], [],<?php echo hooks()->apply_filters('vendors_table_default_order', json_encode(array(1,'asc'))); ?>);
+       
+       $('body').on('click', '.vendor-balance-check', function() {
+           var vendorID = $(this).data('id');
+           var $btn = $(this);
+           $btn.html('<i class="fa fa-refresh fa-spin"></i>');
+           $.get(admin_url + 'purchase/get_vendor_balance/' + vendorID, function(response) {
+               $btn.parent().html(response);
+           });
+       });
+
+       $('#show-all-balances').on('click', function(e) {
+           e.preventDefault();
+           var items = $('.vendor-balance-check').toArray();
+           processItems(items);
+       });
+
+       function processItems(items) {
+           if (items.length === 0) return;
+
+           var item = items.shift();
+           var $item = $(item);
+           var vendorID = $item.data('id');
+           
+           $item.html('<i class="fa fa-refresh fa-spin"></i>');
+           $.get(admin_url + 'purchase/get_vendor_balance/' + vendorID, function(response) {
+               $item.parent().html(response);
+               processItems(items);
+           });
+       }
+   });
+</script>
 </body>
 </html>

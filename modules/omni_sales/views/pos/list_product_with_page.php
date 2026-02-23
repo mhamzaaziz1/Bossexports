@@ -1,13 +1,13 @@
 <div class="col-md-12 head_title pt-2">
 		<div><?php echo html_entity_decode($title_group); ?></div>
 	</div>
-<div class="product_list">			    		
-<?php $this->load->view('pos/list_product_partial');  ?>
+<div class="product_list">	
+	<?php $this->load->view('pos/list_product_partial');  ?>
 </div> 	  
 <br>	
 <br>	
 <div class="clearfix"></div>
-<div class="row text-right">
+<div class="text-right page-list page">
 <?php
  for ($i=1; $i <= $total_page; $i++) {
  	$active = '';

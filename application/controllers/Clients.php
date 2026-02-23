@@ -19,13 +19,13 @@ class Clients extends ClientsController
     public function __construct()
     {
         parent::__construct();
+        $this->load->model('clients_model');
 
         hooks()->do_action('after_clients_area_init', $this);
     }
 
     public function index()
     {
-        $data['is_home'] = true;
         $this->load->model('reports_model');
         $data['payments_years'] = $this->reports_model->get_distinct_customer_invoices_years();
 

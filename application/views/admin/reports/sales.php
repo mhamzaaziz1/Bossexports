@@ -30,6 +30,10 @@
                       </p>
                       <hr class="hr-10" />
                       <p>
+                        <a href="#" class="font-medium" onclick="init_report(this,'purchase-sales-aging-report'); return false;"><i class="fa fa-caret-down" aria-hidden="true"></i> <?php echo _l('Purchase & Sales Aging Report'); ?></a>
+                      </p>
+                      <hr class="hr-10" />
+                      <p>
                         <a href="#" class="font-medium" onclick="init_report(this,'payments-received'); return false;"><i class="fa fa-caret-down" aria-hidden="true"></i> <?php echo _l('payments_received'); ?></a>
                       </p>
                       <hr class="hr-10" />
@@ -150,6 +154,7 @@
                <?php $this->load->view('admin/reports/includes/sales_payments'); ?>
                <?php $this->load->view('admin/reports/includes/sales_proposals'); ?>
                <?php $this->load->view('admin/reports/includes/sales_cashbook'); ?>
+               <?php $this->load->view('admin/reports/purchase_sales_aging'); ?>
                </div>
             </div>
          </div>
@@ -161,5 +166,6 @@
 <?php $this->load->view('admin/reports/includes/sales_js'); ?>
 <?php $this->load->view('admin/reports/includes/avg_sale_aging_js'); ?>
 <?php $this->load->view('admin/reports/includes/sales_aging_js'); ?>
+<?php $this->load->view('admin/reports/includes/purchase_sales_aging_js'); ?>
 </body>
 </html>

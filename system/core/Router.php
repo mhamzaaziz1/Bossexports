@@ -53,7 +53,7 @@ class CI_Router {
 	/**
 	 * CI_Config class object
 	 *
-	 * @var	object
+	 * @var	object|CI_Config
 	 */
 	public $config;
 
@@ -112,8 +112,12 @@ class CI_Router {
 	public $enable_query_strings = FALSE;
 
 	// --------------------------------------------------------------------
+    /**
+     * @var object|CI_URI
+     */
+    public $uri;
 
-	/**
+    /**
 	 * Class constructor
 	 *
 	 * Runs the route mapping function.

@@ -4,17 +4,16 @@ defined('BASEPATH') or exit('No direct script access allowed');
 
 /**
  * Load PDF language for client
- * This is used eq if client have different language the system default language so in this case the PDF document
- * will be on client language not on system language
- * @param  mixed $clientid client id
+ *
+ * @param string|null $clientLangauge
+ *
  * @return null
  */
-function load_pdf_language($clientid)
+function load_pdf_language($clientLanguage)
 {
     $CI = & get_instance();
 
-    $language       = get_option('active_language');
-    $clientLanguage = get_client_default_language($clientid);
+    $language = get_option('active_language');
 
     // When cron or email sending pdf document the pdfs need to be on the client language
     if (is_data_for_customer() || DEFINED('CRON')) {
@@ -29,13 +28,11 @@ function load_pdf_language($clientid)
 
     if (file_exists(APPPATH . 'language/' . $language)) {
         $CI->lang->load($language . '_lang', $language);
-    }
+        load_custom_lang_file($language);
 
-    if (file_exists(APPPATH . 'language/' . $language . '/custom_lang.php')) {
-        $CI->lang->load('custom_lang', $language);
+        $CI->lang->set_last_loaded_language($language);
+        hooks()->do_action('load_pdf_language', ['language' => $language]);
     }
-
-    hooks()->do_action('load_pdf_language', ['language' => $language, 'client_id' => $clientid]);
 }
 
 /**
@@ -215,15 +212,6 @@ function payment_pdf($payment, $tag = '')
 function statement_pdf($statement)
 {
     return app_pdf('statement', LIBSPATH . 'pdf/Statement_pdf', $statement);
-}
-/**
- * Prepare customer statement pdf
- * @param  object $statement statement
- * @return mixed
- */
-function vendor_statement_pdf($statement)
-{
-    return app_pdf('statement', LIBSPATH . 'pdf/Vendor_pdf', $statement);
 }
 
 /**

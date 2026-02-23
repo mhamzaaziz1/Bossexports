@@ -35,11 +35,14 @@
 		$itemss =  explode(',',$discount->items);
 		$minimum_order_value = app_format_money($discount->minimum_order_value,'');
 		$channel = $discount->channel;
-
-		if($clientss != ''){
-			$check1 = 'checked';
-			$hide1 = '';
-			$col1 = 'col-md-6';
+		if(isset($clientss[0])){
+			if($clientss[0]!=''){
+				if(count($clientss) > 0){
+					$check1 = 'checked';
+					$hide1 = '';
+					$col1 = 'col-md-6';
+				}	
+			}
 		}
 		if($itemss != ''){
 			$check2 = 'checked';
@@ -63,7 +66,8 @@
 <div class="panel-body">
 <div class="clearfix"></div><br>
 	<div class="col-md-12">
-		<h4><i class="fa fa-list-ul">&nbsp;&nbsp;</i><?php echo html_entity_decode($title); ?></h4>
+		<h4><i class="fa fa-list-ul">&nbsp;&nbsp;</i><?php
+		 echo html_entity_decode($title); ?></h4>
 		<hr>
 	</div>
 	<div class="col-md-12">
@@ -107,6 +111,7 @@
                 <option value="1" <?php if($channel == 1 ){ echo 'selected';}?> >Pos</option>
                 <option value="2" <?php if($channel == 2 ){ echo 'selected';}?> >Portal</option>
                 <option value="3" <?php if($channel == 3 ){ echo 'selected';}?> >WooCommerce</option>
+                <option value="6" <?php if($channel == 6 ){ echo 'selected';}?> >Pre-order</option>
             </select>
         </div>
 	</div>

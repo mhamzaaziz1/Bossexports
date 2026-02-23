@@ -368,7 +368,7 @@ class CI_Encryption {
 	 * @param	array	$params	Input parameters
 	 * @return	string
 	 */
-	public function encrypt($data, array $params = NULL)
+	public function encrypt($data, $params = NULL)
 	{
 		if (($params = $this->_get_params($params)) === FALSE)
 		{
@@ -503,7 +503,7 @@ class CI_Encryption {
 	 * @param	array	$params	Input parameters
 	 * @return	string
 	 */
-	public function decrypt($data, array $params = NULL)
+	public function decrypt($data, $params = NULL)
 	{
 		if (($params = $this->_get_params($params)) === FALSE)
 		{
@@ -909,6 +909,10 @@ class CI_Encryption {
 	 */
 	protected static function strlen($str)
 	{
+		if(! $str) {
+			return 0;
+		}
+
 		return (self::$func_overload)
 			? mb_strlen($str, '8bit')
 			: strlen($str);

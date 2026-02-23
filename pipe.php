@@ -17,8 +17,8 @@ $system_path = rtrim($system_path, '/') . '/';
 
 define('BASEPATH', str_replace('\\', '/', $system_path));
 define('APPPATH', $application_folder . '/');
-$view_folder = APPPATH.'views';
-define('VIEWPATH', $view_folder.DIRECTORY_SEPARATOR);
+$view_folder = APPPATH . 'views';
+define('VIEWPATH', $view_folder . DIRECTORY_SEPARATOR);
 define('EXT', '.php');
 define('ENVIRONMENT', $environment ? $environment : 'development');
 define('FCPATH', dirname(__FILE__) . '/');
@@ -128,18 +128,15 @@ $attachments     = [];
 $mailAttachments = $message->getAllAttachmentParts();
 
 foreach ($mailAttachments as $attachment) {
-    $filename = $attachment->getHeaderParameter('Content-Disposition', 'filename');
+    $filename = $attachment->getFilename();
+    $content  = $attachment->getContent();
 
-    if (empty($filename)) {
-        $filename = $attachment->getHeaderParameter('Content-Disposition', 'name');
-    }
-
-    if (!$filename) {
+    if (!$filename || !$content) {
         continue;
     }
 
     $attachments[] = [
-        'data'     => $attachment->getContent(),
+        'data'     => $content,
         'filename' => sanitize_file_name($filename),
     ];
 }
@@ -160,6 +157,7 @@ if ($reply_to = $message->getHeaderValue('reply-to')) {
     $fromemail = $reply_to;
 }
 
+$cc       = [];
 $toemails = [];
 foreach (['to', 'cc', 'bcc'] as $checkHeader) {
     $addreses = $message->getHeader($checkHeader);
@@ -167,6 +165,9 @@ foreach (['to', 'cc', 'bcc'] as $checkHeader) {
     if ($addreses) {
         foreach ($addreses->getAddresses() as $addr) {
             $toemails[] = $addr->getEmail();
+            if ($checkHeader === 'cc') {
+                $cc[] = $addr->getEmail();
+            }
         }
     }
 }
@@ -187,21 +188,22 @@ if (class_exists('EmailReplyParser\EmailReplyParser')
     }
 }
 
-// Trim message
 $body = trim($body);
 $body = str_replace('&nbsp;', ' ', $body);
-// Remove html tags - strips inline styles also
-$body = trim(strip_html_tags($body, '<br/>, <br>, <a>'));
-// Once again do security
-$body = $instance->security->xss_clean($body);
+$body = trim(remove_html_invisible_tags($body));
+$body = preg_replace('/^<html[^>]*>/', '', $body);
+$body = preg_replace('/.*<body[^>]*>(.*?)<\/body>.*/is', '$1', $body);
+$body = trim($body);
+
 // Remove duplicate new lines
 $body = preg_replace("/[\r\n]+/", "\n", $body);
 // new lines with <br />
 $body = preg_replace('/\n(\s*\n)+/', '<br />', $body);
-$body = preg_replace('/\n/', '<br />', $body);
+$body = preg_replace('/\n/', '<br>', $body);
 
 $instance->tickets_model->insert_piped_ticket([
     'to'          => $to,
+    'cc'          => $cc,
     'fromname'    => $fromname,
     'email'       => $fromemail,
     'subject'     => $subject,

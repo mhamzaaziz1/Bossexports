@@ -76,10 +76,10 @@ function smart_reports_register_settings()
     $CI = &get_instance();
 
     // Add tab in settings
-    $CI->app_tabs->add_settings_tab('smart-reports', [
+    $CI->app->add_settings_section('smart-reports', [
         'name'     => _l('smart_reports'),
         'view'     => 'smart_reports/settings',
-        'position' => 36,
+        'position' => 9,
     ]);
 
     // Add OpenAI API key setting if it doesn't exist

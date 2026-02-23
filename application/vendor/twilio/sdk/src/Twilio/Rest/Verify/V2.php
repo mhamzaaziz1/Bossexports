@@ -11,35 +11,85 @@ namespace Twilio\Rest\Verify;
 
 use Twilio\Domain;
 use Twilio\Exceptions\TwilioException;
+use Twilio\InstanceContext;
+use Twilio\Rest\Verify\V2\FormList;
+use Twilio\Rest\Verify\V2\SafelistList;
 use Twilio\Rest\Verify\V2\ServiceList;
+use Twilio\Rest\Verify\V2\TemplateList;
+use Twilio\Rest\Verify\V2\VerificationAttemptList;
+use Twilio\Rest\Verify\V2\VerificationAttemptsSummaryList;
 use Twilio\Version;
 
 /**
- * @property \Twilio\Rest\Verify\V2\ServiceList $services
+ * @property FormList $forms
+ * @property SafelistList $safelist
+ * @property ServiceList $services
+ * @property VerificationAttemptList $verificationAttempts
+ * @property VerificationAttemptsSummaryList $verificationAttemptsSummary
+ * @property TemplateList $templates
+ * @method \Twilio\Rest\Verify\V2\FormContext forms(string $formType)
+ * @method \Twilio\Rest\Verify\V2\SafelistContext safelist(string $phoneNumber)
  * @method \Twilio\Rest\Verify\V2\ServiceContext services(string $sid)
+ * @method \Twilio\Rest\Verify\V2\VerificationAttemptContext verificationAttempts(string $sid)
  */
 class V2 extends Version {
-    protected $_services = null;
+    protected $_forms;
+    protected $_safelist;
+    protected $_services;
+    protected $_verificationAttempts;
+    protected $_verificationAttemptsSummary;
+    protected $_templates;
 
     /**
      * Construct the V2 version of Verify
      *
-     * @param \Twilio\Domain $domain Domain that contains the version
-     * @return \Twilio\Rest\Verify\V2 V2 version of Verify
+     * @param Domain $domain Domain that contains the version
      */
     public function __construct(Domain $domain) {
         parent::__construct($domain);
         $this->version = 'v2';
     }
 
-    /**
-     * @return \Twilio\Rest\Verify\V2\ServiceList
-     */
-    protected function getServices() {
+    protected function getForms(): FormList {
+        if (!$this->_forms) {
+            $this->_forms = new FormList($this);
+        }
+        return $this->_forms;
+    }
+
+    protected function getSafelist(): SafelistList {
+        if (!$this->_safelist) {
+            $this->_safelist = new SafelistList($this);
+        }
+        return $this->_safelist;
+    }
+
+    protected function getServices(): ServiceList {
         if (!$this->_services) {
             $this->_services = new ServiceList($this);
         }
         return $this->_services;
+    }
+
+    protected function getVerificationAttempts(): VerificationAttemptList {
+        if (!$this->_verificationAttempts) {
+            $this->_verificationAttempts = new VerificationAttemptList($this);
+        }
+        return $this->_verificationAttempts;
+    }
+
+    protected function getVerificationAttemptsSummary(): VerificationAttemptsSummaryList {
+        if (!$this->_verificationAttemptsSummary) {
+            $this->_verificationAttemptsSummary = new VerificationAttemptsSummaryList($this);
+        }
+        return $this->_verificationAttemptsSummary;
+    }
+
+    protected function getTemplates(): TemplateList {
+        if (!$this->_templates) {
+            $this->_templates = new TemplateList($this);
+        }
+        return $this->_templates;
     }
 
     /**
@@ -49,7 +99,7 @@ class V2 extends Version {
      * @return \Twilio\ListResource The requested resource
      * @throws TwilioException For unknown resource
      */
-    public function __get($name) {
+    public function __get(string $name) {
         $method = 'get' . \ucfirst($name);
         if (\method_exists($this, $method)) {
             return $this->$method();
@@ -63,10 +113,10 @@ class V2 extends Version {
      *
      * @param string $name Resource to return
      * @param array $arguments Context parameters
-     * @return \Twilio\InstanceContext The requested resource context
+     * @return InstanceContext The requested resource context
      * @throws TwilioException For unknown resource
      */
-    public function __call($name, $arguments) {
+    public function __call(string $name, array $arguments): InstanceContext {
         $property = $this->$name;
         if (\method_exists($property, 'getContext')) {
             return \call_user_func_array(array($property, 'getContext'), $arguments);
@@ -80,7 +130,7 @@ class V2 extends Version {
      *
      * @return string Machine friendly representation
      */
-    public function __toString() {
+    public function __toString(): string {
         return '[Twilio.Verify.V2]';
     }
 }

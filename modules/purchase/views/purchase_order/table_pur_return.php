@@ -27,7 +27,7 @@ if(isset($vendor)){
     'order_date',
     'subtotal',
     'approve_status',
-    
+
     ];
 }
 
@@ -111,12 +111,12 @@ foreach ($rResult as $aRow) {
         }elseif($aColumns[$i] == 'pur_order_name'){
 
             $numberOutput = '';
-    
+
             $numberOutput = '<a href="' . admin_url('purchase/purchase_order/' . $aRow['id']) . '?return=1"  onclick="init_pur_order(' . $aRow['id'] . '); return false;" >'.$aRow['pur_order_number']. '</a>';
             if($aRow['returns']==1){
                 $numberOutput .= '<br><a href="#" class="btn btn-danger btn-icon" align="center">Return</a>';
             }
-            
+
             $numberOutput .= '<div class="row-options">';
 
             if (has_permission('purchase', '', 'view')) {
@@ -126,7 +126,7 @@ foreach ($rResult as $aRow) {
                 $numberOutput .= ' | <a href="' . admin_url('purchase/pur_order/' . $aRow['id']) . '?return=1">' . _l('edit') . '</a>';
             }
             if (has_permission('purchase', '', 'delete') || is_admin()) {
-                $numberOutput .= ' | <a href="' . admin_url('purchase/delete_pur_orderr/' . $aRow['id']) . '" class="text-danger">' . _l('delete') . '</a>';
+                $numberOutput .= ' | <a href="' . admin_url('purchase/delete_pur_orderr/' . $aRow['id']) . '" class="text-danger _delete">' . _l('delete') . '</a>';
             }
             $numberOutput .= '</div>';
 
@@ -149,7 +149,7 @@ foreach ($rResult as $aRow) {
             else{
                 $_data =" ";
             }
-            
+
         }elseif($aColumns[$i] == '(SELECT GROUP_CONCAT(name SEPARATOR ",") FROM ' . db_prefix() . 'taggables JOIN ' . db_prefix() . 'tags ON ' . db_prefix() . 'taggables.tag_id = ' . db_prefix() . 'tags.id WHERE rel_id = ' . db_prefix() . 'pur_orders.id and rel_type="pur_order" ORDER by tag_order ASC) as tags'){
                 $this->ci->load->model('purchase_model');
                 $_data = '<a href="'.admin_url('purchase/pur_order/'.$this->ci->purchase_model->get_pur_order($aRow['id'])->estimate) .'" class="btn btn-default btn-with-tooltip">'.format_pur_estimate_number($this->ci->purchase_model->get_pur_order($aRow['id'])->estimate).'</a>';
@@ -161,7 +161,7 @@ foreach ($rResult as $aRow) {
         }
         // var_dump($_data);
         $row[] = $_data;
-        
+
     }
     $output['aaData'][] = $row;
 

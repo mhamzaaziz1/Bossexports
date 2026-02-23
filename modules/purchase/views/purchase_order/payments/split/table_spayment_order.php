@@ -3,7 +3,7 @@
 defined('BASEPATH') or exit('No direct script access allowed');
 $aColumns = [
     'tblpur_order_payment.id as pur_order_name',
-    
+
     'Date as order_date',
     'COALESCE(tblpur_orders.Vendor,tblpur_order_payment.vendor) as vendor',
     'pur_order',
@@ -19,7 +19,7 @@ if(isset($vendor)){
     'order_date',
     'subtotal',
     'approve_status',
-    
+
     ];
 }
 
@@ -70,7 +70,7 @@ foreach ($rResult as $aRow) {
             $numberOutput = '<a href="#" >'.$aRow['pur_order_name'].'</a>';
             $row[] = $numberOutput;
             $row[] = _d($aRow['order_date']);
-            
+
             if($aRow['vendor']!="0"){
             $row[] = '<a href="' . admin_url('purchase/vendor/' . $aRow['vendor']) . '" >' .  wh_get_vendor_company_name($aRow['vendor']) . '</a>';
             }else{
@@ -79,7 +79,7 @@ foreach ($rResult as $aRow) {
                 $row[] = '<a href="' . admin_url('purchase/vendor/' . $vendor) . '" >'.wh_get_vendor_company_name($vendor).'</a>';
             }
             $row[] = $aRow['total'];
-            $row[] = '<a href="' . admin_url('purchase/delete_payments/' . $aRow['pur_order_name']) . '" class="btn btn-danger btn-icon"><i class="fa fa-trash"></i></a>';
+            $row[] = '<a href="' . admin_url('purchase/delete_payments/' . $aRow['pur_order_name']) . '" class="btn btn-danger btn-icon _delete"><i class="fa fa-trash"></i></a>';
     $output['aaData'][] = $row;
     //  var_dump($row); die;
 

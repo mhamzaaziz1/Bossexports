@@ -28,7 +28,7 @@ abstract class TaskQueueOptions {
      * @param string $taskOrder How Tasks will be assigned to Workers
      * @return UpdateTaskQueueOptions Options builder
      */
-    public static function update($friendlyName = Values::NONE, $targetWorkers = Values::NONE, $reservationActivitySid = Values::NONE, $assignmentActivitySid = Values::NONE, $maxReservedWorkers = Values::NONE, $taskOrder = Values::NONE) {
+    public static function update(string $friendlyName = Values::NONE, string $targetWorkers = Values::NONE, string $reservationActivitySid = Values::NONE, string $assignmentActivitySid = Values::NONE, int $maxReservedWorkers = Values::NONE, string $taskOrder = Values::NONE): UpdateTaskQueueOptions {
         return new UpdateTaskQueueOptions($friendlyName, $targetWorkers, $reservationActivitySid, $assignmentActivitySid, $maxReservedWorkers, $taskOrder);
     }
 
@@ -38,10 +38,11 @@ abstract class TaskQueueOptions {
      * @param string $evaluateWorkerAttributes The attributes of the Workers to read
      * @param string $workerSid The SID of the Worker with the TaskQueue resources
      *                          to read
+     * @param string $ordering Sorting parameter for TaskQueues
      * @return ReadTaskQueueOptions Options builder
      */
-    public static function read($friendlyName = Values::NONE, $evaluateWorkerAttributes = Values::NONE, $workerSid = Values::NONE) {
-        return new ReadTaskQueueOptions($friendlyName, $evaluateWorkerAttributes, $workerSid);
+    public static function read(string $friendlyName = Values::NONE, string $evaluateWorkerAttributes = Values::NONE, string $workerSid = Values::NONE, string $ordering = Values::NONE): ReadTaskQueueOptions {
+        return new ReadTaskQueueOptions($friendlyName, $evaluateWorkerAttributes, $workerSid, $ordering);
     }
 
     /**
@@ -56,7 +57,7 @@ abstract class TaskQueueOptions {
      *                                      Workers once a task is assigned to them
      * @return CreateTaskQueueOptions Options builder
      */
-    public static function create($targetWorkers = Values::NONE, $maxReservedWorkers = Values::NONE, $taskOrder = Values::NONE, $reservationActivitySid = Values::NONE, $assignmentActivitySid = Values::NONE) {
+    public static function create(string $targetWorkers = Values::NONE, int $maxReservedWorkers = Values::NONE, string $taskOrder = Values::NONE, string $reservationActivitySid = Values::NONE, string $assignmentActivitySid = Values::NONE): CreateTaskQueueOptions {
         return new CreateTaskQueueOptions($targetWorkers, $maxReservedWorkers, $taskOrder, $reservationActivitySid, $assignmentActivitySid);
     }
 }
@@ -76,7 +77,7 @@ class UpdateTaskQueueOptions extends Options {
      *                                while in the queue
      * @param string $taskOrder How Tasks will be assigned to Workers
      */
-    public function __construct($friendlyName = Values::NONE, $targetWorkers = Values::NONE, $reservationActivitySid = Values::NONE, $assignmentActivitySid = Values::NONE, $maxReservedWorkers = Values::NONE, $taskOrder = Values::NONE) {
+    public function __construct(string $friendlyName = Values::NONE, string $targetWorkers = Values::NONE, string $reservationActivitySid = Values::NONE, string $assignmentActivitySid = Values::NONE, int $maxReservedWorkers = Values::NONE, string $taskOrder = Values::NONE) {
         $this->options['friendlyName'] = $friendlyName;
         $this->options['targetWorkers'] = $targetWorkers;
         $this->options['reservationActivitySid'] = $reservationActivitySid;
@@ -91,7 +92,7 @@ class UpdateTaskQueueOptions extends Options {
      * @param string $friendlyName A string to describe the resource
      * @return $this Fluent Builder
      */
-    public function setFriendlyName($friendlyName) {
+    public function setFriendlyName(string $friendlyName): self {
         $this->options['friendlyName'] = $friendlyName;
         return $this;
     }
@@ -103,7 +104,7 @@ class UpdateTaskQueueOptions extends Options {
      *                              criteria for any Tasks that enter the TaskQueue
      * @return $this Fluent Builder
      */
-    public function setTargetWorkers($targetWorkers) {
+    public function setTargetWorkers(string $targetWorkers): self {
         $this->options['targetWorkers'] = $targetWorkers;
         return $this;
     }
@@ -116,7 +117,7 @@ class UpdateTaskQueueOptions extends Options {
      *                                       them
      * @return $this Fluent Builder
      */
-    public function setReservationActivitySid($reservationActivitySid) {
+    public function setReservationActivitySid(string $reservationActivitySid): self {
         $this->options['reservationActivitySid'] = $reservationActivitySid;
         return $this;
     }
@@ -128,7 +129,7 @@ class UpdateTaskQueueOptions extends Options {
      *                                      Workers when a task is assigned for them
      * @return $this Fluent Builder
      */
-    public function setAssignmentActivitySid($assignmentActivitySid) {
+    public function setAssignmentActivitySid(string $assignmentActivitySid): self {
         $this->options['assignmentActivitySid'] = $assignmentActivitySid;
         return $this;
     }
@@ -141,7 +142,7 @@ class UpdateTaskQueueOptions extends Options {
      *                                while in the queue
      * @return $this Fluent Builder
      */
-    public function setMaxReservedWorkers($maxReservedWorkers) {
+    public function setMaxReservedWorkers(int $maxReservedWorkers): self {
         $this->options['maxReservedWorkers'] = $maxReservedWorkers;
         return $this;
     }
@@ -152,7 +153,7 @@ class UpdateTaskQueueOptions extends Options {
      * @param string $taskOrder How Tasks will be assigned to Workers
      * @return $this Fluent Builder
      */
-    public function setTaskOrder($taskOrder) {
+    public function setTaskOrder(string $taskOrder): self {
         $this->options['taskOrder'] = $taskOrder;
         return $this;
     }
@@ -162,14 +163,9 @@ class UpdateTaskQueueOptions extends Options {
      *
      * @return string Machine friendly representation
      */
-    public function __toString() {
-        $options = array();
-        foreach ($this->options as $key => $value) {
-            if ($value != Values::NONE) {
-                $options[] = "$key=$value";
-            }
-        }
-        return '[Twilio.Taskrouter.V1.UpdateTaskQueueOptions ' . \implode(' ', $options) . ']';
+    public function __toString(): string {
+        $options = \http_build_query(Values::of($this->options), '', ' ');
+        return '[Twilio.Taskrouter.V1.UpdateTaskQueueOptions ' . $options . ']';
     }
 }
 
@@ -180,11 +176,13 @@ class ReadTaskQueueOptions extends Options {
      * @param string $evaluateWorkerAttributes The attributes of the Workers to read
      * @param string $workerSid The SID of the Worker with the TaskQueue resources
      *                          to read
+     * @param string $ordering Sorting parameter for TaskQueues
      */
-    public function __construct($friendlyName = Values::NONE, $evaluateWorkerAttributes = Values::NONE, $workerSid = Values::NONE) {
+    public function __construct(string $friendlyName = Values::NONE, string $evaluateWorkerAttributes = Values::NONE, string $workerSid = Values::NONE, string $ordering = Values::NONE) {
         $this->options['friendlyName'] = $friendlyName;
         $this->options['evaluateWorkerAttributes'] = $evaluateWorkerAttributes;
         $this->options['workerSid'] = $workerSid;
+        $this->options['ordering'] = $ordering;
     }
 
     /**
@@ -194,7 +192,7 @@ class ReadTaskQueueOptions extends Options {
      *                             read
      * @return $this Fluent Builder
      */
-    public function setFriendlyName($friendlyName) {
+    public function setFriendlyName(string $friendlyName): self {
         $this->options['friendlyName'] = $friendlyName;
         return $this;
     }
@@ -205,7 +203,7 @@ class ReadTaskQueueOptions extends Options {
      * @param string $evaluateWorkerAttributes The attributes of the Workers to read
      * @return $this Fluent Builder
      */
-    public function setEvaluateWorkerAttributes($evaluateWorkerAttributes) {
+    public function setEvaluateWorkerAttributes(string $evaluateWorkerAttributes): self {
         $this->options['evaluateWorkerAttributes'] = $evaluateWorkerAttributes;
         return $this;
     }
@@ -217,8 +215,19 @@ class ReadTaskQueueOptions extends Options {
      *                          to read
      * @return $this Fluent Builder
      */
-    public function setWorkerSid($workerSid) {
+    public function setWorkerSid(string $workerSid): self {
         $this->options['workerSid'] = $workerSid;
+        return $this;
+    }
+
+    /**
+     * Sorting parameter for TaskQueues
+     *
+     * @param string $ordering Sorting parameter for TaskQueues
+     * @return $this Fluent Builder
+     */
+    public function setOrdering(string $ordering): self {
+        $this->options['ordering'] = $ordering;
         return $this;
     }
 
@@ -227,14 +236,9 @@ class ReadTaskQueueOptions extends Options {
      *
      * @return string Machine friendly representation
      */
-    public function __toString() {
-        $options = array();
-        foreach ($this->options as $key => $value) {
-            if ($value != Values::NONE) {
-                $options[] = "$key=$value";
-            }
-        }
-        return '[Twilio.Taskrouter.V1.ReadTaskQueueOptions ' . \implode(' ', $options) . ']';
+    public function __toString(): string {
+        $options = \http_build_query(Values::of($this->options), '', ' ');
+        return '[Twilio.Taskrouter.V1.ReadTaskQueueOptions ' . $options . ']';
     }
 }
 
@@ -250,7 +254,7 @@ class CreateTaskQueueOptions extends Options {
      * @param string $assignmentActivitySid The SID of the Activity to assign
      *                                      Workers once a task is assigned to them
      */
-    public function __construct($targetWorkers = Values::NONE, $maxReservedWorkers = Values::NONE, $taskOrder = Values::NONE, $reservationActivitySid = Values::NONE, $assignmentActivitySid = Values::NONE) {
+    public function __construct(string $targetWorkers = Values::NONE, int $maxReservedWorkers = Values::NONE, string $taskOrder = Values::NONE, string $reservationActivitySid = Values::NONE, string $assignmentActivitySid = Values::NONE) {
         $this->options['targetWorkers'] = $targetWorkers;
         $this->options['maxReservedWorkers'] = $maxReservedWorkers;
         $this->options['taskOrder'] = $taskOrder;
@@ -265,7 +269,7 @@ class CreateTaskQueueOptions extends Options {
      *                              criteria for any Tasks that enter the TaskQueue
      * @return $this Fluent Builder
      */
-    public function setTargetWorkers($targetWorkers) {
+    public function setTargetWorkers(string $targetWorkers): self {
         $this->options['targetWorkers'] = $targetWorkers;
         return $this;
     }
@@ -276,7 +280,7 @@ class CreateTaskQueueOptions extends Options {
      * @param int $maxReservedWorkers The maximum number of Workers to reserve
      * @return $this Fluent Builder
      */
-    public function setMaxReservedWorkers($maxReservedWorkers) {
+    public function setMaxReservedWorkers(int $maxReservedWorkers): self {
         $this->options['maxReservedWorkers'] = $maxReservedWorkers;
         return $this;
     }
@@ -287,7 +291,7 @@ class CreateTaskQueueOptions extends Options {
      * @param string $taskOrder How Tasks will be assigned to Workers
      * @return $this Fluent Builder
      */
-    public function setTaskOrder($taskOrder) {
+    public function setTaskOrder(string $taskOrder): self {
         $this->options['taskOrder'] = $taskOrder;
         return $this;
     }
@@ -300,7 +304,7 @@ class CreateTaskQueueOptions extends Options {
      *                                       them
      * @return $this Fluent Builder
      */
-    public function setReservationActivitySid($reservationActivitySid) {
+    public function setReservationActivitySid(string $reservationActivitySid): self {
         $this->options['reservationActivitySid'] = $reservationActivitySid;
         return $this;
     }
@@ -312,7 +316,7 @@ class CreateTaskQueueOptions extends Options {
      *                                      Workers once a task is assigned to them
      * @return $this Fluent Builder
      */
-    public function setAssignmentActivitySid($assignmentActivitySid) {
+    public function setAssignmentActivitySid(string $assignmentActivitySid): self {
         $this->options['assignmentActivitySid'] = $assignmentActivitySid;
         return $this;
     }
@@ -322,13 +326,8 @@ class CreateTaskQueueOptions extends Options {
      *
      * @return string Machine friendly representation
      */
-    public function __toString() {
-        $options = array();
-        foreach ($this->options as $key => $value) {
-            if ($value != Values::NONE) {
-                $options[] = "$key=$value";
-            }
-        }
-        return '[Twilio.Taskrouter.V1.CreateTaskQueueOptions ' . \implode(' ', $options) . ']';
+    public function __toString(): string {
+        $options = \http_build_query(Values::of($this->options), '', ' ');
+        return '[Twilio.Taskrouter.V1.CreateTaskQueueOptions ' . $options . ']';
     }
 }

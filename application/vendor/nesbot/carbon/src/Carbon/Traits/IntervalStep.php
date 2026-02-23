@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * This file is part of the Carbon package.
  *
@@ -8,8 +10,10 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
 namespace Carbon\Traits;
 
+use Carbon\Callback;
 use Carbon\Carbon;
 use Carbon\CarbonImmutable;
 use Carbon\CarbonInterface;
@@ -64,7 +68,9 @@ trait IntervalStep
         $carbonDate = $dateTime instanceof CarbonInterface ? $dateTime : $this->resolveCarbon($dateTime);
 
         if ($this->step) {
-            return $carbonDate->setDateTimeFrom(($this->step)($carbonDate->copy(), $negated));
+            $carbonDate = Callback::parameter($this->step, $carbonDate->avoidMutation());
+
+            return $carbonDate->modify(($this->step)($carbonDate, $negated)->format('Y-m-d H:i:s.u e O'));
         }
 
         if ($negated) {
@@ -76,12 +82,8 @@ trait IntervalStep
 
     /**
      * Convert DateTimeImmutable instance to CarbonImmutable instance and DateTime instance to Carbon instance.
-     *
-     * @param DateTimeInterface $dateTime
-     *
-     * @return Carbon|CarbonImmutable
      */
-    private function resolveCarbon(DateTimeInterface $dateTime)
+    private function resolveCarbon(DateTimeInterface $dateTime): Carbon|CarbonImmutable
     {
         if ($dateTime instanceof DateTimeImmutable) {
             return CarbonImmutable::instance($dateTime);

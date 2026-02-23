@@ -19,36 +19,28 @@ class MessageContext extends InstanceContext {
     /**
      * Initialize the MessageContext
      *
-     * @param \Twilio\Version $version Version that contains the resource
-     * @param string $serviceSid The SID of the Service to fetch the resource from
-     * @param string $channelSid The unique ID of the Channel the message to fetch
-     *                           belongs to
-     * @param string $sid The unique string that identifies the resource
-     * @return \Twilio\Rest\IpMessaging\V1\Service\Channel\MessageContext
+     * @param Version $version Version that contains the resource
+     * @param string $serviceSid The service_sid
+     * @param string $channelSid The channel_sid
+     * @param string $sid The sid
      */
     public function __construct(Version $version, $serviceSid, $channelSid, $sid) {
         parent::__construct($version);
 
         // Path Solution
-        $this->solution = array('serviceSid' => $serviceSid, 'channelSid' => $channelSid, 'sid' => $sid, );
+        $this->solution = ['serviceSid' => $serviceSid, 'channelSid' => $channelSid, 'sid' => $sid, ];
 
         $this->uri = '/Services/' . \rawurlencode($serviceSid) . '/Channels/' . \rawurlencode($channelSid) . '/Messages/' . \rawurlencode($sid) . '';
     }
 
     /**
-     * Fetch a MessageInstance
+     * Fetch the MessageInstance
      *
      * @return MessageInstance Fetched MessageInstance
      * @throws TwilioException When an HTTP error occurs.
      */
-    public function fetch() {
-        $params = Values::of(array());
-
-        $payload = $this->version->fetch(
-            'GET',
-            $this->uri,
-            $params
-        );
+    public function fetch(): MessageInstance {
+        $payload = $this->version->fetch('GET', $this->uri);
 
         return new MessageInstance(
             $this->version,
@@ -60,13 +52,13 @@ class MessageContext extends InstanceContext {
     }
 
     /**
-     * Deletes the MessageInstance
+     * Delete the MessageInstance
      *
-     * @return boolean True if delete succeeds, false otherwise
+     * @return bool True if delete succeeds, false otherwise
      * @throws TwilioException When an HTTP error occurs.
      */
-    public function delete() {
-        return $this->version->delete('delete', $this->uri);
+    public function delete(): bool {
+        return $this->version->delete('DELETE', $this->uri);
     }
 
     /**
@@ -76,17 +68,12 @@ class MessageContext extends InstanceContext {
      * @return MessageInstance Updated MessageInstance
      * @throws TwilioException When an HTTP error occurs.
      */
-    public function update($options = array()) {
+    public function update(array $options = []): MessageInstance {
         $options = new Values($options);
 
-        $data = Values::of(array('Body' => $options['body'], 'Attributes' => $options['attributes'], ));
+        $data = Values::of(['Body' => $options['body'], 'Attributes' => $options['attributes'], ]);
 
-        $payload = $this->version->update(
-            'POST',
-            $this->uri,
-            array(),
-            $data
-        );
+        $payload = $this->version->update('POST', $this->uri, [], $data);
 
         return new MessageInstance(
             $this->version,
@@ -102,8 +89,8 @@ class MessageContext extends InstanceContext {
      *
      * @return string Machine friendly representation
      */
-    public function __toString() {
-        $context = array();
+    public function __toString(): string {
+        $context = [];
         foreach ($this->solution as $key => $value) {
             $context[] = "$key=$value";
         }

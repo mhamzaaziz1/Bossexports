@@ -13,6 +13,11 @@ use Twilio\Deserialize;
 use Twilio\Exceptions\TwilioException;
 use Twilio\InstanceResource;
 use Twilio\Options;
+use Twilio\Rest\Messaging\V1\Service\AlphaSenderList;
+use Twilio\Rest\Messaging\V1\Service\PhoneNumberList;
+use Twilio\Rest\Messaging\V1\Service\ShortCodeList;
+use Twilio\Rest\Messaging\V1\Service\UsAppToPersonList;
+use Twilio\Rest\Messaging\V1\Service\UsAppToPersonUsecaseList;
 use Twilio\Values;
 use Twilio\Version;
 
@@ -39,25 +44,29 @@ use Twilio\Version;
  * @property int $validityPeriod
  * @property string $url
  * @property array $links
+ * @property string $usecase
+ * @property bool $usAppToPersonRegistered
+ * @property bool $useInboundWebhookOnNumber
  */
 class ServiceInstance extends InstanceResource {
-    protected $_phoneNumbers = null;
-    protected $_shortCodes = null;
-    protected $_alphaSenders = null;
+    protected $_phoneNumbers;
+    protected $_shortCodes;
+    protected $_alphaSenders;
+    protected $_usAppToPerson;
+    protected $_usAppToPersonUsecases;
 
     /**
      * Initialize the ServiceInstance
      *
-     * @param \Twilio\Version $version Version that contains the resource
+     * @param Version $version Version that contains the resource
      * @param mixed[] $payload The response payload
      * @param string $sid The SID that identifies the resource to fetch
-     * @return \Twilio\Rest\Messaging\V1\ServiceInstance
      */
-    public function __construct(Version $version, array $payload, $sid = null) {
+    public function __construct(Version $version, array $payload, string $sid = null) {
         parent::__construct($version);
 
         // Marshaled Properties
-        $this->properties = array(
+        $this->properties = [
             'sid' => Values::array_get($payload, 'sid'),
             'accountSid' => Values::array_get($payload, 'account_sid'),
             'friendlyName' => Values::array_get($payload, 'friendly_name'),
@@ -78,19 +87,21 @@ class ServiceInstance extends InstanceResource {
             'validityPeriod' => Values::array_get($payload, 'validity_period'),
             'url' => Values::array_get($payload, 'url'),
             'links' => Values::array_get($payload, 'links'),
-        );
+            'usecase' => Values::array_get($payload, 'usecase'),
+            'usAppToPersonRegistered' => Values::array_get($payload, 'us_app_to_person_registered'),
+            'useInboundWebhookOnNumber' => Values::array_get($payload, 'use_inbound_webhook_on_number'),
+        ];
 
-        $this->solution = array('sid' => $sid ?: $this->properties['sid'], );
+        $this->solution = ['sid' => $sid ?: $this->properties['sid'], ];
     }
 
     /**
      * Generate an instance context for the instance, the context is capable of
      * performing various actions.  All instance actions are proxied to the context
      *
-     * @return \Twilio\Rest\Messaging\V1\ServiceContext Context for this
-     *                                                  ServiceInstance
+     * @return ServiceContext Context for this ServiceInstance
      */
-    protected function proxy() {
+    protected function proxy(): ServiceContext {
         if (!$this->context) {
             $this->context = new ServiceContext($this->version, $this->solution['sid']);
         }
@@ -105,55 +116,63 @@ class ServiceInstance extends InstanceResource {
      * @return ServiceInstance Updated ServiceInstance
      * @throws TwilioException When an HTTP error occurs.
      */
-    public function update($options = array()) {
+    public function update(array $options = []): ServiceInstance {
         return $this->proxy()->update($options);
     }
 
     /**
-     * Fetch a ServiceInstance
+     * Fetch the ServiceInstance
      *
      * @return ServiceInstance Fetched ServiceInstance
      * @throws TwilioException When an HTTP error occurs.
      */
-    public function fetch() {
+    public function fetch(): ServiceInstance {
         return $this->proxy()->fetch();
     }
 
     /**
-     * Deletes the ServiceInstance
+     * Delete the ServiceInstance
      *
-     * @return boolean True if delete succeeds, false otherwise
+     * @return bool True if delete succeeds, false otherwise
      * @throws TwilioException When an HTTP error occurs.
      */
-    public function delete() {
+    public function delete(): bool {
         return $this->proxy()->delete();
     }
 
     /**
      * Access the phoneNumbers
-     *
-     * @return \Twilio\Rest\Messaging\V1\Service\PhoneNumberList
      */
-    protected function getPhoneNumbers() {
+    protected function getPhoneNumbers(): PhoneNumberList {
         return $this->proxy()->phoneNumbers;
     }
 
     /**
      * Access the shortCodes
-     *
-     * @return \Twilio\Rest\Messaging\V1\Service\ShortCodeList
      */
-    protected function getShortCodes() {
+    protected function getShortCodes(): ShortCodeList {
         return $this->proxy()->shortCodes;
     }
 
     /**
      * Access the alphaSenders
-     *
-     * @return \Twilio\Rest\Messaging\V1\Service\AlphaSenderList
      */
-    protected function getAlphaSenders() {
+    protected function getAlphaSenders(): AlphaSenderList {
         return $this->proxy()->alphaSenders;
+    }
+
+    /**
+     * Access the usAppToPerson
+     */
+    protected function getUsAppToPerson(): UsAppToPersonList {
+        return $this->proxy()->usAppToPerson;
+    }
+
+    /**
+     * Access the usAppToPersonUsecases
+     */
+    protected function getUsAppToPersonUsecases(): UsAppToPersonUsecaseList {
+        return $this->proxy()->usAppToPersonUsecases;
     }
 
     /**
@@ -163,7 +182,7 @@ class ServiceInstance extends InstanceResource {
      * @return mixed The requested property
      * @throws TwilioException For unknown properties
      */
-    public function __get($name) {
+    public function __get(string $name) {
         if (\array_key_exists($name, $this->properties)) {
             return $this->properties[$name];
         }
@@ -181,8 +200,8 @@ class ServiceInstance extends InstanceResource {
      *
      * @return string Machine friendly representation
      */
-    public function __toString() {
-        $context = array();
+    public function __toString(): string {
+        $context = [];
         foreach ($this->solution as $key => $value) {
             $context[] = "$key=$value";
         }

@@ -22,21 +22,23 @@ function init_admin_auth_assets()
 {
     $CI        = &get_instance();
     $groupName = 'admin-auth';
+
     add_favicon_link_asset($groupName);
-    $CI->app_css->add('reset-css', 'assets/css/reset.min.css', $groupName);
+
+    $CI->app_css->add('reset-css', 'assets/css/reset.min.css', $groupName, ['inter-font']);
+    $CI->app_css->add('inter-font', 'assets/plugins/inter/inter.css', $groupName);
     $CI->app_css->add('bootstrap-css', 'assets/plugins/bootstrap/css/bootstrap.min.css', $groupName);
+
     if (is_rtl()) {
         $CI->app_css->add('bootstrap-rtl-css', 'assets/plugins/bootstrap-arabic/css/bootstrap-arabic.min.css', $groupName);
     }
-    $CI->app_css->add('roboto-css', 'assets/plugins/roboto/roboto.css', $groupName);
-    $CI->app_css->add('bootstrap-overrides', 'assets/css/bs-overides.min.css', $groupName);
+
+    $CI->app_css->add('tailwind-css', base_url($CI->app_css->core_file('assets/builds', 'tailwind.css')) . '?v=' . $CI->app_css->core_version(), $groupName, ['bootstrap-css']);
 }
 
 function _init_admin_assets()
 {
-    $CI          = &get_instance();
-    $locale      = $GLOBALS['locale'];
-    $localeUpper = strtoupper($locale);
+    $CI = &get_instance();
 
     // Javascript
     $CI->app_scripts->add('vendor-js', 'assets/builds/vendor-admin.js');
@@ -67,18 +69,24 @@ function _init_admin_assets()
         ['vendor-js', 'datatables-js', 'bootstrap-select-js', 'tinymce-js', 'jquery-migrate-js', 'jquery-validation-js', 'moment-js', 'common-js']
     );
 
+    $CI->app_scripts->add('app-v3', 'assets/builds/app.js');
+
     // CSS
     add_favicon_link_asset();
 
     $CI->app_css->add('reset-css', 'assets/css/reset.min.css');
-    $CI->app_css->add('roboto-css', 'assets/plugins/roboto/roboto.css', 'admin', ['reset-css']);
+    $CI->app_css->add('inter-font', 'assets/plugins/inter/inter.css', 'admin', ['reset-css']);
     $CI->app_css->add('vendor-css', 'assets/builds/vendor-admin.css', 'admin', ['reset-css']);
+
+    $CI->app_css->add('fontawesome-css', 'assets/plugins/font-awesome/css/all.min.css');
 
     if (is_rtl()) {
         $CI->app_css->add('bootstrap-rtl-css', 'assets/plugins/bootstrap-arabic/css/bootstrap-arabic.min.css');
     }
 
-    $CI->app_css->add('app-css', base_url($CI->app_css->core_file('assets/css', 'style.css')) . '?v=' . $CI->app_css->core_version());
+    $CI->app_css->add('tailwind-css', base_url($CI->app_css->core_file('assets/builds', 'tailwind.css')) . '?v=' . $CI->app_css->core_version());
+
+    $CI->app_css->add('app-css', base_url($CI->app_css->core_file('assets/css', 'style.css')) . '?v=' . $CI->app_css->core_version(), 'admin', ['tailwind-css']);
 
     if (file_exists(FCPATH . 'assets/css/custom.css')) {
         $CI->app_css->add('custom-css', base_url('assets/css/custom.css'), 'admin', ['app-css']);
@@ -88,22 +96,18 @@ function _init_admin_assets()
 }
 
 
-function add_calendar_assets($group = 'admin', $tryGcal = true)
+function add_calendar_assets($group = 'admin')
 {
     $locale = $GLOBALS['locale'];
     $CI     = &get_instance();
 
-    $CI->app_scripts->add('full-calendar-js', 'assets/plugins/fullcalendar/fullcalendar.min.js', $group);
+    $CI->app_scripts->add('fullcalendar-js', 'assets/plugins/fullcalendar/lib/main.min.js', $group);
 
-    if ($tryGcal && get_option('google_api_key') != '') {
-        $CI->app_scripts->add('full-calendar-gcal-js', 'assets/plugins/fullcalendar/gcal.min.js', $group);
+    if ($locale != 'en' && file_exists(FCPATH . 'assets/plugins/fullcalendar/lib/locales/' . $locale . '.js')) {
+        $CI->app_scripts->add('fullcalendar-lang-js', 'assets/plugins/fullcalendar/lib/locales/' . $locale . '.js', $group);
     }
 
-    if ($locale != 'en' && file_exists(FCPATH . 'assets/plugins/fullcalendar/locale/' . $locale . '.js')) {
-        $CI->app_scripts->add('full-calendar-lang-js', 'assets/plugins/fullcalendar/locale/' . $locale . '.js', $group);
-    }
-
-    $CI->app_css->add('full-calendar-css', 'assets/plugins/fullcalendar/fullcalendar.min.css', $group);
+    $CI->app_css->add('fullcalendar-css', 'assets/plugins/fullcalendar/lib/main.min.css', $group);
 }
 
 function add_moment_js_assets($group = 'admin')
@@ -184,6 +188,12 @@ function add_dropbox_js_assets($group = 'admin')
 function add_google_api_js_assets($group = 'admin')
 {
     if (get_option('enable_google_picker') == '1') {
+        get_instance()->app_scripts->add('google-gsi-js', [
+            'path'       => 'https://accounts.google.com/gsi/client',
+            'attributes' => [
+                'defer',
+            ],
+        ], $group);
         get_instance()->app_scripts->add('google-js', [
             'path'       => 'https://apis.google.com/js/api.js?onload=onGoogleApiLoad',
             'attributes' => [

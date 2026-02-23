@@ -231,6 +231,7 @@ if(isset($invoice->scheduled_email) && $invoice->scheduled_email) { ?>
                   <?php echo app_format_money($invoice->total, $invoice->currency_name); ?>
                </td>
             </tr>
+            <?php if (get_option('show_shipping_on_sales') == 1) { ?>
             <tr>
                <td><span class="bold"><?php echo _l('Shipping Expense'); ?></span>
                </td>
@@ -244,6 +245,7 @@ if(isset($invoice->scheduled_email) && $invoice->scheduled_email) { ?>
                   <?php echo app_format_money($invoice->other_expense, $invoice->currency_name); ?>
                </td>
             </tr>
+            <?php } ?>
             <?php if(count($invoice->payments) > 0 && get_option('show_total_paid_on_invoice') == 1) { ?>
                <tr>
                   <td><span class="bold"><?php echo _l('invoice_total_paid'); ?></span></td>
@@ -350,20 +352,33 @@ if(isset($invoice->scheduled_email) && $invoice->scheduled_email) { ?>
                               
                               ?>
                               <tr>
-                                 <td>Balance: <input type="password" value="<?php echo $result['balance_due']?>" id="myInput" disabled></td>
-                                <td><button onclick="myFunction()">Show Balance</button></td>
-                                
-                                <script>
-                                function myFunction() {
-                                  var x = document.getElementById("myInput");
-                                  if (x.type === "password") {
-                                    x.type = "text";
-                                  } else {
-                                    x.type = "password";
-                                  }
-                                }
-                                </script>
-                                 
+                                 <td><span class="bold">Balance:</span></td>
+                                 <td>
+                                    <div class="input-group input-group-sm pull-right" style="width: 150px;">
+                                        <input type="password" class="form-control" style="background: transparent; border: 0; box-shadow: none; text-align: right; padding-right: 10px; height: 30px;" value="<?php echo $result['balance_due']?>" id="balanceInput" readonly>
+                                        <span class="input-group-btn">
+                                            <button class="btn btn-default" type="button" onclick="toggleBalanceVisibility()" id="balanceBtn" data-toggle="tooltip" title="Show Balance" style="height: 30px;">
+                                                <i class="fa fa-eye"></i>
+                                            </button>
+                                        </span>
+                                    </div>
+                                    <script>
+                                       function toggleBalanceVisibility() {
+                                          var x = document.getElementById("balanceInput");
+                                          var btn = document.getElementById("balanceBtn");
+                                          var icon = btn.querySelector('i');
+                                          if (x.type === "password") {
+                                             x.type = "text";
+                                             icon.classList.remove('fa-eye');
+                                             icon.classList.add('fa-eye-slash');
+                                          } else {
+                                             x.type = "password";
+                                             icon.classList.remove('fa-eye-slash');
+                                             icon.classList.add('fa-eye');
+                                          }
+                                       }
+                                    </script>
+                                 </td>
                               </tr>
             <?php } ?>
          </tbody>

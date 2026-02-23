@@ -12,7 +12,7 @@ defined('BASEPATH') or exit('No direct script access allowed');
 function woocommerce_add_settings_tab()
 {
     $CI = & get_instance();
-    $CI->app_tabs->add_settings_tab('woocommerce-settings', [
+    $CI->app->add_settings_section('woocommerce-settings', [
      'name'     => ''._l('woocommerce_settings').'',
      'view'     => 'woocommerce/settings',
      'position' => 41,

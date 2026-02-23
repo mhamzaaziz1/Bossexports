@@ -8,7 +8,9 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
 return array_replace_recursive(require __DIR__.'/en.php', [
+    'first_day_of_week' => 0,
     'meridiem' => ['Ma', 'Mo'],
     'weekdays' => ['Chumapiri', 'Chumatato', 'Chumaine', 'Chumatano', 'Aramisi', 'Ichuma', 'Esabato'],
     'weekdays_short' => ['Cpr', 'Ctt', 'Cmn', 'Cmt', 'Ars', 'Icm', 'Est'],

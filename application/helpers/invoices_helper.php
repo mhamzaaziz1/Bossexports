@@ -1,8 +1,5 @@
 <?php
 
-use GuzzleHttp\Client;
-use GuzzleHttp\Exception\RequestException;
-
 defined('BASEPATH') or exit('No direct script access allowed');
 
 /**
@@ -181,9 +178,11 @@ function format_invoice_status($status, $classes = '', $label = true)
     if (!class_exists('Invoices_model', false)) {
         get_instance()->load->model('invoices_model');
     }
-
+    
     $id          = $status;
+    
     $label_class = get_invoice_status_label($status);
+
     if ($status == Invoices_model::STATUS_UNPAID) {
         $status = _l('invoice_status_unpaid');
     } elseif ($status == Invoices_model::STATUS_PAID) {
@@ -198,11 +197,12 @@ function format_invoice_status($status, $classes = '', $label = true)
         // status 6
         $status = _l('invoice_status_draft');
     }
+
     if ($label == true) {
-        return '<span class="label label-' . $label_class . ' ' . $classes . ' s-status invoice-status-' . $id . '">' . $status . '</span>';
+        return '<span class="label label-' . $label_class . ' ' . $classes . ' s-status invoice-status-' . e($id) . '">' . e($status) . '</span>';
     }
 
-    return $status;
+    return e($status);
 }
 /**
  * Return invoice status label class baed on twitter bootstrap classses
@@ -438,11 +438,17 @@ function format_invoice_number($id)
 {
     $CI = &get_instance();
 
-    $CI->db->select('date,number,prefix,number_format,status')
-        ->from(db_prefix() . 'invoices')
-        ->where('id', $id);
+    if (!is_object($id)) {
+        $CI->db->select('date,number,prefix,number_format,status')
+            ->from(db_prefix() . 'invoices')
+            ->where('id', $id);
 
-    $invoice = $CI->db->get()->row();
+        $invoice = $CI->db->get()->row();
+    } else {
+        $invoice = $id;
+
+        $id = $invoice->id;
+    }
 
     if (!$invoice) {
         return '';
@@ -590,7 +596,7 @@ function found_invoice_mode($modes, $invoiceid, $offline = true, $show_on_pdf = 
  */
 function get_invoices_percent_by_status($status)
 {
-    $has_permission_view = has_permission('invoices', '', 'view');
+    $has_permission_view = staff_can('view',  'invoices');
     $total_invoices      = total_rows(db_prefix() . 'invoices', 'status NOT IN(5)' . (!$has_permission_view ? ' AND (' . get_invoices_where_sql_for_staff(get_staff_user_id()) . ')' : ''));
 
     $data            = [];
@@ -674,7 +680,7 @@ function load_invoices_total_template()
 function get_invoices_where_sql_for_staff($staff_id)
 {
     $CI                                 = &get_instance();
-    $has_permission_view_own            = has_permission('invoices', '', 'view_own');
+    $has_permission_view_own            = staff_can('view_own',  'invoices');
     $allow_staff_view_invoices_assigned = get_option('allow_staff_view_invoices_assigned');
     $whereUser                          = '';
     if ($has_permission_view_own) {

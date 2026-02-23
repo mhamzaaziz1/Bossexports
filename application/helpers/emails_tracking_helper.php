@@ -8,7 +8,7 @@ function email_tracking_inject_in_body($template)
 {
     $CI = &get_instance();
     if (in_array($template->slug, get_available_tracking_templates_slugs())) {
-        $template->message .= '<img src="' . site_url('check_emails/track/' . $template->tmp_id) . '" alt="" width="1" height="1" border="0">';
+        $template->message .= '<img src="' . site_url('check_emails/track/' . $template->tmp_id) . '" alt="" width="1" height="1" border="0" style="height:1px!important;width:1px!important;border-width:0!important;margin-top:0!important;margin-bottom:0!important;margin-right:0!important;margin-left:0!important;padding-top:0!important;padding-bottom:0!important;padding-right:0!important;padding-left:0!important">';
         $template->has_tracking = true;
     }
 
@@ -70,6 +70,7 @@ function get_available_tracking_templates_slugs()
         'send-contract',
         'send-subscription',
         'subscription-payment-failed',
+        'contract-sign-reminder',
     ];
 
     return hooks()->apply_filters('available_tracking_templates', $slugs);

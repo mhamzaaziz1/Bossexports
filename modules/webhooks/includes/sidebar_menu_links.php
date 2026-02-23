@@ -46,7 +46,7 @@ hooks()->add_action('admin_init', function () use ($cache_data) {
         ]);
     }
 
-    $CI->app_tabs->add_settings_tab('webhooks', [
+    $CI->app->add_settings_section('webhooks', [
         'name' => _l('webhooks_cron_job'),
         'view' => 'webhooks/settings/webhooks_cron_job',
         'position' => 50,

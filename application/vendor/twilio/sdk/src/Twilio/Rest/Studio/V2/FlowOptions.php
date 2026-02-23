@@ -12,44 +12,41 @@ namespace Twilio\Rest\Studio\V2;
 use Twilio\Options;
 use Twilio\Values;
 
-/**
- * PLEASE NOTE that this class contains beta products that are subject to change. Use them with caution.
- */
 abstract class FlowOptions {
     /**
-     * @param string $commitMessage Description on change made in the revision
+     * @param string $commitMessage Description of change made in the revision
      * @return CreateFlowOptions Options builder
      */
-    public static function create($commitMessage = Values::NONE) {
+    public static function create(string $commitMessage = Values::NONE): CreateFlowOptions {
         return new CreateFlowOptions($commitMessage);
     }
 
     /**
      * @param string $friendlyName The string that you assigned to describe the Flow
      * @param array $definition JSON representation of flow definition
-     * @param string $commitMessage Description on change made in the revision
+     * @param string $commitMessage Description of change made in the revision
      * @return UpdateFlowOptions Options builder
      */
-    public static function update($friendlyName = Values::NONE, $definition = Values::NONE, $commitMessage = Values::NONE) {
+    public static function update(string $friendlyName = Values::NONE, array $definition = Values::ARRAY_NONE, string $commitMessage = Values::NONE): UpdateFlowOptions {
         return new UpdateFlowOptions($friendlyName, $definition, $commitMessage);
     }
 }
 
 class CreateFlowOptions extends Options {
     /**
-     * @param string $commitMessage Description on change made in the revision
+     * @param string $commitMessage Description of change made in the revision
      */
-    public function __construct($commitMessage = Values::NONE) {
+    public function __construct(string $commitMessage = Values::NONE) {
         $this->options['commitMessage'] = $commitMessage;
     }
 
     /**
-     * Description on change made in the revision.
+     * Description of change made in the revision.
      *
-     * @param string $commitMessage Description on change made in the revision
+     * @param string $commitMessage Description of change made in the revision
      * @return $this Fluent Builder
      */
-    public function setCommitMessage($commitMessage) {
+    public function setCommitMessage(string $commitMessage): self {
         $this->options['commitMessage'] = $commitMessage;
         return $this;
     }
@@ -59,14 +56,9 @@ class CreateFlowOptions extends Options {
      *
      * @return string Machine friendly representation
      */
-    public function __toString() {
-        $options = array();
-        foreach ($this->options as $key => $value) {
-            if ($value != Values::NONE) {
-                $options[] = "$key=$value";
-            }
-        }
-        return '[Twilio.Studio.V2.CreateFlowOptions ' . \implode(' ', $options) . ']';
+    public function __toString(): string {
+        $options = \http_build_query(Values::of($this->options), '', ' ');
+        return '[Twilio.Studio.V2.CreateFlowOptions ' . $options . ']';
     }
 }
 
@@ -74,9 +66,9 @@ class UpdateFlowOptions extends Options {
     /**
      * @param string $friendlyName The string that you assigned to describe the Flow
      * @param array $definition JSON representation of flow definition
-     * @param string $commitMessage Description on change made in the revision
+     * @param string $commitMessage Description of change made in the revision
      */
-    public function __construct($friendlyName = Values::NONE, $definition = Values::NONE, $commitMessage = Values::NONE) {
+    public function __construct(string $friendlyName = Values::NONE, array $definition = Values::ARRAY_NONE, string $commitMessage = Values::NONE) {
         $this->options['friendlyName'] = $friendlyName;
         $this->options['definition'] = $definition;
         $this->options['commitMessage'] = $commitMessage;
@@ -88,7 +80,7 @@ class UpdateFlowOptions extends Options {
      * @param string $friendlyName The string that you assigned to describe the Flow
      * @return $this Fluent Builder
      */
-    public function setFriendlyName($friendlyName) {
+    public function setFriendlyName(string $friendlyName): self {
         $this->options['friendlyName'] = $friendlyName;
         return $this;
     }
@@ -99,18 +91,18 @@ class UpdateFlowOptions extends Options {
      * @param array $definition JSON representation of flow definition
      * @return $this Fluent Builder
      */
-    public function setDefinition($definition) {
+    public function setDefinition(array $definition): self {
         $this->options['definition'] = $definition;
         return $this;
     }
 
     /**
-     * Description on change made in the revision.
+     * Description of change made in the revision.
      *
-     * @param string $commitMessage Description on change made in the revision
+     * @param string $commitMessage Description of change made in the revision
      * @return $this Fluent Builder
      */
-    public function setCommitMessage($commitMessage) {
+    public function setCommitMessage(string $commitMessage): self {
         $this->options['commitMessage'] = $commitMessage;
         return $this;
     }
@@ -120,13 +112,8 @@ class UpdateFlowOptions extends Options {
      *
      * @return string Machine friendly representation
      */
-    public function __toString() {
-        $options = array();
-        foreach ($this->options as $key => $value) {
-            if ($value != Values::NONE) {
-                $options[] = "$key=$value";
-            }
-        }
-        return '[Twilio.Studio.V2.UpdateFlowOptions ' . \implode(' ', $options) . ']';
+    public function __toString(): string {
+        $options = \http_build_query(Values::of($this->options), '', ' ');
+        return '[Twilio.Studio.V2.UpdateFlowOptions ' . $options . ']';
     }
 }

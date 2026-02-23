@@ -45,8 +45,8 @@ class Invoices_model extends App_Model
     {
         return $this->statuses;
     }
-    
-    public function get_unpaid_invoices($id)
+
+    public function get_unpaid_invoices($id = '')
     {
         if (!staff_can('view', 'invoices')) {
             $where = get_invoices_where_sql_for_staff(get_staff_user_id());
@@ -56,7 +56,11 @@ class Invoices_model extends App_Model
         $this->db->join(db_prefix() . 'clients', db_prefix() . 'invoices.clientid=' . db_prefix() . 'clients.userid', 'left');
         $this->db->where_not_in('status', [self::STATUS_CANCELLED, self::STATUS_PAID]);
         $this->db->where('total >', 0);
-        $this->db->where(db_prefix() . 'invoices.clientid', $id);
+        
+        if ($id != '') {
+            $this->db->where(db_prefix() . 'invoices.clientid', $id);
+        }
+        
         $this->db->order_by('number,YEAR(date)', 'desc');
         $invoices = $this->db->get(db_prefix() . 'invoices')->result();
         return $invoices;
@@ -90,7 +94,7 @@ class Invoices_model extends App_Model
         if (is_numeric($id)) {
             $this->db->where(db_prefix() . 'invoices' . '.id', $id);
             $invoice = $this->db->get()->row();
-            
+
             if ($invoice) {
                 $invoice->total_left_to_pay = get_invoice_total_left_to_pay($invoice->id, $invoice->total);
 
@@ -133,9 +137,9 @@ class Invoices_model extends App_Model
 
         $this->db->order_by('number,YEAR(date)', 'desc');
         // $this->db->get()->result_array();
-  
+
         return $this->db->get()->result_array();
-    
+
     }
 
     public function get_invoice_item($id)
@@ -169,7 +173,7 @@ class Invoices_model extends App_Model
 
         return false;
     }
-    
+
     public function mark_as_paid($id)
     {
         $isDraft = $this->is_draft($id);
@@ -230,7 +234,7 @@ class Invoices_model extends App_Model
 
         return $recurring_invoices;
     }
-    
+
     //get unpaid invoices
     public function get_invoice_unpaid($id)
     {
@@ -577,7 +581,7 @@ class Invoices_model extends App_Model
     public function get_expenses_to_bill($clientid)
     {
         $this->load->model('expenses_model');
-        $where = 'billable=1 AND clientid=' . $clientid . ' AND invoiceid IS NULL';
+        $where = 'clientid=' . $clientid . ' AND invoiceid IS NULL';
         if (!has_permission('expenses', '', 'view')) {
             $where .= ' AND ' . db_prefix() . 'expenses.addedfrom=' . get_staff_user_id();
         }
@@ -1852,5 +1856,52 @@ class Invoices_model extends App_Model
         return $this->clients_model->get_contacts($client_id, [
             'active' => 1, 'invoice_emails' => 1,
         ]);
+    }
+
+    /**
+     * Get invoices total by client for a specific period
+     * @param  integer $client_id    Client ID
+     * @param  string  $from_date    From date (optional)
+     * @return array                 Array with count and amount
+     */
+    public function get_invoices_total_by_client($client_id, $from_date = '')
+    {
+        $this->db->select('COUNT(*) as count, SUM(total) as amount');
+        $this->db->from(db_prefix() . 'invoices');
+        $this->db->where('clientid', $client_id);
+        $this->db->where('status !=', 5); // Exclude cancelled invoices
+
+        if ($from_date) {
+            $this->db->where('date >=', $from_date);
+        }
+
+        $result = $this->db->get()->row_array();
+
+        // Ensure we have valid values
+        $result['count'] = $result['count'] ? $result['count'] : 0;
+        $result['amount'] = $result['amount'] ? $result['amount'] : 0;
+
+        return $result;
+    }
+
+    /**
+     * @since  3.2.0
+     *
+     * Save formatted number
+     *
+     * @param  int $id
+     *
+     * @return boolean
+     */
+    public function save_formatted_number($id)
+    {
+        $formatted_number = format_invoice_number($id);
+
+        $this->db->where('id', $id);
+        $this->db->update(db_prefix() . 'invoices', [
+            'formatted_number' => $formatted_number,
+        ]);
+
+        return $this->db->affected_rows() > 0;
     }
 }

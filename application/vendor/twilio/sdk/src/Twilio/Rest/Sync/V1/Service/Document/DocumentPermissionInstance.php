@@ -15,8 +15,6 @@ use Twilio\Values;
 use Twilio\Version;
 
 /**
- * PLEASE NOTE that this class contains beta products that are subject to change. Use them with caution.
- *
  * @property string $accountSid
  * @property string $serviceSid
  * @property string $documentSid
@@ -30,7 +28,7 @@ class DocumentPermissionInstance extends InstanceResource {
     /**
      * Initialize the DocumentPermissionInstance
      *
-     * @param \Twilio\Version $version Version that contains the resource
+     * @param Version $version Version that contains the resource
      * @param mixed[] $payload The response payload
      * @param string $serviceSid The SID of the Sync Service that the resource is
      *                           associated with
@@ -38,13 +36,12 @@ class DocumentPermissionInstance extends InstanceResource {
      * @param string $identity The application-defined string that uniquely
      *                         identifies the User's Document Permission resource
      *                         to fetch
-     * @return \Twilio\Rest\Sync\V1\Service\Document\DocumentPermissionInstance
      */
-    public function __construct(Version $version, array $payload, $serviceSid, $documentSid, $identity = null) {
+    public function __construct(Version $version, array $payload, string $serviceSid, string $documentSid, string $identity = null) {
         parent::__construct($version);
 
         // Marshaled Properties
-        $this->properties = array(
+        $this->properties = [
             'accountSid' => Values::array_get($payload, 'account_sid'),
             'serviceSid' => Values::array_get($payload, 'service_sid'),
             'documentSid' => Values::array_get($payload, 'document_sid'),
@@ -53,22 +50,22 @@ class DocumentPermissionInstance extends InstanceResource {
             'write' => Values::array_get($payload, 'write'),
             'manage' => Values::array_get($payload, 'manage'),
             'url' => Values::array_get($payload, 'url'),
-        );
+        ];
 
-        $this->solution = array(
+        $this->solution = [
             'serviceSid' => $serviceSid,
             'documentSid' => $documentSid,
             'identity' => $identity ?: $this->properties['identity'],
-        );
+        ];
     }
 
     /**
      * Generate an instance context for the instance, the context is capable of
      * performing various actions.  All instance actions are proxied to the context
      *
-     * @return \Twilio\Rest\Sync\V1\Service\Document\DocumentPermissionContext Context for this DocumentPermissionInstance
+     * @return DocumentPermissionContext Context for this DocumentPermissionInstance
      */
-    protected function proxy() {
+    protected function proxy(): DocumentPermissionContext {
         if (!$this->context) {
             $this->context = new DocumentPermissionContext(
                 $this->version,
@@ -82,22 +79,22 @@ class DocumentPermissionInstance extends InstanceResource {
     }
 
     /**
-     * Fetch a DocumentPermissionInstance
+     * Fetch the DocumentPermissionInstance
      *
      * @return DocumentPermissionInstance Fetched DocumentPermissionInstance
      * @throws TwilioException When an HTTP error occurs.
      */
-    public function fetch() {
+    public function fetch(): DocumentPermissionInstance {
         return $this->proxy()->fetch();
     }
 
     /**
-     * Deletes the DocumentPermissionInstance
+     * Delete the DocumentPermissionInstance
      *
-     * @return boolean True if delete succeeds, false otherwise
+     * @return bool True if delete succeeds, false otherwise
      * @throws TwilioException When an HTTP error occurs.
      */
-    public function delete() {
+    public function delete(): bool {
         return $this->proxy()->delete();
     }
 
@@ -110,7 +107,7 @@ class DocumentPermissionInstance extends InstanceResource {
      * @return DocumentPermissionInstance Updated DocumentPermissionInstance
      * @throws TwilioException When an HTTP error occurs.
      */
-    public function update($read, $write, $manage) {
+    public function update(bool $read, bool $write, bool $manage): DocumentPermissionInstance {
         return $this->proxy()->update($read, $write, $manage);
     }
 
@@ -121,7 +118,7 @@ class DocumentPermissionInstance extends InstanceResource {
      * @return mixed The requested property
      * @throws TwilioException For unknown properties
      */
-    public function __get($name) {
+    public function __get(string $name) {
         if (\array_key_exists($name, $this->properties)) {
             return $this->properties[$name];
         }
@@ -139,8 +136,8 @@ class DocumentPermissionInstance extends InstanceResource {
      *
      * @return string Machine friendly representation
      */
-    public function __toString() {
-        $context = array();
+    public function __toString(): string {
+        $context = [];
         foreach ($this->solution as $key => $value) {
             $context[] = "$key=$value";
         }

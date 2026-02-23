@@ -8,6 +8,7 @@
 		<a href="#" class="btn btn-info mbot15" data-toggle="modal" data-target="#client_zip_estimates"><?php echo _l('zip_estimates'); ?></a>
 	<?php } ?>
 	<div id="estimates_total"></div>
+    <?php if (get_option('show_shipping_on_sales') == 1) { ?>
 	<div id="estimates_total">
         <h6>Stats of Retained</h6>
         <?php
@@ -45,6 +46,7 @@
             </div>
         </div>
     </div>
+    <?php } ?>
 	<?php
 	$this->load->view('admin/estimates/table_html', array('class'=>'estimates-single-client'));
 	$this->load->view('admin/clients/modals/zip_estimates');

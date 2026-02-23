@@ -14,8 +14,6 @@ if (!$CI->db->table_exists(db_prefix() . 'ai_query_builder_logs')) {
         `rows_returned` int(11) NOT NULL DEFAULT 0,
         `staff_id` int(11) NOT NULL,
         `date_created` datetime NOT NULL,
-        `name` varchar(255) NULL DEFAULT NULL,
-        `is_saved` tinyint(1) NOT NULL DEFAULT 0,
         PRIMARY KEY (`id`)
     ) ENGINE=InnoDB DEFAULT CHARSET=' . $CI->db->char_set . ';');
 }

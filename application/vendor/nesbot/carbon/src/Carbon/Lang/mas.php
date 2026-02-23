@@ -8,7 +8,9 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
 return array_replace_recursive(require __DIR__.'/en.php', [
+    'first_day_of_week' => 0,
     'meridiem' => ['Ɛnkakɛnyá', 'Ɛndámâ'],
     'weekdays' => ['Jumapílí', 'Jumatátu', 'Jumane', 'Jumatánɔ', 'Alaámisi', 'Jumáa', 'Jumamósi'],
     'weekdays_short' => ['Jpi', 'Jtt', 'Jnn', 'Jtn', 'Alh', 'Iju', 'Jmo'],

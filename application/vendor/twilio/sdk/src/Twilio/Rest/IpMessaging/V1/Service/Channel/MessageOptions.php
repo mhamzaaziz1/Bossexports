@@ -14,64 +14,60 @@ use Twilio\Values;
 
 abstract class MessageOptions {
     /**
-     * @param string $from The identity of the new message's author
-     * @param string $attributes A valid JSON string that contains
-     *                           application-specific data
+     * @param string $from The from
+     * @param string $attributes The attributes
      * @return CreateMessageOptions Options builder
      */
-    public static function create($from = Values::NONE, $attributes = Values::NONE) {
+    public static function create(string $from = Values::NONE, string $attributes = Values::NONE): CreateMessageOptions {
         return new CreateMessageOptions($from, $attributes);
     }
 
     /**
-     * @param string $order The sort order of the returned messages
+     * @param string $order The order
      * @return ReadMessageOptions Options builder
      */
-    public static function read($order = Values::NONE) {
+    public static function read(string $order = Values::NONE): ReadMessageOptions {
         return new ReadMessageOptions($order);
     }
 
     /**
-     * @param string $body The message to send to the channel
-     * @param string $attributes A valid JSON string that contains
-     *                           application-specific data
+     * @param string $body The body
+     * @param string $attributes The attributes
      * @return UpdateMessageOptions Options builder
      */
-    public static function update($body = Values::NONE, $attributes = Values::NONE) {
+    public static function update(string $body = Values::NONE, string $attributes = Values::NONE): UpdateMessageOptions {
         return new UpdateMessageOptions($body, $attributes);
     }
 }
 
 class CreateMessageOptions extends Options {
     /**
-     * @param string $from The identity of the new message's author
-     * @param string $attributes A valid JSON string that contains
-     *                           application-specific data
+     * @param string $from The from
+     * @param string $attributes The attributes
      */
-    public function __construct($from = Values::NONE, $attributes = Values::NONE) {
+    public function __construct(string $from = Values::NONE, string $attributes = Values::NONE) {
         $this->options['from'] = $from;
         $this->options['attributes'] = $attributes;
     }
 
     /**
-     * The [identity](https://www.twilio.com/docs/api/chat/guides/identity) of the new message's author. The default value is `system`.
+     * The from
      *
-     * @param string $from The identity of the new message's author
+     * @param string $from The from
      * @return $this Fluent Builder
      */
-    public function setFrom($from) {
+    public function setFrom(string $from): self {
         $this->options['from'] = $from;
         return $this;
     }
 
     /**
-     * A valid JSON string that contains application-specific data.
+     * The attributes
      *
-     * @param string $attributes A valid JSON string that contains
-     *                           application-specific data
+     * @param string $attributes The attributes
      * @return $this Fluent Builder
      */
-    public function setAttributes($attributes) {
+    public function setAttributes(string $attributes): self {
         $this->options['attributes'] = $attributes;
         return $this;
     }
@@ -81,32 +77,27 @@ class CreateMessageOptions extends Options {
      *
      * @return string Machine friendly representation
      */
-    public function __toString() {
-        $options = array();
-        foreach ($this->options as $key => $value) {
-            if ($value != Values::NONE) {
-                $options[] = "$key=$value";
-            }
-        }
-        return '[Twilio.IpMessaging.V1.CreateMessageOptions ' . \implode(' ', $options) . ']';
+    public function __toString(): string {
+        $options = \http_build_query(Values::of($this->options), '', ' ');
+        return '[Twilio.IpMessaging.V1.CreateMessageOptions ' . $options . ']';
     }
 }
 
 class ReadMessageOptions extends Options {
     /**
-     * @param string $order The sort order of the returned messages
+     * @param string $order The order
      */
-    public function __construct($order = Values::NONE) {
+    public function __construct(string $order = Values::NONE) {
         $this->options['order'] = $order;
     }
 
     /**
-     * The sort order of the returned messages. Can be: `asc` (ascending) or `desc` (descending) with `asc` as the default.
+     * The order
      *
-     * @param string $order The sort order of the returned messages
+     * @param string $order The order
      * @return $this Fluent Builder
      */
-    public function setOrder($order) {
+    public function setOrder(string $order): self {
         $this->options['order'] = $order;
         return $this;
     }
@@ -116,47 +107,40 @@ class ReadMessageOptions extends Options {
      *
      * @return string Machine friendly representation
      */
-    public function __toString() {
-        $options = array();
-        foreach ($this->options as $key => $value) {
-            if ($value != Values::NONE) {
-                $options[] = "$key=$value";
-            }
-        }
-        return '[Twilio.IpMessaging.V1.ReadMessageOptions ' . \implode(' ', $options) . ']';
+    public function __toString(): string {
+        $options = \http_build_query(Values::of($this->options), '', ' ');
+        return '[Twilio.IpMessaging.V1.ReadMessageOptions ' . $options . ']';
     }
 }
 
 class UpdateMessageOptions extends Options {
     /**
-     * @param string $body The message to send to the channel
-     * @param string $attributes A valid JSON string that contains
-     *                           application-specific data
+     * @param string $body The body
+     * @param string $attributes The attributes
      */
-    public function __construct($body = Values::NONE, $attributes = Values::NONE) {
+    public function __construct(string $body = Values::NONE, string $attributes = Values::NONE) {
         $this->options['body'] = $body;
         $this->options['attributes'] = $attributes;
     }
 
     /**
-     * The message to send to the channel. Can also be an empty string or `null`, which sets the value as an empty string. You can send structured data in the body by serializing it as a string.
+     * The body
      *
-     * @param string $body The message to send to the channel
+     * @param string $body The body
      * @return $this Fluent Builder
      */
-    public function setBody($body) {
+    public function setBody(string $body): self {
         $this->options['body'] = $body;
         return $this;
     }
 
     /**
-     * A valid JSON string that contains application-specific data.
+     * The attributes
      *
-     * @param string $attributes A valid JSON string that contains
-     *                           application-specific data
+     * @param string $attributes The attributes
      * @return $this Fluent Builder
      */
-    public function setAttributes($attributes) {
+    public function setAttributes(string $attributes): self {
         $this->options['attributes'] = $attributes;
         return $this;
     }
@@ -166,13 +150,8 @@ class UpdateMessageOptions extends Options {
      *
      * @return string Machine friendly representation
      */
-    public function __toString() {
-        $options = array();
-        foreach ($this->options as $key => $value) {
-            if ($value != Values::NONE) {
-                $options[] = "$key=$value";
-            }
-        }
-        return '[Twilio.IpMessaging.V1.UpdateMessageOptions ' . \implode(' ', $options) . ']';
+    public function __toString(): string {
+        $options = \http_build_query(Values::of($this->options), '', ' ');
+        return '[Twilio.IpMessaging.V1.UpdateMessageOptions ' . $options . ']';
     }
 }

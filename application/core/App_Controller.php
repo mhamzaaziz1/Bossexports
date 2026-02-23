@@ -2,6 +2,11 @@
 
 defined('BASEPATH') or exit('No direct script access allowed');
 
+/**
+ * @property-read App $app
+ * @property-read App_scripts $app_scripts
+ * @property-read App_css $app_css
+ */
 class App_Controller extends CI_Controller
 {
     protected $current_db_version;

@@ -56,6 +56,40 @@ function estimate_by_vendor(invoker){
       $('select[name="estimate"]').selectpicker('refresh');
     });
 
+    $.post(admin_url + 'purchase/pur_order_by_vendor/'+invoker.value).done(function(response){
+      response = JSON.parse(response);
+      $('select[name="pur_order_copy"]').html('');
+      $('select[name="pur_order_copy"]').append(response.result);
+      $('select[name="pur_order_copy"]').selectpicker('refresh');
+    });
+
+  }
+}
+
+function copy_pur_order(){
+  "use strict";
+  var pur_order_id = $('select[name="pur_order_copy"]').val();
+  if(pur_order_id != ''){
+     hot.alter('remove_row',0,hot.countRows());
+     $.post(admin_url + 'purchase/copy_pur_order/'+pur_order_id).done(function(response){
+          response = JSON.parse(response);
+          hot.updateSettings({
+            data: response.result,
+          });
+
+          var total_money = 0;
+          for (var row_index = 0; row_index <= 400; row_index++) {
+            if(parseFloat(hot.getDataAtCell(row_index, 10)) > 0){
+              total_money += (parseFloat(hot.getDataAtCell(row_index, 10)));
+            }
+          }
+          $('input[name="total_mn"]').val(numberWithCommas(total_money));
+          $('input[name="dc_percent"]').val(numberWithCommas(response.dc_percent));
+          $('input[name="dc_total"]').val(numberWithCommas(response.dc_total));
+          $('input[name="after_discount"]').val(numberWithCommas(total_money - response.dc_total));
+    });
+  }else{
+    alert_float('warning', '<?php echo _l('please_chose_pur_order'); ?>');
   }
 }
 

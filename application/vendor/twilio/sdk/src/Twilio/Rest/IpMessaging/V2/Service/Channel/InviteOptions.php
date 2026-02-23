@@ -14,37 +14,37 @@ use Twilio\Values;
 
 abstract class InviteOptions {
     /**
-     * @param string $roleSid The Role assigned to the new member
+     * @param string $roleSid The role_sid
      * @return CreateInviteOptions Options builder
      */
-    public static function create($roleSid = Values::NONE) {
+    public static function create(string $roleSid = Values::NONE): CreateInviteOptions {
         return new CreateInviteOptions($roleSid);
     }
 
     /**
-     * @param string $identity The `identity` value of the resources to read
+     * @param string[] $identity The identity
      * @return ReadInviteOptions Options builder
      */
-    public static function read($identity = Values::NONE) {
+    public static function read(array $identity = Values::ARRAY_NONE): ReadInviteOptions {
         return new ReadInviteOptions($identity);
     }
 }
 
 class CreateInviteOptions extends Options {
     /**
-     * @param string $roleSid The Role assigned to the new member
+     * @param string $roleSid The role_sid
      */
-    public function __construct($roleSid = Values::NONE) {
+    public function __construct(string $roleSid = Values::NONE) {
         $this->options['roleSid'] = $roleSid;
     }
 
     /**
-     * The SID of the [Role](https://www.twilio.com/docs/chat/rest/role-resource) assigned to the new member.
+     * The role_sid
      *
-     * @param string $roleSid The Role assigned to the new member
+     * @param string $roleSid The role_sid
      * @return $this Fluent Builder
      */
-    public function setRoleSid($roleSid) {
+    public function setRoleSid(string $roleSid): self {
         $this->options['roleSid'] = $roleSid;
         return $this;
     }
@@ -54,32 +54,27 @@ class CreateInviteOptions extends Options {
      *
      * @return string Machine friendly representation
      */
-    public function __toString() {
-        $options = array();
-        foreach ($this->options as $key => $value) {
-            if ($value != Values::NONE) {
-                $options[] = "$key=$value";
-            }
-        }
-        return '[Twilio.IpMessaging.V2.CreateInviteOptions ' . \implode(' ', $options) . ']';
+    public function __toString(): string {
+        $options = \http_build_query(Values::of($this->options), '', ' ');
+        return '[Twilio.IpMessaging.V2.CreateInviteOptions ' . $options . ']';
     }
 }
 
 class ReadInviteOptions extends Options {
     /**
-     * @param string $identity The `identity` value of the resources to read
+     * @param string[] $identity The identity
      */
-    public function __construct($identity = Values::NONE) {
+    public function __construct(array $identity = Values::ARRAY_NONE) {
         $this->options['identity'] = $identity;
     }
 
     /**
-     * The [User](https://www.twilio.com/docs/chat/rest/user-resource)'s `identity` value of the resources to read. See [access tokens](https://www.twilio.com/docs/chat/create-tokens) for more details.
+     * The identity
      *
-     * @param string $identity The `identity` value of the resources to read
+     * @param string[] $identity The identity
      * @return $this Fluent Builder
      */
-    public function setIdentity($identity) {
+    public function setIdentity(array $identity): self {
         $this->options['identity'] = $identity;
         return $this;
     }
@@ -89,13 +84,8 @@ class ReadInviteOptions extends Options {
      *
      * @return string Machine friendly representation
      */
-    public function __toString() {
-        $options = array();
-        foreach ($this->options as $key => $value) {
-            if ($value != Values::NONE) {
-                $options[] = "$key=$value";
-            }
-        }
-        return '[Twilio.IpMessaging.V2.ReadInviteOptions ' . \implode(' ', $options) . ']';
+    public function __toString(): string {
+        $options = \http_build_query(Values::of($this->options), '', ' ');
+        return '[Twilio.IpMessaging.V2.ReadInviteOptions ' . $options . ']';
     }
 }

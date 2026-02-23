@@ -14,6 +14,15 @@ use Twilio\Values;
 
 abstract class UserChannelOptions {
     /**
+     * @param string $xTwilioWebhookEnabled The X-Twilio-Webhook-Enabled HTTP
+     *                                      request header
+     * @return DeleteUserChannelOptions Options builder
+     */
+    public static function delete(string $xTwilioWebhookEnabled = Values::NONE): DeleteUserChannelOptions {
+        return new DeleteUserChannelOptions($xTwilioWebhookEnabled);
+    }
+
+    /**
      * @param string $notificationLevel The push notification level to assign to
      *                                  the User Channel
      * @param int $lastConsumedMessageIndex The index of the last Message that the
@@ -25,8 +34,40 @@ abstract class UserChannelOptions {
      *                                            Channel
      * @return UpdateUserChannelOptions Options builder
      */
-    public static function update($notificationLevel = Values::NONE, $lastConsumedMessageIndex = Values::NONE, $lastConsumptionTimestamp = Values::NONE) {
+    public static function update(string $notificationLevel = Values::NONE, int $lastConsumedMessageIndex = Values::NONE, \DateTime $lastConsumptionTimestamp = Values::NONE): UpdateUserChannelOptions {
         return new UpdateUserChannelOptions($notificationLevel, $lastConsumedMessageIndex, $lastConsumptionTimestamp);
+    }
+}
+
+class DeleteUserChannelOptions extends Options {
+    /**
+     * @param string $xTwilioWebhookEnabled The X-Twilio-Webhook-Enabled HTTP
+     *                                      request header
+     */
+    public function __construct(string $xTwilioWebhookEnabled = Values::NONE) {
+        $this->options['xTwilioWebhookEnabled'] = $xTwilioWebhookEnabled;
+    }
+
+    /**
+     * The X-Twilio-Webhook-Enabled HTTP request header
+     *
+     * @param string $xTwilioWebhookEnabled The X-Twilio-Webhook-Enabled HTTP
+     *                                      request header
+     * @return $this Fluent Builder
+     */
+    public function setXTwilioWebhookEnabled(string $xTwilioWebhookEnabled): self {
+        $this->options['xTwilioWebhookEnabled'] = $xTwilioWebhookEnabled;
+        return $this;
+    }
+
+    /**
+     * Provide a friendly representation
+     *
+     * @return string Machine friendly representation
+     */
+    public function __toString(): string {
+        $options = \http_build_query(Values::of($this->options), '', ' ');
+        return '[Twilio.Chat.V2.DeleteUserChannelOptions ' . $options . ']';
     }
 }
 
@@ -42,7 +83,7 @@ class UpdateUserChannelOptions extends Options {
      *                                            event for the Member within the
      *                                            Channel
      */
-    public function __construct($notificationLevel = Values::NONE, $lastConsumedMessageIndex = Values::NONE, $lastConsumptionTimestamp = Values::NONE) {
+    public function __construct(string $notificationLevel = Values::NONE, int $lastConsumedMessageIndex = Values::NONE, \DateTime $lastConsumptionTimestamp = Values::NONE) {
         $this->options['notificationLevel'] = $notificationLevel;
         $this->options['lastConsumedMessageIndex'] = $lastConsumedMessageIndex;
         $this->options['lastConsumptionTimestamp'] = $lastConsumptionTimestamp;
@@ -55,7 +96,7 @@ class UpdateUserChannelOptions extends Options {
      *                                  the User Channel
      * @return $this Fluent Builder
      */
-    public function setNotificationLevel($notificationLevel) {
+    public function setNotificationLevel(string $notificationLevel): self {
         $this->options['notificationLevel'] = $notificationLevel;
         return $this;
     }
@@ -67,7 +108,7 @@ class UpdateUserChannelOptions extends Options {
      *                                      Member has read within the Channel
      * @return $this Fluent Builder
      */
-    public function setLastConsumedMessageIndex($lastConsumedMessageIndex) {
+    public function setLastConsumedMessageIndex(int $lastConsumedMessageIndex): self {
         $this->options['lastConsumedMessageIndex'] = $lastConsumedMessageIndex;
         return $this;
     }
@@ -82,7 +123,7 @@ class UpdateUserChannelOptions extends Options {
      *                                            Channel
      * @return $this Fluent Builder
      */
-    public function setLastConsumptionTimestamp($lastConsumptionTimestamp) {
+    public function setLastConsumptionTimestamp(\DateTime $lastConsumptionTimestamp): self {
         $this->options['lastConsumptionTimestamp'] = $lastConsumptionTimestamp;
         return $this;
     }
@@ -92,13 +133,8 @@ class UpdateUserChannelOptions extends Options {
      *
      * @return string Machine friendly representation
      */
-    public function __toString() {
-        $options = array();
-        foreach ($this->options as $key => $value) {
-            if ($value != Values::NONE) {
-                $options[] = "$key=$value";
-            }
-        }
-        return '[Twilio.Chat.V2.UpdateUserChannelOptions ' . \implode(' ', $options) . ']';
+    public function __toString(): string {
+        $options = \http_build_query(Values::of($this->options), '', ' ');
+        return '[Twilio.Chat.V2.UpdateUserChannelOptions ' . $options . ']';
     }
 }

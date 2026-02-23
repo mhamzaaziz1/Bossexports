@@ -21,6 +21,7 @@ class Goals_model extends App_Model
 
             return $this->db->get(db_prefix() . 'goals')->row();
         }
+
         if ($exclude_notified == true) {
             $this->db->where('notified', 0);
         }
@@ -28,9 +29,34 @@ class Goals_model extends App_Model
         return $this->db->get(db_prefix() . 'goals')->result_array();
     }
 
+    public function get_all_goals($exclude_notified = true)
+    {
+        if ($exclude_notified) {
+            $this->db->where('notified', 0);
+        }
+
+        $this->db->order_by('end_date', 'asc');
+        $goals = $this->db->get(db_prefix() . 'goals')->result_array();
+
+        foreach ($goals as $key => $val) {
+            $goal = get_goal_type($val['goal_type']);
+
+            if (!$goal || $goal && isset($goal['dashboard']) && $goal['dashboard'] === false) {
+                unset($goals[$key]);
+                continue;
+            }
+
+            $goals[$key]['achievement']    = $this->calculate_goal_achievement($val['id']);
+            $goals[$key]['goal_type_name'] = format_goal_type($val['goal_type']);
+        }
+
+        return array_values($goals);
+    }
+
     public function get_staff_goals($staff_id, $exclude_notified = true)
     {
         $this->db->where('staff_id', $staff_id);
+
         if ($exclude_notified) {
             $this->db->where('notified', 0);
         }
@@ -173,10 +199,7 @@ class Goals_model extends App_Model
         }
 
         pusher_trigger_notification($notifiedUsers);
-        $this->db->where('id', $goal->id);
-        $this->db->update(db_prefix() . 'goals', [
-            'notified' => 1,
-        ]);
+        $this->mark_as_notified($goal->id);
 
         if (count($staff) > 0 && $this->db->affected_rows() > 0) {
             return true;
@@ -192,12 +215,8 @@ class Goals_model extends App_Model
      */
     public function calculate_goal_achievement($id)
     {
-        $s = strtotime('2020-08-17 17:48:42');
-        $call_sdate = date('Y-m-d', $s);
-       
         $goal       = $this->get($id);
         $start_date = $goal->start_date;
-        
         $end_date   = $goal->end_date;
         $type       = $goal->goal_type;
         $total      = 0;
@@ -212,7 +231,15 @@ class Goals_model extends App_Model
             $sql .= ' WHERE ' . db_prefix() . "invoicepaymentrecords.date BETWEEN '" . $start_date . "' AND '" . $end_date . "'";
 
             if ($goal->staff_id != 0) {
-                $sql .= ' AND (' . db_prefix() . 'invoices.addedfrom=' . $goal->staff_id . ' OR sale_agent=' . $goal->staff_id . ')';
+                $sql .= ' AND (sale_agent=' . $goal->staff_id . ')';
+            }
+        } elseif ($type == 8) {
+            $sql = 'SELECT SUM(total) as total FROM ' . db_prefix() . 'invoices';
+
+            $sql .= ' WHERE ' . db_prefix() . "invoices.date BETWEEN '" . $start_date . "' AND '" . $end_date . "'";
+
+            if ($goal->staff_id != 0) {
+                $sql .= ' AND (sale_agent=' . $goal->staff_id . ')';
             }
         } elseif ($type == 2) {
             $sql = 'SELECT COUNT(' . db_prefix() . 'leads.id) as total FROM ' . db_prefix() . "leads WHERE DATE(date_converted) BETWEEN '" . $start_date . "' AND '" . $end_date . "' AND status = 1 AND " . db_prefix() . 'leads.id IN (SELECT leadid FROM ' . db_prefix() . 'clients WHERE leadid=' . db_prefix() . 'leads.id)';
@@ -243,19 +270,16 @@ class Goals_model extends App_Model
             if ($goal->staff_id != 0) {
                 $sql .= ' AND (addedfrom=' . $goal->staff_id . ' OR sale_agent=' . $goal->staff_id . ')';
             }
-        }
-        elseif ($type == 8) {
-            $column = 'datestart';
-             $sql = 'SELECT count(id) as total FROM ' . db_prefix() . 'call_logs WHERE ' . $column . " BETWEEN '" . $start_date . "' AND '" . $end_date . "'";   
-        }
-         else {
+        } else {
             $sql = hooks()->apply_filters('calculate_goal_achievement_sql', '', $goal);
 
             if ($sql === '') {
                 return;
             }
         }
+
         $total = floatval($this->db->query($sql)->row()->total);
+
         if ($total >= floatval($goal->achievement)) {
             $percent = 100;
         } else {
@@ -270,5 +294,13 @@ class Goals_model extends App_Model
             'percent'              => $percent,
             'progress_bar_percent' => $progress_bar_percent,
         ];
+    }
+
+    public function mark_as_notified($id)
+    {
+        $this->db->where('id', $id);
+        $this->db->update(db_prefix() . 'goals', [
+            'notified' => 1,
+        ]);
     }
 }

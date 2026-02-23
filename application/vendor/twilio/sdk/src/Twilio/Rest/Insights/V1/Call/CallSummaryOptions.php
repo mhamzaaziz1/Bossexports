@@ -12,15 +12,12 @@ namespace Twilio\Rest\Insights\V1\Call;
 use Twilio\Options;
 use Twilio\Values;
 
-/**
- * PLEASE NOTE that this class contains preview products that are subject to change. Use them with caution. If you currently do not have developer preview access, please contact help@twilio.com.
- */
 abstract class CallSummaryOptions {
     /**
      * @param string $processingState The processing_state
      * @return FetchCallSummaryOptions Options builder
      */
-    public static function fetch($processingState = Values::NONE) {
+    public static function fetch(string $processingState = Values::NONE): FetchCallSummaryOptions {
         return new FetchCallSummaryOptions($processingState);
     }
 }
@@ -29,7 +26,7 @@ class FetchCallSummaryOptions extends Options {
     /**
      * @param string $processingState The processing_state
      */
-    public function __construct($processingState = Values::NONE) {
+    public function __construct(string $processingState = Values::NONE) {
         $this->options['processingState'] = $processingState;
     }
 
@@ -39,7 +36,7 @@ class FetchCallSummaryOptions extends Options {
      * @param string $processingState The processing_state
      * @return $this Fluent Builder
      */
-    public function setProcessingState($processingState) {
+    public function setProcessingState(string $processingState): self {
         $this->options['processingState'] = $processingState;
         return $this;
     }
@@ -49,13 +46,8 @@ class FetchCallSummaryOptions extends Options {
      *
      * @return string Machine friendly representation
      */
-    public function __toString() {
-        $options = array();
-        foreach ($this->options as $key => $value) {
-            if ($value != Values::NONE) {
-                $options[] = "$key=$value";
-            }
-        }
-        return '[Twilio.Insights.V1.FetchCallSummaryOptions ' . \implode(' ', $options) . ']';
+    public function __toString(): string {
+        $options = \http_build_query(Values::of($this->options), '', ' ');
+        return '[Twilio.Insights.V1.FetchCallSummaryOptions ' . $options . ']';
     }
 }

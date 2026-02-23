@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * This file is part of the Carbon package.
  *
@@ -8,9 +10,12 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
 namespace Carbon\Traits;
 
 use Carbon\CarbonInterface;
+use Carbon\Exceptions\InvalidFormatException;
+use ReturnTypeWillChange;
 
 /**
  * Trait Modifiers.
@@ -82,7 +87,7 @@ trait Modifiers
         }
 
         return $this->change(
-            'next '.(\is_string($modifier) ? $modifier : static::$days[$modifier])
+            'next '.(\is_string($modifier) ? $modifier : static::$days[$modifier]),
         );
     }
 
@@ -164,7 +169,7 @@ trait Modifiers
         }
 
         return $this->change(
-            'last '.(\is_string($modifier) ? $modifier : static::$days[$modifier])
+            'last '.(\is_string($modifier) ? $modifier : static::$days[$modifier]),
         );
     }
 
@@ -223,11 +228,11 @@ trait Modifiers
      */
     public function nthOfMonth($nth, $dayOfWeek)
     {
-        $date = $this->copy()->firstOfMonth();
+        $date = $this->avoidMutation()->firstOfMonth();
         $check = $date->rawFormat('Y-m');
         $date = $date->modify('+'.$nth.' '.static::$days[$dayOfWeek]);
 
-        return $date->rawFormat('Y-m') === $check ? $this->modify("$date") : false;
+        return $date->rawFormat('Y-m') === $check ? $this->modify((string) $date) : false;
     }
 
     /**
@@ -273,12 +278,12 @@ trait Modifiers
      */
     public function nthOfQuarter($nth, $dayOfWeek)
     {
-        $date = $this->copy()->day(1)->month($this->quarter * static::MONTHS_PER_QUARTER);
+        $date = $this->avoidMutation()->day(1)->month($this->quarter * static::MONTHS_PER_QUARTER);
         $lastMonth = $date->month;
         $year = $date->year;
         $date = $date->firstOfQuarter()->modify('+'.$nth.' '.static::$days[$dayOfWeek]);
 
-        return ($lastMonth < $date->month || $year !== $date->year) ? false : $this->modify("$date");
+        return ($lastMonth < $date->month || $year !== $date->year) ? false : $this->modify((string) $date);
     }
 
     /**
@@ -324,9 +329,9 @@ trait Modifiers
      */
     public function nthOfYear($nth, $dayOfWeek)
     {
-        $date = $this->copy()->firstOfYear()->modify('+'.$nth.' '.static::$days[$dayOfWeek]);
+        $date = $this->avoidMutation()->firstOfYear()->modify('+'.$nth.' '.static::$days[$dayOfWeek]);
 
-        return $this->year === $date->year ? $this->modify("$date") : false;
+        return $this->year === $date->year ? $this->modify((string) $date) : false;
     }
 
     /**
@@ -339,7 +344,7 @@ trait Modifiers
      */
     public function average($date = null)
     {
-        return $this->addRealMicroseconds((int) ($this->diffInRealMicroseconds($this->resolveCarbon($date), false) / 2));
+        return $this->addRealMicroseconds((int) ($this->diffInMicroseconds($this->resolveCarbon($date), false) / 2));
     }
 
     /**
@@ -352,7 +357,7 @@ trait Modifiers
      */
     public function closest($date1, $date2)
     {
-        return $this->diffInRealMicroseconds($date1) < $this->diffInRealMicroseconds($date2) ? $date1 : $date2;
+        return $this->diffInMicroseconds($date1, true) < $this->diffInMicroseconds($date2, true) ? $date1 : $date2;
     }
 
     /**
@@ -365,7 +370,7 @@ trait Modifiers
      */
     public function farthest($date1, $date2)
     {
-        return $this->diffInRealMicroseconds($date1) > $this->diffInRealMicroseconds($date2) ? $date1 : $date2;
+        return $this->diffInMicroseconds($date1, true) > $this->diffInMicroseconds($date2, true) ? $date1 : $date2;
     }
 
     /**
@@ -428,10 +433,14 @@ trait Modifiers
      * Calls \DateTime::modify if mutable or \DateTimeImmutable::modify else.
      *
      * @see https://php.net/manual/en/datetime.modify.php
+     *
+     * @return static
      */
+    #[ReturnTypeWillChange]
     public function modify($modify)
     {
-        return parent::modify((string) $modify);
+        return parent::modify((string) $modify)
+            ?: throw new InvalidFormatException('Could not modify with: '.var_export($modify, true));
     }
 
     /**
@@ -452,7 +461,7 @@ trait Modifiers
     {
         return $this->modify(preg_replace_callback('/^(next|previous|last)\s+(\d{1,2}(h|am|pm|:\d{1,2}(:\d{1,2})?))$/i', function ($match) {
             $match[2] = str_replace('h', ':00', $match[2]);
-            $test = $this->copy()->modify($match[2]);
+            $test = $this->avoidMutation()->modify($match[2]);
             $method = $match[1] === 'next' ? 'lt' : 'gt';
             $match[1] = $test->$method($this) ? $match[1].' day' : 'today';
 
