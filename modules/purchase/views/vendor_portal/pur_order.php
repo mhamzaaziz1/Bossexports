@@ -10,6 +10,9 @@
           
           <div class="row">
             <div class="col-md-12">
+              <?php if(is_dir(APPPATH.'modules/vendor_pricing')) { ?>
+                 <a href="<?php echo site_url('vendor_pricing/vendor_po/view/' . $pur_order->id . '/' . $pur_order->hash); ?>" class="btn btn-success pull-right"><i class="fa fa-edit"></i> Submit Prices</a>
+              <?php } ?>
               <p class="bold p_style"><?php echo _l('general_infor'); ?></p>
               <hr class="hr_style"/>
             </div>

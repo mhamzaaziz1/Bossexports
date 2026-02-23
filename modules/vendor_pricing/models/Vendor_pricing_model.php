@@ -124,4 +124,190 @@ class Vendor_pricing_model extends App_Model
         $this->db->update(db_prefix() . 'vendor_pricing_po_details', ['status' => 'rejected']);
         return true;
     }
+
+    /**
+     * Generate HTML for Vendor PDF view
+     */
+    public function get_vendor_pricing_pdf_html($pur_order_id, $vendor_prices)
+    {
+        $this->load->model('purchase/purchase_model');
+        $pur_order = $this->purchase_model->get_pur_order($pur_order_id);
+        $pur_order_detail = $this->purchase_model->get_pur_order_detail($pur_order_id);
+        
+        $organization_info = '<div style="color:#424242; font-size:14px" border="1px">';
+        $organization_info .= format_organization_info();
+        $organization_info .= '</div>';
+
+        $info_right_column ='<span style="font-weight:bold;font-size:24px;" align="right">'.mb_strtoupper(_l('purchase_order')).'</span><br/>';
+        $invoice_number = html_entity_decode($pur_order->pur_order_number.' - '.$pur_order->pur_order_name);
+
+        $invoice_info1 = '<div style="font-size:14px" border="1px" align="right">Invoice <b style="color:#4e4e4e;">' . $invoice_number.'</b>';
+        $invoice_info1 .= '<br />' . _l('invoice_data_date') . ' ' . _d($pur_order->order_date) . '<br>';
+        $invoice_info1 .= '<br> <br> </div>';
+
+        $html = '<table >
+            <tbody border="1px">
+              <tr >
+                <td style="width:50%">'.pdf_logo_url().'</td>
+                <td style="width:50%">'.$info_right_column.'</td>
+              </tr>
+              <tr>
+                <td >'. $organization_info .'</td>
+                <td align="right">'.$invoice_info1.'</td>
+              </tr>
+            </tbody>
+          </table>
+          <table class="table" style="font-size:14px">
+            <tbody>
+              <tr>
+                <td style="width:50%"><b>Vendor:</b><div border="1px">'. get_vendor_company_name($pur_order->vendor).'</div></td>
+                <td style="width:50%"><b>Ship From:</b><div border="1px">'. get_vendor_company_name($pur_order->vendor).'</div></td>
+              </tr>
+            </tbody>
+          </table><br><br>';
+
+        $html .= '<table class="table purorder-item" border="1px" style="font-size:14px">
+        <thead>
+          <tr bgcolor="#f9f9f9">
+            <th class="thead-dark" width="3%" align="center">#</th>
+            <th class="thead-dark" width="22%">'._l('item').'</th>
+            <th class="thead-dark" align="right" width="6%">'._l('quantity').'</th>
+            <th class="thead-dark" align="right" width="9%">Unit Price</th>
+            <th class="thead-dark" align="right" width="10%">Into money</th>
+            <th class="thead-dark" align="right" width="10%">Tax</th>
+            <th class="thead-dark" align="right" width="10%"><b>Tax Amount</b></th>
+            <th class="thead-dark" align="right" width="10%">Sub total</th>
+            <th class="thead-dark" align="right" width="8%">Discount</th>
+            <th class="thead-dark" align="right" width="8%">Discount (money)</th>
+            <th class="thead-dark" align="right" width="10%">'._l('total').'</th>
+          </tr>
+        </thead>
+        <tbody>';
+        
+        $i = 1;
+        $subtotal = 0;
+        $taxes_totals = [];
+
+        foreach($pur_order_detail as $row){
+            $item_name = $row['description'] ? $row['description'] : $row['item_name'];
+            $long_desc = isset($row['long_description']) ? $row['long_description'] : '';
+            if($long_desc != ''){
+                $item_name .= '<br><span style="color:#777;">'.$long_desc.'</span>';
+            }
+            $qty = $row['quantity'];
+            $v_price = isset($vendor_prices[$row['item_code']]) ? (float)$vendor_prices[$row['item_code']] : 0;
+            
+            // Into Money
+            $into_money = $qty * $v_price;
+            
+            // Tax Calculation
+            $tax_names = [];
+            if($row['tax'] != '' && $row['tax'] != null) {
+                $tax_arr = explode('|', $row['tax']);
+                $tax_rate_arr = explode('|', $row['tax_rate']);
+                foreach($tax_arr as $k => $tn) {
+                    $rate = isset($tax_rate_arr[$k]) ? $tax_rate_arr[$k] : 0;
+                    $tax_names[] = ['name' => $tn . ' (' . $rate . '%)', 'rate' => $rate];
+                }
+            } else {
+                if(isset($row['tax_name']) && $row['tax_name'] != '') {
+                    $tax_names[] = ['name' => $row['tax_name'] . ' (' . $row['tax_rate'] . '%)', 'rate' => $row['tax_rate']];
+                }
+            }
+            
+            $row_tax_amount = 0;
+            foreach($tax_names as $tn) {
+                $t_rate = $tn['rate'];
+                $t_amt = ($into_money * ($t_rate / 100));
+                $row_tax_amount += $t_amt;
+                
+                $t_name = $tn['name'];
+                if(!isset($taxes_totals[$t_name])) {
+                    $taxes_totals[$t_name] = 0;
+                }
+                $taxes_totals[$t_name] += $t_amt;
+            }
+
+            // Tax Amount column acts as Sub_total
+            $tax_amount_col = $into_money + $row_tax_amount;
+            
+            $discount_percent = isset($row['discount_%']) ? $row['discount_%'] : 0;
+            $discount_money = $tax_amount_col * ($discount_percent / 100);
+            $line_total = $tax_amount_col - $discount_money;
+
+            $subtotal += $into_money;
+
+            $html .= '<tr nobr="true" class="sortable">
+                <td align="center">'.$i.'</td>
+                <td><b>'.$item_name.'</b></td>
+                <td align="right">'.number_format($qty, 2).'</td>
+                <td align="right">'.app_format_money($v_price,'').'</td>
+                <td align="right">'.app_format_money($into_money,'').'</td>
+                <td align="right">'.app_format_money($row_tax_amount,'').'</td>
+                <td align="right">'.app_format_money($tax_amount_col,'').'</td>
+                <td align="right"></td>
+                <td align="right">'.number_format($discount_percent, 2).'%</td>
+                <td align="right">'.app_format_money($discount_money,'').'</td>
+                <td align="right">'.app_format_money($line_total,'').'</td>
+              </tr>';
+            $i++;
+        }
+        
+        $html .=  '</tbody>
+        </table><br><br>';
+
+        $total_discount = 0;
+        if($pur_order->discount_percent > 0) {
+            $total_discount = $subtotal * ($pur_order->discount_percent / 100);
+        }
+        
+        $global_tax_total = 0;
+        foreach($taxes_totals as $t_amt) {
+            $global_tax_total += $t_amt;
+        }
+
+        $grand_total = ($subtotal - $total_discount) + $global_tax_total;
+
+        $html .= '<table class="table text-right" style="font-size:14px"><tbody>';
+        $html .= '<tr id="subtotal">
+                    <td width="33%"></td>
+                     <td><b>'._l('subtotal').'</b></td>
+                     <td class="subtotal">
+                        '.app_format_money($subtotal,'').'
+                     </td>
+                  </tr>';
+        
+        if($pur_order->discount_percent > 0) {
+            $html .= '<tr id="discount">
+                        <td width="33%"></td>
+                         <td><b>Discount ('.app_format_money($pur_order->discount_percent, '').'%)</b></td>
+                         <td class="subtotal">
+                            -'.app_format_money($total_discount,'').'
+                         </td>
+                      </tr>';
+        }
+
+        foreach($taxes_totals as $taxName => $taxAmt) {
+            $html .= '<tr id="taxtotal">
+                        <td width="33%"></td>
+                         <td><b>'.$taxName.'</b></td>
+                         <td class="subtotal">
+                            '.app_format_money($taxAmt,'').'
+                         </td>
+                      </tr>';
+        }
+                  
+        $html .= '<tr id="grandtotal">
+                 <td width="33%"></td>
+                 <td><b>'. _l('total').'</b></td>
+                 <td class="subtotal">
+                    '. app_format_money($grand_total, '').'
+                 </td>
+              </tr>';
+        $html .= ' </tbody></table>';
+        
+        $html .= '<br><br>';
+        $html .= '<link href="' . module_dir_url('purchase', 'assets/css/pur_order_pdf.css') . '"  rel="stylesheet" type="text/css" />';
+        return $html;
+    }
 }

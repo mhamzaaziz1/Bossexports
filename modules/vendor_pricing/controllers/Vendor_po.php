@@ -3,9 +3,16 @@ defined('BASEPATH') or exit('No direct script access allowed');
 
 class Vendor_po extends App_Controller
 {
+    public function __construct()
+    {
+        parent::__construct();
+        $this->load->helper('vendor_pricing/vendor_pricing');
+        $this->load->language('vendor_pricing/vendor_pricing');
+    }
+
     public function view($id, $hash)
     {
-        check_pur_order_restrictions($id, $hash);
+        check_vendor_pricing_po_restrictions($id, $hash);
 
         $this->load->model('purchase/purchase_model');
         $this->load->model('vendor_pricing_model');
@@ -40,6 +47,32 @@ class Vendor_po extends App_Controller
 
         $data['title'] = $pur_order->pur_order_name;
         
+
         $this->load->view('vendor_po_view', $data);
+    }
+
+    public function pdf($id, $hash)
+    {
+        check_vendor_pricing_po_restrictions($id, $hash);
+        
+        $this->load->model('purchase/purchase_model');
+        $this->load->model('vendor_pricing_model');
+
+        $submitted_prices = $this->vendor_pricing_model->get_vendor_pricing($id);
+        $prices_map = [];
+        foreach ($submitted_prices as $sp) {
+            $prices_map[$sp['item_code']] = $sp['vendor_price'];
+        }
+
+        $html = $this->vendor_pricing_model->get_vendor_pricing_pdf_html($id, $prices_map);
+
+        try {
+            $pdf = $this->purchase_model->purorder_pdf($html);
+        } catch (Exception $e) {
+            echo html_entity_decode($e->getMessage());
+            die;
+        }
+
+        $pdf->Output('vendor_po_' . $id . '.pdf', 'D');
     }
 }

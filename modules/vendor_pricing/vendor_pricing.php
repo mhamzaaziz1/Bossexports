@@ -24,6 +24,9 @@ function vendor_pricing_module_activation_hook()
     require_once(__DIR__ . '/install.php');
 }
 
+register_merge_fields('vendor_pricing/merge_fields/vendor_pricing_merge_fields');
+
+
 /**
 * Register language files, must be registered if the module is using languages
 */
@@ -75,7 +78,11 @@ function vendor_pricing_app_admin_footer()
                 var new_url = site_url + "vendor_pricing/vendor_po/view/" + id_hash;
                 
                 var title = "Copy Vendor Pricing Link";
-                var html = \'<div class="col-md-12 padr_div_0 mtop10" style="padding-right:0px;"><br><div class="pull-right _buttons mright5"><a href="javascript:void(0)" onclick="copy_vendor_pricing_link(); return false;" class="btn btn-warning btn-with-tooltip" data-toggle="tooltip" title="\'+title+\'"><i class="fa fa-clone"></i></a></div><div class="pull-right col-md-6"><input type="text" id="vendor_pricing_link" readonly class="form-control" title="Vendor Pricing Link" value="\'+new_url+\'"></div><div class="clearfix"></div></div>\';
+                var email_title = "Send Vendor Pricing Request Email";
+                
+                var email_btn_html = \'<a href="\'+admin_url+\'vendor_pricing/send_email/\'+id_hash+\'" class="btn btn-info btn-with-tooltip mleft5" data-toggle="tooltip" title="\'+email_title+\'"><i class="fa fa-envelope"></i></a>\';
+                
+                var html = \'<div class="col-md-12 padr_div_0 mtop10" style="padding-right:0px;"><br><div class="pull-right _buttons mright5"><a href="javascript:void(0)" onclick="copy_vendor_pricing_link(); return false;" class="btn btn-warning btn-with-tooltip" data-toggle="tooltip" title="\'+title+\'"><i class="fa fa-clone"></i></a>\'+email_btn_html+\'</div><div class="pull-right col-md-6"><input type="text" id="vendor_pricing_link" readonly class="form-control" title="Vendor Pricing Link" value="\'+new_url+\'"></div><div class="clearfix"></div></div>\';
                 
                 $("input[name=\"link_public\"]").closest(".col-md-12.padr_div_0").after(html);
                 $("[data-toggle=\"tooltip\"]").tooltip();

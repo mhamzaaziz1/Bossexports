@@ -70,4 +70,44 @@ class Vendor_pricing extends AdminController
         }
         redirect(admin_url('vendor_pricing/view/' . $po_id));
     }
+
+    public function send_email($po_id, $hash)
+    {
+        if (!has_permission('vendor_pricing', '', 'view')) {
+            access_denied('vendor_pricing');
+        }
+
+        $pur_order = $this->purchase_model->get_pur_order($po_id);
+        if (!$pur_order || $pur_order->hash != $hash) {
+            show_404();
+        }
+
+        $this->db->where('userid', $pur_order->vendor);
+        $this->db->where('is_primary', 1);
+        $contact = $this->db->get(db_prefix() . 'pur_contacts')->row();
+
+        if (!$contact || empty($contact->email)) {
+            set_alert('danger', 'Vendor Primary Contact Email not found.');
+            redirect(admin_url('purchase/purchase_order/' . $po_id));
+        }
+
+        $data = new stdClass();
+        $data->receiver = $contact->email;
+        $data->vendor_name = get_vendor_company_name($pur_order->vendor);
+        $data->pur_order_number = $pur_order->pur_order_number;
+        $data->vendor_pricing_link = site_url('vendor_pricing/vendor_po/view/' . $po_id . '/' . $hash);
+
+        try {
+            $sent = mail_template('vendor_pricing_request', 'vendor_pricing', clone $data)->send();
+            if ($sent) {
+                set_alert('success', 'Vendor Pricing Request email sent successfully.');
+            } else {
+                set_alert('warning', 'Failed to send Vendor Pricing Request email.');
+            }
+        } catch (Exception $e) {
+            set_alert('warning', 'Failed to send Custom Email: ' . $e->getMessage());
+        }
+
+        redirect(admin_url('purchase/purchase_order/' . $po_id));
+    }
 }

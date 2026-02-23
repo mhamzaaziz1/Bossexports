@@ -14,3 +14,13 @@ if (!$CI->db->table_exists(db_prefix() . 'vendor_pricing_po_details')) {
         PRIMARY KEY (`id`)
     ) ENGINE=InnoDB DEFAULT CHARSET=' . $CI->db->char_set . ';');
 }
+
+$CI->load->helper('perfex_emails');
+
+create_email_template(
+    'Vendor Pricing Request', 
+    'Hi {vendor_name}! <br /><br />Please click the link below to submit your prices for Purchase Order <b>{pur_order_number}</b>:<br /><br /><a href="{vendor_pricing_link}">{vendor_pricing_link}</a><br /><br />Thank you.', 
+    'vendor_pricing', 
+    'Vendor Pricing Request (Sent to Vendor)', 
+    'vendor-pricing-request'
+);
