@@ -26,63 +26,97 @@
         <div id="content">
             <div class="container">
                 <div class="row">
+                    <div class="col-md-3">
+                        <div class="mbot30">
+                            <div class="company-logo">
+                                <?php echo get_dark_company_logo(); ?>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
                     <div class="col-md-12">
                         <div class="panel_s">
                             <div class="panel-body">
-                                <div class="row">
-                                    <div class="col-md-6">
-                                        <table class="table table-bordered">
-                                            <tbody>
-                                                <tr>
-                                                    <td width="40%" class="bg-light">Purchase order number</td>
-                                                    <td><?php echo html_entity_decode($pur_order->pur_order_number); ?></td>
-                                                </tr>
-                                                <tr>
-                                                    <td class="bg-light">Purchase order name</td>
-                                                    <td><?php echo html_entity_decode($pur_order->pur_order_name); ?></td>
-                                                </tr>
-                                                <tr>
-                                                    <td class="bg-light">Approve Status</td>
-                                                    <td><span class="label label-primary"><?php echo get_status_approve($pur_order->approve_status); ?></span></td>
-                                                </tr>
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <table class="table table-bordered">
-                                            <tbody>
-                                                <tr>
-                                                    <td width="40%" class="bg-light">Order Date</td>
-                                                    <td><?php echo _d($pur_order->order_date); ?></td>
-                                                </tr>
-                                                <tr>
-                                                    <td class="bg-light">Delivery Date</td>
-                                                    <td>
-                                                        <div class="form-group mb-0">
-                                                            <div class="input-group date">
-                                                                <input type="text" class="form-control" value="<?php echo _d($pur_order->delivery_date); ?>" disabled>
-                                                                <div class="input-group-addon"><i class="fa fa-calendar"></i></div>
-                                                            </div>
-                                                        </div>
-                                                    </td>
-                                                </tr>
-                                                <tr>
-                                                    <td class="bg-light">Total</td>
-                                                    <td><span id="top_total">0.00</span></td>
-                                                </tr>
-                                            </tbody>
-                                        </table>
-                                        <div class="text-right mtop10">
-                                            <a href="#" onclick="window.print(); return false;" class="btn btn-default"><i class="fa fa-print"></i> <?php echo _l('print'); ?></a>
-                                            <a href="<?php echo site_url('vendor_pricing/vendor_po/pdf/'.$pur_order->id.'/'.$pur_order->hash); ?>" class="btn btn-default"><i class="fa fa-file-pdf-o"></i> <?php echo _l('download_pdf', 'Download PDF'); ?></a>
-                                        </div>
+                                <div class="ribbon info span_style"><span>NEW ORDER</span></div>
+                                <div class="horizontal-scrollable-tabs preview-tabs-top">
+                                    <div class="scroller arrow-left"><i class="fa fa-angle-left"></i></div>
+                                    <div class="scroller arrow-right"><i class="fa fa-angle-right"></i></div>
+                                    <div class="horizontal-tabs">
+                                        <ul class="nav nav-tabs nav-tabs-horizontal mbot15" role="tablist">
+                                            <li role="presentation" class="active">
+                                                <a href="#general_info" aria-controls="general_info" role="tab" data-toggle="tab">
+                                                    <?php echo _l('general_infor', 'General Info'); ?>
+                                                </a>
+                                            </li>
+                                            <li role="presentation">
+                                                <a href="#attachments" aria-controls="attachments" role="tab" data-toggle="tab">
+                                                    <?php echo _l('attachment', 'Attachments'); ?>
+                                                </a>
+                                            </li>
+                                            <li role="presentation">
+                                                <a href="#discuss" aria-controls="discuss" role="tab" data-toggle="tab">
+                                                    <?php echo _l('discuss', 'Discuss'); ?>
+                                                </a>
+                                            </li>
+                                        </ul>
                                     </div>
                                 </div>
-                                <?php if($status == 'pending'){ ?>
-                                    <div class="alert alert-info">Price quote submitted and pending approval.</div>
-                                <?php } elseif($status == 'accepted') { ?>
-                                    <div class="alert alert-success">Prices accepted.</div>
-                                <?php } ?>
+
+                                <div class="tab-content">
+                                    <div role="tabpanel" class="tab-pane active" id="general_info">
+                                        
+                                        <?php if($status == 'pending'){ ?>
+                                            <div class="alert alert-info">Price quote submitted and pending approval.</div>
+                                        <?php } elseif($status == 'accepted') { ?>
+                                            <div class="alert alert-success">Prices accepted.</div>
+                                        <?php } ?>
+
+                                        <div class="row mtop20">
+                                            <div class="col-md-6">
+                                                <table class="table table-bordered">
+                                                    <tbody>
+                                                        <tr>
+                                                            <td width="40%" class="bg-light">Purchase order number</td>
+                                                            <td><?php echo html_entity_decode($pur_order->pur_order_number); ?></td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td class="bg-light">Purchase order name</td>
+                                                            <td><?php echo html_entity_decode($pur_order->pur_order_name); ?></td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td class="bg-light">Approve Status</td>
+                                                            <td><span class="label label-primary"><?php echo get_status_approve($pur_order->approve_status); ?></span></td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <table class="table table-bordered">
+                                                    <tbody>
+                                                        <tr>
+                                                            <td width="40%" class="bg-light">Order Date</td>
+                                                            <td><?php echo _d($pur_order->order_date); ?></td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td class="bg-light">Delivery Date</td>
+                                                            <td>
+                                                                <div class="form-group mb-0">
+                                                                    <div class="input-group date">
+                                                                        <input type="text" class="form-control" value="<?php echo _d($pur_order->delivery_date); ?>" disabled>
+                                                                        <div class="input-group-addon"><i class="fa fa-calendar"></i></div>
+                                                                    </div>
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td class="bg-light">Total</td>
+                                                            <td><span id="top_total">0.00</span></td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
                                 
                                 <?php echo form_open(site_url('vendor_pricing/vendor_po/view/'.$pur_order->id.'/'.$pur_order->hash)); ?>
                                 <div class="table-responsive mtop15">
@@ -178,13 +212,36 @@
                                         </table>
                                     </div>
                                 </div>
-                                
-                                <?php if($status != 'accepted' && $status != 'rejected'){ ?>
-                                <div class="text-right">
-                                    <button type="submit" class="btn btn-primary"><?php echo _l('submit'); ?></button>
+                                        <?php if($status != 'accepted' && $status != 'rejected'){ ?>
+                                        <div class="text-right mtop15">
+                                            <button type="submit" class="btn btn-primary"><?php echo _l('submit'); ?></button>
+                                        </div>
+                                        <?php } ?>
+                                        <?php echo form_close(); ?>
+                                        
+                                        <div class="row mtop25">
+                                            <div class="col-md-12">
+                                                <p class="bold pb-2">Terms & CONDITIONS</p>
+                                                <?php $terms = (isset($pur_order) ? $pur_order->terms : ''); ?>
+                                                <p class="text-muted"><?php echo html_entity_decode($terms); ?></p>
+                                                
+                                                <div class="mtop25">
+                                                    <div class="text-right">
+                                                        <a href="#" onclick="window.print(); return false;" class="btn btn-default"><i class="fa fa-print"></i> <?php echo _l('print'); ?></a>
+                                                        <a href="<?php echo site_url('vendor_pricing/vendor_po/pdf/'.$pur_order->id.'/'.$pur_order->hash); ?>" class="btn btn-default"><i class="fa fa-file-pdf-o"></i> <?php echo _l('download_pdf', 'Download PDF'); ?></a>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                    <div role="tabpanel" class="tab-pane" id="attachments">
+                                        <p class="text-muted text-center mtop10">No attachments found.</p>
+                                    </div>
+                                    <div role="tabpanel" class="tab-pane" id="discuss">
+                                        <p class="text-muted text-center mtop10">No discussions available.</p>
+                                    </div>
                                 </div>
-                                <?php } ?>
-                                <?php echo form_close(); ?>
                             </div>
                         </div>
                     </div>
