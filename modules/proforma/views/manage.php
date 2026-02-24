@@ -33,7 +33,7 @@
                                 $CI->load->model('proforma_model');
                                 $proformas = $CI->proforma_model->get();
                                 foreach($proformas as $p) { ?>
-                                <tr>
+                                <tr class="has-row-options" data-proforma-id="<?php echo $p['id']; ?>" style="cursor: pointer;">
                                     <td><a href="#" onclick="init_proforma(<?php echo $p['id']; ?>); return false;"><?php echo format_proforma_number($p['id']); ?></a></td>
                                     <td><?php echo _d($p['date']); ?></td>
                                     <td><?php echo $p['clientid']; // Need to fetch name ?></td>
@@ -57,6 +57,19 @@
 <?php init_tail(); ?>
 <script>
     var hidden_columns = [2,3,4,5];
+    $(function() {
+        $('body').on('click', '.table-proformainvoices tbody tr', function(e) {
+            // Do not trigger if clicking on an A tag or a button or input inside the td
+            if ($(e.target).closest('a').length || $(e.target).closest('button').length || $(e.target).closest('input').length) {
+                return;
+            }
+            var id = $(this).data('proforma-id');
+            if (id) {
+                init_proforma(id);
+            }
+        });
+    });
+
     function init_proforma(id) {
         var _invoiceid = id;
         var _url = admin_url + 'proforma/get_proforma_data_ajax/' + _invoiceid;

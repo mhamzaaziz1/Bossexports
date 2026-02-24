@@ -2,7 +2,7 @@
 
 defined('BASEPATH') or exit('No direct script access allowed');
 
-class vendor_pricing_merge_fields extends App_merge_fields
+class Vendor_pricing_merge_fields extends App_merge_fields
 {
     public function build()
     {
