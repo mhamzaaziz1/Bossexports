@@ -208,6 +208,12 @@
                   <?php if(has_permission('payments','','create') && abs($invoice->total) > 0){ ?>
                   <a href="#" onclick="record_payment(<?php echo $invoice->id; ?>); return false;"  class="mleft10 pull-right btn btn-success<?php if($invoice->status == Invoices_model::STATUS_PAID || $invoice->status == Invoices_model::STATUS_CANCELLED){echo ' disabled';} ?>">
                   <i class="fa fa-plus-square"></i> <?php echo _l('payment'); ?></a>
+                  <?php $CI_tmp = &get_instance(); if($CI_tmp->app_modules->is_active('nedarimpay')){ ?>
+                  <a href="#" onclick="nedarimpayOpenPaymentModal(<?php echo $invoice->id; ?>, <?php echo (float)$invoice->total_left_to_pay; ?>); return false;"
+                     class="mleft10 pull-right btn btn-primary<?php if($invoice->status == Invoices_model::STATUS_PAID || $invoice->status == Invoices_model::STATUS_CANCELLED){echo ' disabled';} ?>">
+                     <i class="fa fa-credit-card"></i> <?php echo _l('nedarimpay_record_payment_btn'); ?>
+                  </a>
+                  <?php } ?>
                   <?php } ?>
                </div>
             </div>
@@ -709,6 +715,7 @@
 <?php $this->load->view('admin/invoices/invoice_send_to_client'); ?>
 <?php $this->load->view('admin/credit_notes/apply_invoice_credits'); ?>
 <?php $this->load->view('admin/credit_notes/invoice_create_credit_note_confirm'); ?>
+<?php if($CI_tmp->app_modules->is_active('nedarimpay')){ $this->load->view('nedarimpay/invoice_payment_modal'); } ?>
 <script>
    init_items_sortable(true);
    init_btn_with_tooltips();
