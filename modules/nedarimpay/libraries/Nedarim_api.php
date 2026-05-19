@@ -278,12 +278,10 @@ class Nedarim_api
      */
     private function _post_to_nedarim($endpoint, array $fields)
     {
+        // Always use the Nedarim Plus base URL for API calls.
+        // The api_key field is the iFrame payment URL — it must NOT override
+        // server-to-server API endpoints, as that causes 406/404 responses.
         $url = rtrim($this->base_url, '/') . '/' . ltrim($endpoint, '/');
-
-        // If a full API key URL is configured, use it directly
-        if (!empty($this->api_key) && filter_var($this->api_key, FILTER_VALIDATE_URL)) {
-            $url = $this->api_key;
-        }
 
         $ch = curl_init($url);
         curl_setopt_array($ch, [
@@ -292,9 +290,12 @@ class Nedarim_api
             CURLOPT_POSTFIELDS     => http_build_query($fields),
             CURLOPT_TIMEOUT        => 30,
             CURLOPT_SSL_VERIFYPEER => true,
+            // Do NOT send Accept: application/json — Nedarim Plus returns plain
+            // text or XML for some endpoints and will reply 406 if JSON-only is
+            // declared. Accept anything and parse the body ourselves.
             CURLOPT_HTTPHEADER     => [
                 'Content-Type: application/x-www-form-urlencoded',
-                'Accept: application/json',
+                'Accept: */*',
             ],
         ]);
 
@@ -308,14 +309,19 @@ class Nedarim_api
             return ['success' => false, 'response' => null, 'http_code' => 0, 'error' => $curl_err];
         }
 
+        // Try JSON first; fall back to raw string (Nedarim may return plain text)
         $decoded = json_decode($response, true);
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            $decoded = trim($response);
+        }
+
         $success = ($http_code >= 200 && $http_code < 300);
 
         log_message('info', 'NedarimPay push_charge HTTP ' . $http_code . ' → ' . $response);
 
         return [
             'success'   => $success,
-            'response'  => $decoded ?? $response,
+            'response'  => $decoded,
             'http_code' => $http_code,
             'error'     => $success ? null : ('HTTP ' . $http_code . ': ' . $response),
         ];
