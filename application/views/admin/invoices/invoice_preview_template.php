@@ -123,10 +123,10 @@
                      }
                      ?>
                   <?php if(has_permission('invoices','','edit')){ ?>
-                  <a href="<?php echo admin_url('invoices/invoice/'.$invoice->id); ?>" data-toggle="tooltip" title="<?php echo _l('edit_invoice_tooltip'); ?>" class="btn btn-default btn-with-tooltip" data-placement="bottom"><i class="fa fa-pencil-square-o"></i></a>
+                  <a href="<?php echo admin_url('invoices/invoice/'.$invoice->id); ?>" data-toggle="tooltip" title="<?php echo _l('edit_invoice_tooltip'); ?>" class="btn btn-default btn-with-tooltip" data-placement="bottom"><i class="fa-regular fa-pen-to-square"></i></a>
                   <?php } ?>
                   <div class="btn-group">
-                     <a href="#" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="fa fa-file-pdf-o"></i><?php if(is_mobile()){echo ' PDF';} ?> <span class="caret"></span></a>
+                     <a href="#" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="fa-regular fa-file-pdf"></i><?php if(is_mobile()){echo ' PDF';} ?> <span class="caret"></span></a>
                      <ul class="dropdown-menu dropdown-menu-right">
                         <li class="hidden-xs"><a href="<?php echo admin_url('invoices/pdf/'.$invoice->id.'?output_view=F&output_type=I'); ?>"><?php echo _l('View Full'); ?></a></li>
                         <li class="hidden-xs"><a href="<?php echo admin_url('invoices/pdf/'.$invoice->id.'?output_view=F&output_type=I&n=1'); ?>"><?php echo _l('View Full with W&V'); ?></a></li>
@@ -208,6 +208,12 @@
                   <?php if(has_permission('payments','','create') && abs($invoice->total) > 0){ ?>
                   <a href="#" onclick="record_payment(<?php echo $invoice->id; ?>); return false;"  class="mleft10 pull-right btn btn-success<?php if($invoice->status == Invoices_model::STATUS_PAID || $invoice->status == Invoices_model::STATUS_CANCELLED){echo ' disabled';} ?>">
                   <i class="fa fa-plus-square"></i> <?php echo _l('payment'); ?></a>
+                  <?php $CI_tmp = &get_instance(); if(!empty($CI_tmp->app_modules) && $CI_tmp->app_modules->is_active('nedarimpay')){ ?>
+                  <a href="#" onclick="nedarimpayOpenPaymentModal(<?php echo $invoice->id; ?>, <?php echo (float)$invoice->total_left_to_pay; ?>); return false;"
+                     class="mleft10 pull-right btn btn-primary<?php if($invoice->status == Invoices_model::STATUS_PAID || $invoice->status == Invoices_model::STATUS_CANCELLED){echo ' disabled';} ?>">
+                     <i class="fa fa-credit-card"></i> <?php echo _l('nedarimpay_record_payment_btn'); ?>
+                  </a>
+                  <?php } ?>
                   <?php } ?>
                </div>
             </div>
@@ -709,6 +715,7 @@
 <?php $this->load->view('admin/invoices/invoice_send_to_client'); ?>
 <?php $this->load->view('admin/credit_notes/apply_invoice_credits'); ?>
 <?php $this->load->view('admin/credit_notes/invoice_create_credit_note_confirm'); ?>
+<?php $_ndp_ci = &get_instance(); if(!empty($_ndp_ci->app_modules) && $_ndp_ci->app_modules->is_active('nedarimpay')){ $this->load->view('nedarimpay/invoice_payment_modal'); } ?>
 <script>
    init_items_sortable(true);
    init_btn_with_tooltips();
