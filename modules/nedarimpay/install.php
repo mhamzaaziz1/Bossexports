@@ -96,6 +96,7 @@ if (!$CI->db->table_exists(db_prefix() . 'nedarimpay_manual_charges')) {
             `id`                  INT(11)        NOT NULL AUTO_INCREMENT,
             `perfex_client_id`    INT(11)        NOT NULL,
             `client_id_nedarim`   VARCHAR(50)    DEFAULT NULL,
+            `receipt_number`      VARCHAR(50)    DEFAULT NULL,
             `amount`              DECIMAL(15,2)  NOT NULL,
             `currency`            TINYINT(1)     NOT NULL DEFAULT 1,
             `description`         VARCHAR(300)   DEFAULT NULL,
@@ -111,6 +112,13 @@ if (!$CI->db->table_exists(db_prefix() . 'nedarimpay_manual_charges')) {
             KEY `idx_status` (`status`)
         ) ENGINE=InnoDB DEFAULT CHARSET=' . $CI->db->char_set . ';
     ');
+} else {
+    // Migration: add receipt_number column to existing installations
+    $cols = array_column($CI->db->field_data(db_prefix() . 'nedarimpay_manual_charges'), 'name');
+    if (!in_array('receipt_number', $cols)) {
+        $CI->db->query('ALTER TABLE `' . db_prefix() . 'nedarimpay_manual_charges`
+            ADD COLUMN `receipt_number` VARCHAR(50) DEFAULT NULL AFTER `client_id_nedarim`');
+    }
 }
 
 // ─── TABLE: nedarimpay_webhook_log ───────────────────────────────────────────

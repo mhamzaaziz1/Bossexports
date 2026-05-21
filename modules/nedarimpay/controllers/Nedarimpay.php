@@ -239,8 +239,8 @@ class Nedarimpay extends AdminController
             UNION ALL
             SELECT
                 m.id,
-                NULL               AS transaction_id,
-                NULL               AS receipt_number,
+                NULL                                                        AS transaction_id,
+                COALESCE(m.receipt_number, CONCAT('MC-', LPAD(m.id, 5, '0'))) AS receipt_number,
                 m.receipt_type,
                 m.perfex_client_id,
                 NULL               AS perfex_invoice_id,
@@ -314,7 +314,7 @@ class Nedarimpay extends AdminController
                 'perfex_invoice_id' => null,
                 'perfex_payment_id' => null,
                 'receipt_type'      => $row['receipt_type'],
-                'receipt_number'    => null,
+                'receipt_number'    => $row['receipt_number'] ?: ('MC-' . str_pad($row['id'], 5, '0', STR_PAD_LEFT)),
                 'zeout'             => null,
                 'client_name'       => $client_name,
                 'email'             => null,
@@ -389,12 +389,14 @@ class Nedarimpay extends AdminController
                 return;
             }
 
-            $result = $this->nedarim_api->push_charge($charge_data);
+            $result         = $this->nedarim_api->push_charge($charge_data);
+            $receipt_number = $this->nedarim_receipt->generate_receipt_number($charge_data['receipt_type']);
 
             // Log the charge attempt
             $this->db->insert(db_prefix() . 'nedarimpay_manual_charges', [
                 'perfex_client_id'  => $charge_data['perfex_client_id'],
                 'client_id_nedarim' => $charge_data['client_id_nedarim'],
+                'receipt_number'    => $receipt_number,
                 'amount'            => $charge_data['amount'],
                 'currency'          => $charge_data['currency'],
                 'description'       => $charge_data['description'],
