@@ -99,6 +99,19 @@
                      </div>
                   </div>
 
+                  <!-- Charge API URL -->
+                  <div class="row">
+                     <div class="col-md-12">
+                        <div class="form-group">
+                           <label><?php echo _l('nedarimpay_charge_api_url_label'); ?></label>
+                           <input type="text" name="nedarimpay_charge_api_url" class="form-control"
+                                  value="<?php echo get_option('nedarimpay_charge_api_url'); ?>"
+                                  placeholder="https://www.matara.pro/nedarimplus/online/">
+                           <small class="help-block"><?php echo _l('nedarimpay_charge_api_url_help'); ?></small>
+                        </div>
+                     </div>
+                  </div>
+
                   <div class="row">
                      <div class="col-md-4">
                         <div class="form-group">

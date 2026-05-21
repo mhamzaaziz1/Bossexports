@@ -444,6 +444,7 @@ class Nedarimpay extends AdminController
                 'nedarimpay_api_valid',
                 'nedarimpay_api_key',
                 'nedarimpay_webhook_secret',
+                'nedarimpay_charge_api_url',
                 'nedarimpay_student_prefix',
                 'nedarimpay_donation_prefix',
                 'nedarimpay_student_email_subject',

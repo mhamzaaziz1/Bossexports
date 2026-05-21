@@ -147,6 +147,7 @@ $defaults = [
     'nedarimpay_api_valid'            => '',   // ApiValid auth token
     'nedarimpay_api_key'              => '',   // Full API key URL / token
     'nedarimpay_webhook_secret'       => '',   // Optional HMAC secret for webhook validation
+    'nedarimpay_charge_api_url'       => '',   // Charge POST endpoint (blank = Nedarim default)
 
     // Receipt series — students (tuition + occasional)
     'nedarimpay_student_prefix'       => 'T',  // e.g. T-0001

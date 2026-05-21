@@ -17,8 +17,8 @@ class Nedarim_api
     /** @var object CodeIgniter instance */
     private $CI;
 
-    /** @var string Nedarim Plus base API URL */
-    private $base_url = 'https://www.matara.pro/nedarimplus/';
+    /** @var string Nedarim Plus iFrame / charge URL (same endpoint for both) */
+    private $base_url = 'https://www.matara.pro/nedarimplus/online/';
 
     /** @var string Institution number */
     private $mosad;
@@ -265,7 +265,13 @@ class Nedarim_api
             'PaymentType' => 'Ragil',
         ];
 
-        $result = $this->_post_to_nedarim('api/charge', $post_fields);
+        // Use configurable charge URL; default is the Nedarim Plus online endpoint
+        $charge_url = trim(get_option('nedarimpay_charge_api_url'));
+        if (!empty($charge_url)) {
+            $this->base_url = rtrim($charge_url, '/') . '/';
+        }
+
+        $result = $this->_post_to_nedarim('', $post_fields);
         return $result;
     }
 
@@ -278,10 +284,9 @@ class Nedarim_api
      */
     private function _post_to_nedarim($endpoint, array $fields)
     {
-        // Always use the Nedarim Plus base URL for API calls.
-        // The api_key field is the iFrame payment URL — it must NOT override
-        // server-to-server API endpoints, as that causes 406/404 responses.
-        $url = rtrim($this->base_url, '/') . '/' . ltrim($endpoint, '/');
+        $url = empty($endpoint)
+            ? rtrim($this->base_url, '/')
+            : rtrim($this->base_url, '/') . '/' . ltrim($endpoint, '/');
 
         $ch = curl_init($url);
         curl_setopt_array($ch, [
