@@ -37,6 +37,22 @@ function nedarimpay_deactivation_hook()
     // Preserve data on deactivation — no table drops
 }
 
+// ─── Schema migrations (run once, check column existence first) ───────────────
+$_ndp_CI = &get_instance();
+if ($_ndp_CI->db->table_exists(db_prefix() . 'nedarimpay_manual_charges')) {
+    $_ndp_cols = array_column(
+        $_ndp_CI->db->field_data(db_prefix() . 'nedarimpay_manual_charges'),
+        'name'
+    );
+    if (!in_array('receipt_number', $_ndp_cols)) {
+        $_ndp_CI->db->query(
+            'ALTER TABLE `' . db_prefix() . 'nedarimpay_manual_charges`
+             ADD COLUMN `receipt_number` VARCHAR(50) DEFAULT NULL AFTER `client_id_nedarim`'
+        );
+    }
+}
+unset($_ndp_CI, $_ndp_cols);
+
 // ─── Language Files ──────────────────────────────────────────────────────────
 register_language_files(NEDARIMPAY_MODULE_NAME, [NEDARIMPAY_MODULE_NAME]);
 
