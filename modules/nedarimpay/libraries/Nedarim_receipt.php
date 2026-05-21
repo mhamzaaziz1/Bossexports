@@ -446,6 +446,15 @@ class Nedarim_receipt
     }
 
     /**
+     * Public wrapper — generate the next receipt number for a given type.
+     * Exposes the private _next_receipt_number() for use from controllers.
+     */
+    public function generate_receipt_number(string $receipt_type): string
+    {
+        return $this->_next_receipt_number($receipt_type);
+    }
+
+    /**
      * Public wrapper for resend_email action in controller.
      */
     public function _send_receipt_email_public(

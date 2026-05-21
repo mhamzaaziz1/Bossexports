@@ -281,15 +281,77 @@ class Nedarimpay extends AdminController
             access_denied('NedarimPay');
         }
 
-        $data['transaction'] = $this->db
-            ->where('id', (int)$id)
-            ->get(db_prefix() . 'nedarimpay_transactions')->row_array();
+        $id  = (int)$id;
+        $src = $this->input->get('src');
 
-        if (!$data['transaction']) {
-            show_404();
+        if ($src === 'mc') {
+            // Manual charge from nedarimpay_manual_charges
+            $row = $this->db->where('id', $id)
+                       ->get(db_prefix() . 'nedarimpay_manual_charges')->row_array();
+
+            if (!$row) {
+                show_404();
+            }
+
+            // Fetch client name from clients table
+            $client_name = '';
+            if (!empty($row['perfex_client_id'])) {
+                $c = $this->db->select('company')->where('userid', $row['perfex_client_id'])
+                        ->get(db_prefix() . 'clients')->row();
+                $client_name = $c ? $c->company : '';
+            }
+
+            // Map manual charge fields to the transaction view structure
+            $status_map = ['sent' => 'processed', 'confirmed' => 'processed',
+                           'failed' => 'failed', 'pending' => 'pending'];
+
+            $tx = [
+                'id'                => $row['id'],
+                'transaction_id'    => null,
+                'keva_id'           => null,
+                'client_id_nedarim' => $row['client_id_nedarim'],
+                'perfex_client_id'  => $row['perfex_client_id'],
+                'perfex_invoice_id' => null,
+                'perfex_payment_id' => null,
+                'receipt_type'      => $row['receipt_type'],
+                'receipt_number'    => null,
+                'zeout'             => null,
+                'client_name'       => $client_name,
+                'email'             => null,
+                'phone'             => null,
+                'address'           => null,
+                'amount'            => $row['amount'],
+                'currency'          => $row['currency'],
+                'transaction_type'  => $row['charge_type'],
+                'groupe'            => $row['groupe'],
+                'comments'          => $row['description'],
+                'tashloumim'        => null,
+                'last_num'          => null,
+                'tokef'             => null,
+                'confirmation'      => null,
+                'shovar'            => null,
+                'makor'             => 'manual_charge',
+                'masof_id'          => null,
+                'debit_iframe'      => 0,
+                'transaction_time'  => $row['created_at'],
+                'raw_payload'       => $row['nedarim_response'],
+                'email_sent'        => 0,
+                'email_sent_at'     => null,
+                'status'            => $status_map[$row['status']] ?? 'pending',
+                'error_message'     => null,
+                'created_at'        => $row['created_at'],
+            ];
+        } else {
+            $tx = $this->db->where('id', $id)
+                      ->get(db_prefix() . 'nedarimpay_transactions')->row_array();
+
+            if (!$tx) {
+                show_404();
+            }
         }
 
-        $data['title'] = _l('nedarimpay_transaction_detail');
+        $data['transaction'] = $tx;
+        $data['title']       = _l('nedarimpay_transaction_detail');
         $this->load->view('nedarimpay/transaction_detail', $data);
     }
 
@@ -453,6 +515,9 @@ class Nedarimpay extends AdminController
 
         $this->load->model('payments_model');
 
+        // Generate receipt number before recording payment
+        $receipt_number = $this->nedarim_receipt->generate_receipt_number($receipt_type);
+
         $payment_data = [
             'invoiceid'   => $invoice_id,
             'amount'      => $amount,
@@ -487,6 +552,7 @@ class Nedarimpay extends AdminController
             'perfex_invoice_id' => $invoice_id,
             'perfex_payment_id' => $payment_id,
             'receipt_type'      => $receipt_type,
+            'receipt_number'    => $receipt_number,
             'amount'            => $amount,
             'comments'          => $note,
             'status'            => 'processed',

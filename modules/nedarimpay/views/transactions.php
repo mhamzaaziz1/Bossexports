@@ -182,7 +182,7 @@
                               </td>
                               <td>
                                  <div class="btn-group">
-                                    <a href="<?php echo admin_url('nedarimpay/transaction_detail/' . $tx['id']); ?>"
+                                    <a href="<?php echo admin_url('nedarimpay/transaction_detail/' . $tx['id'] . ($tx['makor'] === 'manual_charge' ? '?src=mc' : '')); ?>"
                                        class="btn btn-xs btn-default"
                                        data-toggle="tooltip" title="<?php echo _l('nedarimpay_view_detail'); ?>">
                                        <i class="fa fa-eye"></i>
