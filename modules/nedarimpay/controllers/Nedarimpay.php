@@ -189,35 +189,85 @@ class Nedarimpay extends AdminController
             'search'       => $this->input->get('search'),
         ];
 
-        $this->db->order_by('created_at', 'desc');
+        $pfx  = db_prefix();
+        $tx_w = [];
+        $mc_w = [];
 
         if (!empty($filters['receipt_type'])) {
-            $this->db->where('receipt_type', $filters['receipt_type']);
+            $v      = $this->db->escape($filters['receipt_type']);
+            $tx_w[] = "t.receipt_type = $v";
+            $mc_w[] = "m.receipt_type = $v";
         }
         if (!empty($filters['status'])) {
-            $this->db->where('status', $filters['status']);
+            $tx_w[] = 't.status = ' . $this->db->escape($filters['status']);
+            // nedarimpay_manual_charges uses sent/confirmed/failed/pending
+            switch ($filters['status']) {
+                case 'processed': $mc_w[] = "m.status IN ('sent','confirmed')"; break;
+                case 'pending':   $mc_w[] = "m.status = 'pending'"; break;
+                case 'failed':    $mc_w[] = "m.status = 'failed'"; break;
+                default:          $mc_w[] = '1=0'; // 'duplicate' not in manual_charges
+            }
         }
         if (!empty($filters['date_from'])) {
-            $this->db->where('DATE(created_at) >=', $filters['date_from']);
+            $v      = $this->db->escape($filters['date_from']);
+            $tx_w[] = "DATE(t.created_at) >= $v";
+            $mc_w[] = "DATE(m.created_at) >= $v";
         }
         if (!empty($filters['date_to'])) {
-            $this->db->where('DATE(created_at) <=', $filters['date_to']);
+            $v      = $this->db->escape($filters['date_to']);
+            $tx_w[] = "DATE(t.created_at) <= $v";
+            $mc_w[] = "DATE(m.created_at) <= $v";
         }
         if (!empty($filters['search'])) {
-            $s = $this->db->escape_like_str($filters['search']);
-            $this->db->group_start()
-                ->like('client_name', $s)
-                ->or_like('email', $s)
-                ->or_like('transaction_id', $s)
-                ->or_like('receipt_number', $s)
-                ->group_end();
+            $s      = $this->db->escape('%' . $this->db->escape_like_str($filters['search']) . '%');
+            $tx_w[] = "(t.client_name LIKE $s OR t.email LIKE $s OR t.transaction_id LIKE $s OR t.receipt_number LIKE $s)";
+            $mc_w[] = "(c.company LIKE $s OR m.description LIKE $s)";
         }
 
-        $data['transactions'] = $this->db
-            ->get(db_prefix() . 'nedarimpay_transactions')->result_array();
+        $tx_where = $tx_w ? 'WHERE ' . implode(' AND ', $tx_w) : '';
+        $mc_where = $mc_w ? 'WHERE ' . implode(' AND ', $mc_w) : '';
 
-        $data['filters'] = $filters;
-        $data['title']   = _l('nedarimpay_transactions');
+        $sql = "
+            SELECT
+                t.id, t.transaction_id, t.receipt_number, t.receipt_type,
+                t.perfex_client_id, t.perfex_invoice_id,
+                t.client_name, t.email, t.amount, t.currency,
+                t.transaction_type, t.email_sent, t.email_sent_at,
+                t.created_at, t.status, 'webhook' AS makor
+            FROM `{$pfx}nedarimpay_transactions` t
+            $tx_where
+            UNION ALL
+            SELECT
+                m.id,
+                NULL               AS transaction_id,
+                NULL               AS receipt_number,
+                m.receipt_type,
+                m.perfex_client_id,
+                NULL               AS perfex_invoice_id,
+                c.company          AS client_name,
+                NULL               AS email,
+                m.amount,
+                m.currency,
+                m.charge_type      AS transaction_type,
+                0                  AS email_sent,
+                NULL               AS email_sent_at,
+                m.created_at,
+                CASE m.status
+                    WHEN 'sent'      THEN 'processed'
+                    WHEN 'confirmed' THEN 'processed'
+                    WHEN 'failed'    THEN 'failed'
+                    ELSE 'pending'
+                END                AS status,
+                'manual_charge'    AS makor
+            FROM `{$pfx}nedarimpay_manual_charges` m
+            LEFT JOIN `{$pfx}clients` c ON c.userid = m.perfex_client_id
+            $mc_where
+            ORDER BY created_at DESC
+        ";
+
+        $data['transactions'] = $this->db->query($sql)->result_array();
+        $data['filters']      = $filters;
+        $data['title']        = _l('nedarimpay_transactions');
         $this->load->view('nedarimpay/transactions', $data);
     }
 
