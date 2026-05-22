@@ -110,6 +110,9 @@ hooks()->add_action('app_customers_footer',             'nedarimpay_inject_invoi
 hooks()->add_action('after_invoice_view_as_client_link','nedarimpay_render_admin_pay_link');
 hooks()->add_action('app_admin_footer',                 'nedarimpay_inject_admin_pay_link_js');
 
+// Mirror every Nedarim-mode payment Perfex records into our transactions log
+hooks()->add_action('after_payment_added',              'nedarimpay_mirror_payment_to_transactions');
+
 // =============================================================================
 // HOOK: render an invisible marker on the client invoice page
 // =============================================================================
@@ -176,6 +179,107 @@ function nedarimpay_inject_invoice_pay_button()
                 . '?v=' . filemtime(NEDARIMPAY_MODULE_PATH . '/assets/js/invoice_pay_button.js');
 
     echo '<script src="' . htmlspecialchars($script_url, ENT_QUOTES) . '" defer></script>';
+}
+
+// =============================================================================
+// HOOK: mirror Perfex payments (paymentmode = nedarimpay) into our log
+// =============================================================================
+/**
+ * Fires after Perfex inserts a row into tblinvoicepaymentrecords. If the
+ * payment was recorded via this gateway (paymentmode = "nedarimpay") and we
+ * don't already have a transactions row for it (from the webhook), insert a
+ * minimal row so the staff sees it in /admin/nedarimpay/transactions.
+ *
+ * Idempotent — keyed by (perfex_payment_id, transaction_id) so the webhook
+ * handler and this callback never produce duplicates.
+ *
+ * @param int $payment_id  The newly-inserted tblinvoicepaymentrecords.id
+ */
+function nedarimpay_mirror_payment_to_transactions($payment_id)
+{
+    $CI       = &get_instance();
+    $payment  = $CI->db->where('id', (int) $payment_id)
+                       ->get(db_prefix() . 'invoicepaymentrecords')->row();
+    if (!$payment || strtolower((string) $payment->paymentmode) !== 'nedarimpay') {
+        return; // not ours
+    }
+
+    $tx_table = db_prefix() . 'nedarimpay_transactions';
+    if (!$CI->db->table_exists($tx_table)) {
+        return; // schema not present — install hook will handle it next time
+    }
+
+    // De-dup: skip if a row already exists for this transactionid OR for this
+    // perfex_payment_id (webhook may have inserted before us).
+    $existing = $CI->db
+        ->where('perfex_payment_id', (int) $payment->id)
+        ->or_where('transaction_id', (string) $payment->transactionid)
+        ->get($tx_table)->row();
+    if ($existing) {
+        // Make sure existing row points at this Perfex payment + invoice
+        $CI->db->where('id', $existing->id)->update($tx_table, [
+            'perfex_payment_id' => (int) $payment->id,
+            'perfex_invoice_id' => (int) $payment->invoiceid,
+            'status'            => 'processed',
+        ]);
+        return;
+    }
+
+    // Pull invoice context for nice client_name / email in the log
+    $invoice = $CI->db->select('clientid, currency, total')
+                      ->where('id', (int) $payment->invoiceid)
+                      ->get(db_prefix() . 'invoices')->row();
+    $client_name = '';
+    $email       = '';
+    $client_id   = $invoice ? (int) $invoice->clientid : 0;
+    if ($client_id) {
+        $client = $CI->db->select('company, phonenumber')
+                         ->where('userid', $client_id)
+                         ->get(db_prefix() . 'clients')->row();
+        if ($client) {
+            $client_name = (string) $client->company;
+        }
+        $primary = $CI->db->select('email')
+                          ->where('userid', $client_id)
+                          ->where('is_primary', 1)
+                          ->get(db_prefix() . 'contacts')->row();
+        if ($primary) {
+            $email = (string) $primary->email;
+        }
+    }
+
+    // Currency code mapping (Perfex stores currency id; map to Nedarim 1/2)
+    $currency_code = 1; // ILS default
+    $currency_name = '';
+    if ($invoice && !empty($invoice->currency)) {
+        $cur = $CI->db->select('name')
+                      ->where('id', (int) $invoice->currency)
+                      ->get(db_prefix() . 'currencies')->row();
+        if ($cur) {
+            $currency_name = strtoupper((string) $cur->name);
+            $currency_code = $currency_name === 'USD' ? 2 : 1;
+        }
+    }
+
+    // Receipt type defaults from gateway settings; webhook will refine later
+    $receipt_type = (string) (get_option('paymentmethod_nedarimpay_receipt_type') ?: 'student');
+
+    $CI->db->insert($tx_table, [
+        'transaction_id'    => (string) ($payment->transactionid ?: 'PFX-PAY-' . $payment->id),
+        'perfex_client_id'  => $client_id ?: null,
+        'perfex_invoice_id' => (int) $payment->invoiceid,
+        'perfex_payment_id' => (int) $payment->id,
+        'receipt_type'      => in_array($receipt_type, ['student', 'donation'], true) ? $receipt_type : 'student',
+        'client_name'       => $client_name,
+        'email'             => $email,
+        'amount'            => (float) $payment->amount,
+        'currency'          => $currency_code,
+        'transaction_type'  => 'gateway',
+        'makor'             => 'gateway',
+        'transaction_time'  => !empty($payment->date) ? $payment->date : date('Y-m-d H:i:s'),
+        'status'            => 'processed',
+        'created_at'        => date('Y-m-d H:i:s'),
+    ]);
 }
 
 // =============================================================================

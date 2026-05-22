@@ -166,6 +166,12 @@ class Gateway extends App_Controller
         check_invoice_restrictions($invoiceid, $hash);
 
         if ($status === 'success') {
+            // Drop a transactions row from the verify side too — guarantees
+            // the staff sees the payment in /admin/nedarimpay/transactions
+            // even when the asynchronous Nedarim webhook hasn't reached us
+            // yet (or never will, in test environments).
+            $this->_record_gateway_transaction($invoiceid, $hash);
+
             // The webhook lands asynchronously — poll briefly so the customer
             // sees the paid state immediately when possible.
             $paid = false;
@@ -189,6 +195,104 @@ class Gateway extends App_Controller
         }
 
         redirect(site_url('invoice/' . $invoiceid . '/' . $hash));
+    }
+
+    /**
+     * Insert a minimal row into nedarimpay_transactions for the gateway flow.
+     *
+     * De-dup keyed on (perfex_invoice_id + transaction_id) so the webhook
+     * (which is the authoritative source) can either find this row and
+     * update it, or skip the insert entirely. Safe to call multiple times.
+     */
+    private function _record_gateway_transaction($invoice_id, $hash)
+    {
+        $tx_table = db_prefix() . 'nedarimpay_transactions';
+        if (!$this->db->table_exists($tx_table)) {
+            return; // module not fully installed — install hook will handle next time
+        }
+
+        $transaction_id = (string) ($this->input->get('TransactionId') ?: $this->input->get('transaction_id'));
+        $amount         = (float)  ($this->input->get('Amount') ?: $this->input->get('amount'));
+
+        // De-dup: existing webhook row by transaction_id OR existing gateway
+        // row for this invoice (avoids 2 rows when verify is hit twice).
+        $existing = $this->db
+            ->where('perfex_invoice_id', (int) $invoice_id)
+            ->where('makor', 'gateway')
+            ->limit(1)
+            ->get($tx_table)->row();
+        if ($transaction_id) {
+            $by_txn = $this->db
+                ->where('transaction_id', $transaction_id)
+                ->limit(1)
+                ->get($tx_table)->row();
+            if ($by_txn) {
+                $existing = $by_txn;
+            }
+        }
+        if ($existing) {
+            // Already have a row — just make sure invoice id is bound
+            $this->db->where('id', (int) $existing->id)->update($tx_table, [
+                'perfex_invoice_id' => (int) $invoice_id,
+            ]);
+            return;
+        }
+
+        // Pull invoice / client context for nicer log display
+        $invoice = $this->db->select('clientid, total, currency')
+                            ->where('id', (int) $invoice_id)
+                            ->get(db_prefix() . 'invoices')->row();
+        $client_name = '';
+        $email       = '';
+        $client_id   = $invoice ? (int) $invoice->clientid : 0;
+
+        if ($client_id) {
+            $client = $this->db->select('company')
+                               ->where('userid', $client_id)
+                               ->get(db_prefix() . 'clients')->row();
+            if ($client) {
+                $client_name = (string) $client->company;
+            }
+            $primary = $this->db->select('email')
+                                ->where('userid', $client_id)
+                                ->where('is_primary', 1)
+                                ->get(db_prefix() . 'contacts')->row();
+            if ($primary) {
+                $email = (string) $primary->email;
+            }
+        }
+
+        $currency_code = 1;
+        if ($invoice && !empty($invoice->currency)) {
+            $cur = $this->db->select('name')
+                            ->where('id', (int) $invoice->currency)
+                            ->get(db_prefix() . 'currencies')->row();
+            if ($cur && strtoupper((string) $cur->name) === 'USD') {
+                $currency_code = 2;
+            }
+        }
+
+        if ($amount <= 0 && $invoice) {
+            $amount = (float) $invoice->total;
+        }
+
+        $receipt_type = (string) (get_option('paymentmethod_nedarimpay_receipt_type') ?: 'student');
+
+        $this->db->insert($tx_table, [
+            'transaction_id'    => $transaction_id ?: 'GW-INV-' . $invoice_id . '-' . time(),
+            'perfex_client_id'  => $client_id ?: null,
+            'perfex_invoice_id' => (int) $invoice_id,
+            'receipt_type'      => in_array($receipt_type, ['student', 'donation'], true) ? $receipt_type : 'student',
+            'client_name'       => $client_name,
+            'email'             => $email,
+            'amount'            => $amount,
+            'currency'          => $currency_code,
+            'transaction_type'  => 'gateway',
+            'makor'             => 'gateway',
+            'transaction_time'  => date('Y-m-d H:i:s'),
+            'status'            => 'pending', // webhook will flip to "processed"
+            'created_at'        => date('Y-m-d H:i:s'),
+        ]);
     }
 
     // =========================================================================

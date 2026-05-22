@@ -112,6 +112,13 @@
             <div class="panel_s">
                <div class="panel-body">
 
+                  <?php if (!empty($sql_error)) : ?>
+                     <div class="alert alert-danger">
+                        <strong><?php echo _l('error'); ?>:</strong>
+                        <?php echo htmlspecialchars((string) $sql_error, ENT_QUOTES, 'UTF-8'); ?>
+                     </div>
+                  <?php endif; ?>
+
                   <?php if (empty($transactions)) : ?>
                      <p class="text-center text-muted"><?php echo _l('nedarimpay_no_transactions_found'); ?></p>
                   <?php else : ?>
@@ -133,61 +140,69 @@
                            </tr>
                         </thead>
                         <tbody>
+                        <?php
+                        // ─ Helper: null-safe HTML escape (PHP 8.1+ deprecates
+                        //   passing null to htmlspecialchars) ─────────────────
+                        $h = function ($value) {
+                            return htmlspecialchars((string) ($value ?? ''), ENT_QUOTES, 'UTF-8');
+                        };
+                        ?>
                         <?php foreach ($transactions as $tx) : ?>
                            <tr>
                               <td>
-                                 <strong><?php echo htmlspecialchars($tx['receipt_number'] ?? '—'); ?></strong>
+                                 <strong><?php echo $h($tx['receipt_number'] ?? '—'); ?></strong>
                               </td>
                               <td>
-                                 <?php if ($tx['receipt_type'] === 'student') : ?>
+                                 <?php if (($tx['receipt_type'] ?? '') === 'student') : ?>
                                     <span class="label label-info"><?php echo _l('nedarimpay_type_student'); ?></span>
                                  <?php else : ?>
                                     <span class="label label-primary"><?php echo _l('nedarimpay_type_donation'); ?></span>
                                  <?php endif; ?>
                               </td>
                               <td>
-                                 <?php if ($tx['perfex_client_id']) : ?>
+                                 <?php if (!empty($tx['perfex_client_id'])) : ?>
                                     <a href="<?php echo admin_url('clients/client/' . $tx['perfex_client_id']); ?>">
-                                       <?php echo htmlspecialchars($tx['client_name']); ?>
+                                       <?php echo $h($tx['client_name']); ?>
                                     </a>
                                  <?php else : ?>
-                                    <?php echo htmlspecialchars($tx['client_name']); ?>
+                                    <?php echo $h($tx['client_name']) ?: '<span class="text-muted">—</span>'; ?>
                                  <?php endif; ?>
                               </td>
-                              <td><?php echo htmlspecialchars($tx['email']); ?></td>
+                              <td><?php echo $h($tx['email']); ?></td>
                               <td>
-                                 <strong><?php echo number_format($tx['amount'], 2); ?></strong>
-                                 <?php echo $tx['currency'] == 2 ? '$' : '₪'; ?>
+                                 <strong><?php echo number_format((float) ($tx['amount'] ?? 0), 2); ?></strong>
+                                 <?php echo (int) ($tx['currency'] ?? 1) === 2 ? '$' : '₪'; ?>
                               </td>
                               <td>
-                                 <small class="text-muted"><?php echo htmlspecialchars($tx['transaction_type'] ?? ''); ?></small>
+                                 <small class="text-muted"><?php echo $h($tx['transaction_type']); ?></small>
                               </td>
                               <td class="text-center">
-                                 <?php if ($tx['email_sent']) : ?>
+                                 <?php if (!empty($tx['email_sent'])) : ?>
                                     <i class="fa fa-check-circle text-success"
-                                       title="<?php echo _dt($tx['email_sent_at']); ?>"></i>
+                                       title="<?php echo $h(!empty($tx['email_sent_at']) ? _dt($tx['email_sent_at']) : ''); ?>"></i>
                                  <?php else : ?>
                                     <i class="fa fa-times-circle text-danger"></i>
                                  <?php endif; ?>
                               </td>
-                              <td><?php echo _dt($tx['created_at']); ?></td>
+                              <td><?php echo !empty($tx['created_at']) ? _dt($tx['created_at']) : '—'; ?></td>
                               <td>
                                  <?php
-                                 $bmap = ['processed' => 'success', 'pending' => 'warning', 'failed' => 'danger', 'duplicate' => 'default'];
-                                 $b    = $bmap[$tx['status']] ?? 'default';
+                                 $bmap     = ['processed' => 'success', 'pending' => 'warning', 'failed' => 'danger', 'duplicate' => 'default'];
+                                 $tx_stat  = (string) ($tx['status'] ?? 'pending');
+                                 $b        = $bmap[$tx_stat] ?? 'default';
                                  ?>
                                  <span class="label label-<?php echo $b; ?>">
-                                    <?php echo _l('nedarimpay_status_' . $tx['status']); ?>
+                                    <?php echo _l('nedarimpay_status_' . $tx_stat); ?>
                                  </span>
                               </td>
                               <td>
                                  <div class="btn-group">
-                                    <a href="<?php echo admin_url('nedarimpay/transaction_detail/' . $tx['id'] . ($tx['makor'] === 'manual_charge' ? '?src=mc' : '')); ?>"
+                                    <a href="<?php echo admin_url('nedarimpay/transaction_detail/' . (int) ($tx['id'] ?? 0) . (($tx['makor'] ?? '') === 'manual_charge' ? '?src=mc' : '')); ?>"
                                        class="btn btn-xs btn-default"
                                        data-toggle="tooltip" title="<?php echo _l('nedarimpay_view_detail'); ?>">
                                        <i class="fa fa-eye"></i>
                                     </a>
-                                    <?php if ($tx['perfex_invoice_id']) : ?>
+                                    <?php if (!empty($tx['perfex_invoice_id'])) : ?>
                                     <a href="<?php echo admin_url('invoices/list_invoices/' . $tx['perfex_invoice_id']); ?>"
                                        class="btn btn-xs btn-default"
                                        data-toggle="tooltip" title="<?php echo _l('nedarimpay_view_invoice'); ?>"
@@ -195,8 +210,8 @@
                                        <i class="fa fa-file-text-o"></i>
                                     </a>
                                     <?php endif; ?>
-                                    <?php if (!$tx['email_sent'] && !empty($tx['email'])) : ?>
-                                    <a href="<?php echo admin_url('nedarimpay/resend_email/' . $tx['id']); ?>"
+                                    <?php if (empty($tx['email_sent']) && !empty($tx['email'])) : ?>
+                                    <a href="<?php echo admin_url('nedarimpay/resend_email/' . (int) ($tx['id'] ?? 0)); ?>"
                                        class="btn btn-xs btn-info"
                                        data-toggle="tooltip" title="<?php echo _l('nedarimpay_resend_email'); ?>">
                                        <i class="fa fa-paper-plane-o"></i>

@@ -181,15 +181,28 @@ class Nedarimpay extends AdminController
             access_denied('NedarimPay');
         }
 
+        // Always-present filter keys so the view never hits an undefined index
         $filters = [
-            'receipt_type' => $this->input->get('receipt_type'),
-            'status'       => $this->input->get('status'),
-            'date_from'    => $this->input->get('date_from'),
-            'date_to'      => $this->input->get('date_to'),
-            'search'       => $this->input->get('search'),
+            'receipt_type' => (string) $this->input->get('receipt_type'),
+            'status'       => (string) $this->input->get('status'),
+            'date_from'    => (string) $this->input->get('date_from'),
+            'date_to'      => (string) $this->input->get('date_to'),
+            'search'       => (string) $this->input->get('search'),
         ];
 
-        $pfx  = db_prefix();
+        $pfx = db_prefix();
+
+        // Self-heal: if a tables-missing condition is hit (fresh install where
+        // the activation hook didn't run, or a partial uninstall), re-run the
+        // install script instead of bubbling a 500 out of a UNION query.
+        if (!$this->db->table_exists($pfx . 'nedarimpay_transactions')
+            || !$this->db->table_exists($pfx . 'nedarimpay_manual_charges')) {
+            if (defined('NEDARIMPAY_MODULE_PATH')
+                && file_exists(NEDARIMPAY_MODULE_PATH . '/install.php')) {
+                require_once NEDARIMPAY_MODULE_PATH . '/install.php';
+            }
+        }
+
         $tx_w = [];
         $mc_w = [];
 
@@ -265,9 +278,34 @@ class Nedarimpay extends AdminController
             ORDER BY created_at DESC
         ";
 
-        $data['transactions'] = $this->db->query($sql)->result_array();
-        $data['filters']      = $filters;
-        $data['title']        = _l('nedarimpay_transactions');
+        // Wrap query execution so the view always gets an array — a SQL
+        // failure (e.g. column-mismatch on UNION across older schemas) used
+        // to bubble up as a raw 500. Now we log and show an empty list with
+        // a friendly note.
+        $data['transactions'] = [];
+        $data['sql_error']    = null;
+        try {
+            // Tell CI to throw on DB error so we can catch it locally
+            $orig_db_debug = $this->db->db_debug;
+            $this->db->db_debug = false;
+
+            $query = $this->db->query($sql);
+            $this->db->db_debug = $orig_db_debug;
+
+            if ($query !== false) {
+                $data['transactions'] = $query->result_array();
+            } else {
+                $err               = $this->db->error();
+                $data['sql_error'] = $err['message'] ?? 'Unknown SQL error';
+                log_message('error', 'NedarimPay transactions SQL error: ' . $data['sql_error']);
+            }
+        } catch (Throwable $e) {
+            $data['sql_error'] = $e->getMessage();
+            log_message('error', 'NedarimPay transactions exception: ' . $e->getMessage());
+        }
+
+        $data['filters'] = $filters;
+        $data['title']   = _l('nedarimpay_transactions');
         $this->load->view('nedarimpay/transactions', $data);
     }
 
