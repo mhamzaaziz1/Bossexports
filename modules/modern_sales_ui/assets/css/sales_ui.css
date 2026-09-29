@@ -1,0 +1,185 @@
+/* Modern Sales UI - State of the Art Design */
+
+:root {
+    --ms-primary: #4f46e5;      /* Indigo 600 */
+    --ms-primary-soft: #e0e7ff; /* Indigo 100 */
+    --ms-success: #10b981;      /* Emerald 500 */
+    --ms-success-soft: #d1fae5; /* Emerald 100 */
+    --ms-warning: #f59e0b;      /* Amber 500 */
+    --ms-warning-soft: #fef3c7; /* Amber 100 */
+    --ms-danger: #ef4444;       /* Red 500 */
+    --ms-danger-soft: #fee2e2;  /* Red 100 */
+    --ms-gray-50: #f9fafb;
+    --ms-gray-100: #f3f4f6;
+    --ms-gray-200: #e5e7eb;
+    --ms-gray-800: #1f2937;
+    --ms-font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+/* --- Global Overrides for Sales Area --- */
+
+body.admin {
+    font-family: var(--ms-font-sans) !important;
+    background-color: #f1f5f9; /* Slate 100 */
+}
+
+/* Panel Glassmorphism & Card Style */
+.panel_s {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    margin-bottom: 24px;
+}
+
+.panel-body {
+    padding: 24px;
+}
+
+.panel-heading {
+    background: transparent !important;
+    border-bottom: 1px solid var(--ms-gray-100);
+    padding: 20px 24px;
+    font-weight: 600;
+    color: var(--ms-gray-800);
+    border-top-left-radius: 12px;
+    border-top-right-radius: 12px;
+}
+
+/* Buttons Modernization */
+.btn-primary, .btn-info {
+    background-color: var(--ms-primary) !important;
+    border-color: var(--ms-primary) !important;
+    border-radius: 8px;
+    padding: 8px 16px;
+    font-weight: 500;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+    transition: all 0.2s ease;
+}
+
+.btn-primary:hover, .btn-info:hover {
+    filter: brightness(110%);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.2), 0 2px 4px -1px rgba(79, 70, 229, 0.1);
+}
+
+.btn-default {
+    background-color: white;
+    border: 1px solid var(--ms-gray-200);
+    color: var(--ms-gray-800);
+    border-radius: 8px;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+
+.btn-default:hover {
+    background-color: var(--ms-gray-50);
+}
+
+/* Tables Modernization */
+.table.dataTable {
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.table.dataTable thead th {
+    background-color: var(--ms-gray-50);
+    color: var(--ms-gray-800);
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 0.05em;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--ms-gray-200);
+}
+
+.table.dataTable tbody td {
+    padding: 16px;
+    border-bottom: 1px solid var(--ms-gray-100);
+    font-size: 0.875rem;
+    color: #4b5563; /* Gray 600 */
+    vertical-align: middle;
+}
+
+.table.dataTable tbody tr:hover {
+    background-color: var(--ms-primary-soft);
+}
+
+/* Status Labels (Pills) */
+.label {
+    border-radius: 9999px;
+    padding: 4px 12px;
+    font-weight: 500;
+    font-size: 0.75rem;
+    border: none;
+    box-shadow: none;
+    text-transform: capitalize;
+}
+
+/* Semantic Status Colors Override */
+.label-default { background-color: var(--ms-gray-200); color: var(--ms-gray-800); }
+.label-info { background-color: #dbeafe; color: #1e40af; }
+.label-success { background-color: var(--ms-success-soft); color: #065f46; }
+.label-warning { background-color: var(--ms-warning-soft); color: #92400e; }
+.label-danger { background-color: var(--ms-danger-soft); color: #991b1b; }
+
+/* Filter Dropdowns */
+.btn-group .dropdown-menu {
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    padding: 8px;
+}
+
+.btn-group .dropdown-menu li a {
+    border-radius: 6px;
+    padding: 8px 12px;
+    margin-bottom: 2px;
+}
+
+.btn-group .dropdown-menu li a:hover {
+    background-color: var(--ms-gray-50);
+    color: var(--ms-primary);
+}
+
+/* Top Stats Areas */
+.top_stats_wrapper {
+    background: transparent;
+    padding: 0;
+    margin-bottom: 20px;
+}
+
+.quick-stats-invoices, .quick-stats-proposals, .quick-stats-estimates {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+    border: 1px solid var(--ms-gray-100);
+}
+
+/* Progress Bars */
+.progress {
+    border-radius: 9999px;
+    background-color: var(--ms-gray-100);
+    box-shadow: none;
+}
+
+.progress-bar {
+    border-radius: 9999px;
+    box-shadow: none;
+}
+
+/* Specific Page Tweaks */
+
+/* Invoices specific */
+body.invoices .panel-body._buttons a.new-invoice-list,
+body.proposals a.new-proposal-btn,
+body.estimates a.new-estimate-btn {
+    background: linear-gradient(135deg, var(--ms-primary) 0%, #4338ca 100%) !important;
+    border: none !important;
+}
+
+/* Canvas/Charts container */
+canvas {
+    filter: drop-shadow(0 4px 3px rgb(0 0 0 / 0.07));
+}

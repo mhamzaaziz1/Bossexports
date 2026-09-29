@@ -1,0 +1,461 @@
+<?php defined('BASEPATH') or exit('No direct script access allowed'); ?>
+<?php init_head(); ?>
+<div id="wrapper">
+   <div class="content">
+      <div class="row">
+         <div class="col-md-12">
+            <div class="_filters _hidden_inputs hidden">
+               <?php
+                  echo form_hidden('my_customers');
+                  echo form_hidden('requires_registration_confirmation');
+                  foreach($groups as $group){
+                     echo form_hidden('customer_group_'.$group['id']);
+                  }
+                  foreach($contract_types as $type){
+                     echo form_hidden('contract_type_'.$type['id']);
+                  }
+                  foreach($invoice_statuses as $status){
+                     echo form_hidden('invoices_'.$status);
+                  }
+                  foreach($estimate_statuses as $status){
+                     echo form_hidden('estimates_'.$status);
+                  }
+                  foreach($project_statuses as $status){
+                  echo form_hidden('projects_'.$status['id']);
+                  }
+                  foreach($proposal_statuses as $status){
+                  echo form_hidden('proposals_'.$status);
+                  }
+                  foreach($customer_admins as $cadmin){
+                  echo form_hidden('responsible_admin_'.$cadmin['staff_id']);
+                  }
+                  foreach($countries as $country){
+                  echo form_hidden('country_'.$country['country_id']);
+                  }
+                  ?>
+            </div>
+            <div class="panel_s">
+               <div class="panel-body">
+                  <div class="_buttons">
+                     <div class="visible-xs">
+                        <div class="clearfix"></div>
+                     </div>
+                     <div class="btn-group pull-right btn-with-tooltip-group _filter_data" data-toggle="tooltip" data-title="<?php echo _l('filter_by'); ?>">
+                        <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <i class="fa fa-filter" aria-hidden="true"></i>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-left" style="width:300px;">
+                           <li class="active"><a href="#" data-cview="all" onclick="dt_custom_view('','.table-clients',''); return false;"><?php echo _l('customers_sort_all'); ?></a>
+                           </li>
+                           <?php if(get_option('customer_requires_registration_confirmation') == '1' || total_rows(db_prefix().'clients','registration_confirmed=0') > 0) { ?>
+                           <li class="divider"></li>
+                           <li>
+                              <a href="#" data-cview="requires_registration_confirmation" onclick="dt_custom_view('requires_registration_confirmation','.table-clients','requires_registration_confirmation'); return false;">
+                              <?php echo _l('customer_requires_registration_confirmation'); ?>
+                              </a>
+                           </li>
+                           <?php } ?>
+                           <li class="divider"></li>
+                           <li>
+                              <a href="#" data-cview="my_customers" onclick="dt_custom_view('my_customers','.table-clients','my_customers'); return false;">
+                              <?php echo _l('customers_assigned_to_me'); ?>
+                              </a>
+                           </li>
+                           <li class="divider"></li>
+                           <?php if(count($groups) > 0){ ?>
+                           <li class="dropdown-submenu pull-left groups">
+                              <a href="#" tabindex="-1"><?php echo _l('customer_groups'); ?></a>
+                              <ul class="dropdown-menu dropdown-menu-left">
+                                 <?php foreach($groups as $group){ ?>
+                                 <li><a href="#" data-cview="customer_group_<?php echo $group['id']; ?>" onclick="dt_custom_view('customer_group_<?php echo $group['id']; ?>','.table-clients','customer_group_<?php echo $group['id']; ?>'); return false;"><?php echo $group['name']; ?></a></li>
+                                 <?php } ?>
+                              </ul>
+                           </li>
+                           <div class="clearfix"></div>
+                           <li class="divider"></li>
+                           <?php } ?>
+                           <?php if(count($countries) > 1){ ?>
+                           <li class="dropdown-submenu pull-left countries">
+                              <a href="#" tabindex="-1"><?php echo _l('clients_country'); ?></a>
+                              <ul class="dropdown-menu dropdown-menu-left">
+                                 <?php foreach($countries as $country){ ?>
+                                 <li><a href="#" data-cview="country_<?php echo $country['country_id']; ?>" onclick="dt_custom_view('country_<?php echo $country['country_id']; ?>','.table-clients','country_<?php echo $country['country_id']; ?>'); return false;"><?php echo $country['short_name']; ?></a></li>
+                                 <?php } ?>
+                              </ul>
+                           </li>
+                           <div class="clearfix"></div>
+                           <li class="divider"></li>
+                           <?php } ?>
+                           <li class="dropdown-submenu pull-left invoice">
+                              <a href="#" tabindex="-1"><?php echo _l('invoices'); ?></a>
+                              <ul class="dropdown-menu dropdown-menu-left">
+                                 <?php foreach($invoice_statuses as $status){ ?>
+                                 <li>
+                                    <a href="#" data-cview="invoices_<?php echo $status; ?>" onclick="dt_custom_view('invoices_<?php echo $status; ?>','.table-clients','invoices_<?php echo $status; ?>'); return false;"><?php echo _l('customer_have_invoices_by',format_invoice_status($status,'',false)); ?></a>
+                                 </li>
+                                 <?php } ?>
+                              </ul>
+                           </li>
+                           <div class="clearfix"></div>
+                           <li class="divider"></li>
+                           <li class="dropdown-submenu pull-left estimate">
+                              <a href="#" tabindex="-1"><?php echo _l('estimates'); ?></a>
+                              <ul class="dropdown-menu dropdown-menu-left">
+                                 <?php foreach($estimate_statuses as $status){ ?>
+                                 <li>
+                                    <a href="#" data-cview="estimates_<?php echo $status; ?>" onclick="dt_custom_view('estimates_<?php echo $status; ?>','.table-clients','estimates_<?php echo $status; ?>'); return false;">
+                                    <?php echo _l('customer_have_estimates_by',format_estimate_status($status,'',false)); ?>
+                                    </a>
+                                 </li>
+                                 <?php } ?>
+                              </ul>
+                           </li>
+                           <div class="clearfix"></div>
+                           <li class="divider"></li>
+                           <li class="dropdown-submenu pull-left project">
+                              <a href="#" tabindex="-1"><?php echo _l('projects'); ?></a>
+                              <ul class="dropdown-menu dropdown-menu-left">
+                                 <?php foreach($project_statuses as $status){ ?>
+                                 <li>
+                                    <a href="#" data-cview="projects_<?php echo $status['id']; ?>" onclick="dt_custom_view('projects_<?php echo $status['id']; ?>','.table-clients','projects_<?php echo $status['id']; ?>'); return false;">
+                                    <?php echo _l('customer_have_projects_by',$status['name']); ?>
+                                    </a>
+                                 </li>
+                                 <?php } ?>
+                              </ul>
+                           </li>
+                           <div class="clearfix"></div>
+                           <li class="divider"></li>
+                           <li class="dropdown-submenu pull-left proposal">
+                              <a href="#" tabindex="-1"><?php echo _l('proposals'); ?></a>
+                              <ul class="dropdown-menu dropdown-menu-left">
+                                 <?php foreach($proposal_statuses as $status){ ?>
+                                 <li>
+                                    <a href="#" data-cview="proposals_<?php echo $status; ?>" onclick="dt_custom_view('proposals_<?php echo $status; ?>','.table-clients','proposals_<?php echo $status; ?>'); return false;">
+                                    <?php echo _l('customer_have_proposals_by',format_proposal_status($status,'',false)); ?>
+                                    </a>
+                                 </li>
+                                 <?php } ?>
+                              </ul>
+                           </li>
+                           <div class="clearfix"></div>
+                           <?php if(count($contract_types) > 0) { ?>
+                           <li class="divider"></li>
+                           <li class="dropdown-submenu pull-left contract_types">
+                              <a href="#" tabindex="-1"><?php echo _l('contract_types'); ?></a>
+                              <ul class="dropdown-menu dropdown-menu-left">
+                                 <?php foreach($contract_types as $type){ ?>
+                                 <li>
+                                    <a href="#" data-cview="contract_type_<?php echo $type['id']; ?>" onclick="dt_custom_view('contract_type_<?php echo $type['id']; ?>','.table-clients','contract_type_<?php echo $type['id']; ?>'); return false;">
+                                    <?php echo _l('customer_have_contracts_by_type',$type['name']); ?>
+                                    </a>
+                                 </li>
+                                 <?php } ?>
+                              </ul>
+                           </li>
+                           <?php } ?>
+                           <?php if(count($customer_admins) > 0 && (has_permission('customers','','create') || has_permission('customers','','edit'))){ ?>
+                           <div class="clearfix"></div>
+                           <li class="divider"></li>
+                           <li class="dropdown-submenu pull-left responsible_admin">
+                              <a href="#" tabindex="-1"><?php echo _l('responsible_admin'); ?></a>
+                              <ul class="dropdown-menu dropdown-menu-left">
+                                 <?php foreach($customer_admins as $cadmin){ ?>
+                                 <li>
+                                    <a href="#" data-cview="responsible_admin_<?php echo $cadmin['staff_id']; ?>" onclick="dt_custom_view('responsible_admin_<?php echo $cadmin['staff_id']; ?>','.table-clients','responsible_admin_<?php echo $cadmin['staff_id']; ?>'); return false;">
+                                    <?php echo get_staff_full_name($cadmin['staff_id']); ?>
+                                    </a>
+                                 </li>
+                                 <?php } ?>
+                              </ul>
+                           </li>
+                           <?php } ?>
+                        </ul>
+                     </div>
+                  </div>
+                  <div class="clearfix"></div>
+                  <?php if(has_permission('customers','','view') || have_assigned_customers()) {
+                     $where_summary = '';
+                     if(!has_permission('customers','','view')){
+                         $where_summary = ' AND userid IN (SELECT customer_id FROM '.db_prefix().'customer_admins WHERE staff_id='.get_staff_user_id().')';
+                     }
+                     ?>
+                  <hr class="hr-panel-heading" />
+                  <div class="row mbot15">
+                     <div class="col-md-12">
+                        <h4 class="no-margin"><?php echo _l('customers_summary'); ?></h4>
+                     </div>
+                     <div class="col-md-2 col-xs-6 border-right">
+                        <h3 class="bold"><?php echo total_rows(db_prefix().'clients',($where_summary != '' ? substr($where_summary,5) : '')); ?></h3>
+                        <span class="text-dark"><?php echo _l('customers_summary_total'); ?></span>
+                     </div>
+                     <div class="col-md-2 col-xs-6 border-right">
+                        <h3 class="bold"><?php echo total_rows(db_prefix().'clients','active=1'.$where_summary); ?></h3>
+                        <span class="text-success"><?php echo _l('active_customers'); ?></span>
+                     </div>
+                     <div class="col-md-2 col-xs-6 border-right">
+                        <h3 class="bold"><?php echo total_rows(db_prefix().'clients','active=0'.$where_summary); ?></h3>
+                        <span class="text-danger"><?php echo _l('inactive_active_customers'); ?></span>
+                     </div>
+                     <div class="col-md-2 col-xs-6 border-right">
+                        <h3 class="bold"><?php echo total_rows(db_prefix().'contacts','active=1'.$where_summary); ?></h3>
+                        <span class="text-info"><?php echo _l('customers_summary_active'); ?></span>
+                     </div>
+                     <div class="col-md-2  col-xs-6 border-right">
+                        <h3 class="bold"><?php echo total_rows(db_prefix().'contacts','active=0'.$where_summary); ?></h3>
+                        <span class="text-danger"><?php echo _l('customers_summary_inactive'); ?></span>
+                     </div>
+                     <div class="col-md-2 col-xs-6">
+                        <h3 class="bold"><?php echo total_rows(db_prefix().'contacts','last_login LIKE "'.date('Y-m-d').'%"'.$where_summary); ?></h3>
+                        <span class="text-muted">
+                        <?php
+                           $contactsTemplate = '';
+                           if(count($contacts_logged_in_today)> 0){
+                              foreach($contacts_logged_in_today as $contact){
+                               $url = admin_url('clients/client/'.$contact['userid'].'?contactid='.$contact['id']);
+                               $fullName = $contact['firstname'] . ' ' . $contact['lastname'];
+                               $dateLoggedIn = _dt($contact['last_login']);
+                               $html = "<a href='$url' target='_blank'>$fullName</a><br /><small>$dateLoggedIn</small><br />";
+                               $contactsTemplate .= html_escape('<p class="mbot5">'.$html.'</p>');
+                           }
+                           ?>
+                        <?php } ?>
+                        <span<?php if($contactsTemplate != ''){ ?> class="pointer text-has-action" data-toggle="popover" data-title="<?php echo _l('customers_summary_logged_in_today'); ?>" data-html="true" data-content="<?php echo $contactsTemplate; ?>" data-placement="bottom" <?php } ?>><?php echo _l('customers_summary_logged_in_today'); ?></span>
+                        </span>
+                     </div>
+                  </div>
+                  <?php } ?>
+                  <hr class="hr-panel-heading" />
+
+                  <div class="modal fade bulk_actions" id="customers_bulk_action" tabindex="-1" role="dialog">
+                     <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                           <div class="modal-header">
+                              <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                              <h4 class="modal-title"><?php echo _l('bulk_actions'); ?></h4>
+                           </div>
+                           <div class="modal-body">
+                              <?php if(has_permission('customers','','delete')){ ?>
+                              <div class="checkbox checkbox-danger">
+                                 <input type="checkbox" name="mass_delete" id="mass_delete">
+                                 <label for="mass_delete"><?php echo _l('mass_delete'); ?></label>
+                              </div>
+                              <hr class="mass_delete_separator" />
+                              <?php } ?>
+                              <div id="bulk_change">
+                                 <?php echo render_select('move_to_groups_customers_bulk[]',$groups,array('id','name'),'customer_groups','', array('multiple'=>true),array(),'','',false); ?>
+                                 <p class="text-danger"><?php echo _l('bulk_action_customers_groups_warning'); ?></p>
+                              </div>
+                           </div>
+                           <div class="modal-footer">
+                              <button type="button" class="btn btn-default" data-dismiss="modal"><?php echo _l('close'); ?></button>
+                              <a href="#" class="btn btn-info" onclick="customers_bulk_action(this); return false;"><?php echo _l('confirm'); ?></a>
+                           </div>
+                        </div>
+                        <!-- /.modal-content -->
+                     </div>
+                     <!-- /.modal-dialog -->
+                  </div>
+                  <!-- /.modal -->
+                  <div class="checkbox">
+                     <input type="checkbox" checked id="exclude_inactive" name="exclude_inactive">
+                     <label for="exclude_inactive"><?php echo _l('exclude_inactive'); ?> <?php echo _l('clients'); ?></label>
+                  </div>
+                  <div class="clearfix mtop20"></div>
+                  <div class="col-md-12">
+                    <h4 class="no-margin bold">Aging Summary</h4>
+                    <p class="text-muted">Outstanding invoices by age</p>
+                    <hr />
+                  <?php
+                     $table_data = array();
+                     $_table_data = array(
+                      '<span class="hide"> - </span><div class="checkbox mass_select_all_wrap"><input type="checkbox" id="mass_select_all" data-to-table="clients"><label></label></div>',
+                       array(
+                         'name'=>_l('the_number_sign'),
+                         'th_attrs'=>array('class'=>'toggleable', 'id'=>'th-number')
+                        ),
+                         array(
+                         'name'=>_l('clients_list_company'),
+                         'th_attrs'=>array('class'=>'toggleable', 'id'=>'th-company')
+                        ),
+                        array(
+                         'name'=>_l('Current'),
+                         'th_attrs'=>array('class'=>'toggleable text-center', 'id'=>'th-current')
+                        ),
+                         array(
+                         'name'=>_l('1-7 Days'),
+                         'th_attrs'=>array('class'=>'toggleable text-center', 'id'=>'th-1-7-days')
+                        ),
+                         array(
+                         'name'=>_l('8-14 Days'),
+                         'th_attrs'=>array('class'=>'toggleable text-center', 'id'=>'th-8-14-days')
+                        ),
+                         array(
+                         'name'=>_l('15-21 Days'),
+                         'th_attrs'=>array('class'=>'toggleable text-center', 'id'=>'th-15-21-days')
+                        ),
+                         array(
+                         'name'=>_l('22-30 Days'),
+                         'th_attrs'=>array('class'=>'toggleable text-center', 'id'=>'th-22-30-days')
+                        ),
+                         array(
+                         'name'=>_l('31-60 Days'),
+                         'th_attrs'=>array('class'=>'toggleable text-center', 'id'=>'th-31-60-days')
+                        ),
+                        array(
+                         'name'=>_l('61-90 Days'),
+                         'th_attrs'=>array('class'=>'toggleable text-center', 'id'=>'th-61-90-days')
+                        ),
+                         array(
+                         'name'=>_l('Over 90 Days'),
+                         'th_attrs'=>array('class'=>'toggleable text-center', 'id'=>'th-over-90-days')
+                        ),
+                        array(
+                         'name'=>_l('Total'),
+                         'th_attrs'=>array('class'=>'toggleable text-center', 'id'=>'th-total')
+                        ),
+                      );
+                          foreach($_table_data as $_t){
+                           array_push($table_data,$_t);
+                          }
+
+                          $table_data = hooks()->apply_filters('customers_table_columns', $table_data);
+                          
+                          // Custom render of table to include tfoot
+                          $class = 'clients';
+                          $table_attributes = [
+                                'data-last-order-identifier' => 'customers',
+                                'data-default-order'         => get_table_last_order('customers'),
+                          ];
+                          
+                          $_table_attributes = ' ';
+                          foreach ($table_attributes as $key => $val) {
+                              $_table_attributes .= $key . '="' . $val . '" ';
+                          }
+                          ?>
+                          <div class="ie-dt-fix">
+                              <table <?php echo $_table_attributes; ?> class="dt-table-loading table table-<?php echo $class; ?>">
+                                  <thead>
+                                      <tr>
+                                          <?php foreach($table_data as $heading) {
+                                              if (!is_array($heading)) {
+                                                  echo '<th>' . $heading . '</th>';
+                                              } else {
+                                                  $th_attrs = '';
+                                                  if (isset($heading['th_attrs'])) {
+                                                      foreach ($heading['th_attrs'] as $key => $val) {
+                                                          $th_attrs .= $key . '="' . $val . '" ';
+                                                      }
+                                                  }
+                                                  echo '<th' . ($th_attrs != '' ? ' ' . $th_attrs : '') . '>' . $heading['name'] . '</th>';
+                                              }
+                                          } ?>
+                                      </tr>
+                                  </thead>
+                                  <tbody></tbody>
+                                  <tfoot>
+                                      <tr style="background-color: #f0f0f0; font-weight: bold;">
+                                          <td></td>
+                                          <td></td>
+                                          <td class="text-right">Total:</td>
+                                          <td class="text-center" id="total_current"></td>
+                                          <td class="text-center" id="total_1_7"></td>
+                                          <td class="text-center" id="total_8_14"></td>
+                                          <td class="text-center" id="total_15_21"></td>
+                                          <td class="text-center" id="total_22_30"></td>
+                                          <td class="text-center" id="total_31_60"></td>
+                                          <td class="text-center" id="total_61_90"></td>
+                                          <td class="text-center" id="total_over_90"></td>
+                                          <td class="text-center" id="total_all"></td>
+                                      </tr>
+                                  </tfoot>
+                              </table>
+                          </div>
+                    </div>
+                  </div>
+               </div>
+            </div>
+         </div>
+      </div>
+   </div>
+</div>
+<?php init_tail(); ?>
+<script>
+   $(function(){
+       var CustomersServerParams = {};
+       $.each($('._hidden_inputs._filters input'),function(){
+          CustomersServerParams[$(this).attr('name')] = '[name="'+$(this).attr('name')+'"]';
+      });
+       CustomersServerParams['exclude_inactive'] = '[name="exclude_inactive"]:checked';
+
+       var tAPI = initDataTable('.table-clients', admin_url+'clients/aging_table', [0], [0], CustomersServerParams,<?php echo hooks()->apply_filters('customers_table_default_order', json_encode(array(2,'asc'))); ?>);
+       
+       $('input[name="exclude_inactive"]').on('change',function(){
+           tAPI.ajax.reload();
+       });
+
+       tAPI.on('draw', function () {
+            var api = $(this).DataTable();
+            
+            // Function to strip HTML and commas and parse float
+            var intVal = function ( i ) {
+                return typeof i === 'string' ?
+                    i.replace(/<[^>]+>/g, "").replace(/,/g, "")*1 :
+                    typeof i === 'number' ?
+                        i : 0;
+            };
+ 
+            // Calculate totals for columns 3 to 11
+            var columns = [3, 4, 5, 6, 7, 8, 9, 10, 11];
+            var ids = ['total_current', 'total_1_7', 'total_8_14', 'total_15_21', 'total_22_30', 'total_31_60', 'total_61_90', 'total_over_90', 'total_all'];
+            
+            for(var x = 0; x < columns.length; x++) {
+                var colIdx = columns[x];
+                var total = api
+                    .column( colIdx, { page: 'current'} ) // Calculate per page or all? 'current' for page, empty for all. User usually wants visible page? Or all? "add total of each coloumn in the last". Usually implies page total or grand total? DataTables footerCallback example usually calls page total. But for aging report, grand total might be better. But server-side processing makes grand total hard without server support. Let's do page total for now as it is available on client side.
+                    .data()
+                    .reduce( function (a, b) {
+                        return intVal(a) + intVal(b);
+                    }, 0 );
+                    
+                $( '#' + ids[x] ).html(
+                    format_money(total)
+                );
+            }
+        });
+   });
+   function customers_bulk_action(event) {
+       var r = confirm(app.lang.confirm_action_prompt);
+       if (r == false) {
+           return false;
+       } else {
+           var mass_delete = $('#mass_delete').prop('checked');
+           var ids = [];
+           var data = {};
+           if(mass_delete == false || typeof(mass_delete) == 'undefined'){
+               data.groups = $('select[name="move_to_groups_customers_bulk[]"]').selectpicker('val');
+               if (data.groups.length == 0) {
+                   data.groups = 'remove_all';
+               }
+           } else {
+               data.mass_delete = true;
+           }
+           var rows = $('.table-clients').find('tbody tr');
+           $.each(rows, function() {
+               var checkbox = $($(this).find('td').eq(0)).find('input');
+               if (checkbox.prop('checked') == true) {
+                   ids.push(checkbox.val());
+               }
+           });
+           data.ids = ids;
+           $(event).addClass('disabled');
+           setTimeout(function(){
+             $.post(admin_url + 'clients/bulk_action', data).done(function() {
+              window.location.reload();
+          });
+         },50);
+       }
+   }
+</script>
+</body>
+</html>

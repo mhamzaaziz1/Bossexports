@@ -1,0 +1,31 @@
+<?php
+
+$lang['bpmns']                                             = 'نقشه های ذهن';
+$lang['bpmn']                                              = 'نقشه ذهنی';
+$lang['bpmn_create_new']                                   = 'ایجاد جدید';
+$lang['bpmn_edit']                                         = 'ویرایش کنید';
+$lang['bpmn_delete']                                       = 'حذف';
+$lang['bpmn_title']                                        = 'عنوان';
+$lang['bpmn_desc']                                         = 'شرح';
+$lang['bpmn_staff']										  = 'خلق شده توسط';
+$lang['bpmn_search']										  = 'نقشه ذهن را جستجو کنید';
+$lang['bpmn_group']								          = 'گروه';
+$lang['bpmn_groups']								          = 'گروه ها';
+$lang['edit_bpmn_group']								      = 'ویرایش گروه';
+$lang['new_bpmn_group']								      = 'گروه جدید';
+$lang['bpmn_group_add_edit_name']						  = 'نام';
+$lang['bpmn_group_add_edit_description']					  = 'شرح';
+$lang['bpmn_switch_to_grid_view']						  = 'به شبکه تغییر دهید';
+$lang['bpmn_switch_to_list_view']						  = 'تغییر به لیست';
+$lang['bpmn_assigned_to_me']								  = 'bpmn من';
+$lang['bpmn_filter_staff']								  = 'کارمندان';
+$lang['bpmn_filter_group']								  = 'گروه';
+$lang['bpmn_info']								          = 'اطلاعات bpmn';
+$lang['bpmn_staff']								          = 'کارمندان';
+$lang['bpmn_view']								          = 'چشم انداز';
+$lang['bpmn_not_found']								      = 'نقشه ذهن یافت نشد';
+$lang['preview_bpmn']								      = 'پیش نمایش bpmn';
+$lang['bpmn_settings_name']								  = 'نقشه ذهنی';
+$lang['new_bpmn_group']								      = 'گروه جدید';
+$lang['bpmn_created_at']									  = 'ایجاد شده در';
+$lang['bpmn_enable_group_option']                          = 'به کارمندان غیر اداری اجازه داده می شود تا گروهی را در bpmn ایجاد و ویرایش کنند؟  ';

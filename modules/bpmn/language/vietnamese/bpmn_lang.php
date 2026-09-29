@@ -1,0 +1,31 @@
+<?php
+
+$lang['bpmns']                                             = 'Sơ đồ tư duy';
+$lang['bpmn']                                              = 'Sơ đồ tư duy';
+$lang['bpmn_create_new']                                   = 'Tạo mới';
+$lang['bpmn_edit']                                         = 'Biên tập';
+$lang['bpmn_delete']                                       = 'Xóa bỏ';
+$lang['bpmn_title']                                        = 'Tiêu đề';
+$lang['bpmn_desc']                                         = 'Sự miêu tả';
+$lang['bpmn_staff']										  = 'Được tạo bởi';
+$lang['bpmn_search']										  = 'Tìm kiếm bản đồ tư duy';
+$lang['bpmn_group']								          = 'Nhóm';
+$lang['bpmn_groups']								          = 'Các nhóm';
+$lang['edit_bpmn_group']								      = 'Chỉnh sửa nhóm';
+$lang['new_bpmn_group']								      = 'Nhóm mới';
+$lang['bpmn_group_add_edit_name']						  = 'Tên';
+$lang['bpmn_group_add_edit_description']					  = 'Sự miêu tả';
+$lang['bpmn_switch_to_grid_view']						  = 'Chuyển sang lưới';
+$lang['bpmn_switch_to_list_view']						  = 'Chuyển sang danh sách';
+$lang['bpmn_assigned_to_me']								  = 'Sơ đồ tư duy của tôi';
+$lang['bpmn_filter_staff']								  = 'Nhân Viên';
+$lang['bpmn_filter_group']								  = 'Nhóm';
+$lang['bpmn_info']								          = 'Thông tin bpmn';
+$lang['bpmn_staff']								          = 'Nhân Viên';
+$lang['bpmn_view']								          = 'Lượt xem';
+$lang['bpmn_not_found']								      = 'bpmn không tìm thấy';
+$lang['preview_bpmn']								      = 'Sơ đồ tư duy';
+$lang['bpmn_settings_name']								  = 'Sơ đồ tư duy';
+$lang['new_bpmn_group']								      = 'Nhóm mới';
+$lang['bpmn_created_at']									  = 'Tạo tại';
+$lang['bpmn_enable_group_option']                          = 'Cho phép các nhân viên không phải là quản trị viên tạo Nhóm trong khu vực tạo / chỉnh sửa bpmn?  ';

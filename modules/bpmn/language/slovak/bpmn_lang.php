@@ -1,0 +1,31 @@
+<?php
+
+$lang['bpmns']                                             = 'Mapy mysle';
+$lang['bpmn']                                              = 'Myšlienkové mapy';
+$lang['bpmn_create_new']                                   = 'Vytvor nový';
+$lang['bpmn_edit']                                         = 'editovať';
+$lang['bpmn_delete']                                       = 'delete';
+$lang['bpmn_title']                                        = 'nadpis';
+$lang['bpmn_desc']                                         = 'popis';
+$lang['bpmn_staff']										  = 'Vytvoril';
+$lang['bpmn_search']										  = 'Vyhľadajte mapu mysle';
+$lang['bpmn_group']								          = 'skupina';
+$lang['bpmn_groups']								          = 'skupiny';
+$lang['edit_bpmn_group']								      = 'Upraviť skupinu';
+$lang['new_bpmn_group']								      = 'Nová skupina';
+$lang['bpmn_group_add_edit_name']						  = 'názov';
+$lang['bpmn_group_add_edit_description']					  = 'popis';
+$lang['bpmn_switch_to_grid_view']						  = 'Prepnite na mriežku';
+$lang['bpmn_switch_to_list_view']						  = 'Prepnúť na zoznam';
+$lang['bpmn_assigned_to_me']								  = 'My bpmn';
+$lang['bpmn_filter_staff']								  = 'zamestnanci';
+$lang['bpmn_filter_group']								  = 'skupina';
+$lang['bpmn_info']								          = 'Informácie o mysli';
+$lang['bpmn_staff']								          = 'zamestnanci';
+$lang['bpmn_view']								          = 'vyhliadka';
+$lang['bpmn_not_found']								      = 'bpmn sa nenašiel';
+$lang['preview_bpmn']								      = 'Preview bpmn';
+$lang['bpmn_settings_name']								  = 'Myšlienkové mapy';
+$lang['new_bpmn_group']								      = 'Nová skupina';
+$lang['bpmn_created_at']									  = 'Vytvorené v';
+$lang['bpmn_enable_group_option']                          = 'Umožnite neadministratívnym zamestnancom vytvárať skupinu v oblasti vytvárania / úprav bpmny?  ';

@@ -1,0 +1,31 @@
+<?php
+
+$lang['bpmns']                                             = 'Peta konsep';
+$lang['bpmn']                                              = 'Peta pikiran';
+$lang['bpmn_create_new']                                   = 'Membuat baru';
+$lang['bpmn_edit']                                         = 'Edit';
+$lang['bpmn_delete']                                       = 'Menghapus';
+$lang['bpmn_title']                                        = 'Judul';
+$lang['bpmn_desc']                                         = 'Deskripsi';
+$lang['bpmn_staff']										  = 'Dibuat oleh';
+$lang['bpmn_search']										  = 'Cari Peta Pikiran';
+$lang['bpmn_group']								          = 'Kelompok';
+$lang['bpmn_groups']								          = 'Grup';
+$lang['edit_bpmn_group']								      = 'Edit Grup';
+$lang['new_bpmn_group']								      = 'Grup baru';
+$lang['bpmn_group_add_edit_name']						  = 'Nama';
+$lang['bpmn_group_add_edit_description']					  = 'Deskripsi';
+$lang['bpmn_switch_to_grid_view']						  = 'Beralih ke Kotak';
+$lang['bpmn_switch_to_list_view']						  = 'Beralih ke Daftar';
+$lang['bpmn_assigned_to_me']								  = 'bpmn saya';
+$lang['bpmn_filter_staff']								  = 'Staf';
+$lang['bpmn_filter_group']								  = 'Kelompok';
+$lang['bpmn_info']								          = 'Info bpmn';
+$lang['bpmn_staff']								          = 'Staf';
+$lang['bpmn_view']								          = 'Melihat';
+$lang['bpmn_not_found']								      = 'bpmn tidak ditemukan';
+$lang['preview_bpmn']								      = 'Pratinjau bpmn';
+$lang['bpmn_settings_name']								  = 'Peta pikiran';
+$lang['new_bpmn_group']								      = 'Grup baru';
+$lang['bpmn_created_at']									  = 'Dibuat di';
+$lang['bpmn_enable_group_option']                          = 'Izinkan anggota staf non-admin membuat Grup di area buat / edit bpmn?  ';

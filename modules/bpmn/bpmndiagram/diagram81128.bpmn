@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" targetNamespace="" xsi:schemaLocation="http://www.omg.org/spec/BPMN/20100524/MODEL http://www.omg.org/spec/BPMN/2.0/20100501/BPMN20.xsd">
+  <collaboration id="sid-c0e745ff-361e-4afb-8c8d-2a1fc32b1424">
+    <participant id="sid-87F4C1D6-25E1-4A45-9DA7-AD945993D06F" name="Customer" processRef="sid-C3803939-0872-457F-8336-EAE484DC4A04" />
+    <participant id="Participant_1jwdbs6" name="Customer" processRef="Process_07ad1xo" />
+    <participant id="Participant_0gtsuaq" name="Customer" processRef="Process_1j5cqzd" />
+    <participant id="Participant_1dlnjun" name="Customer" processRef="Process_0bqtusy" />
+  </collaboration>
+  <process id="sid-C3803939-0872-457F-8336-EAE484DC4A04" name="Customer" processType="None" isClosed="false" isExecutable="false">
+    <extensionElements />
+    <laneSet id="sid-b167d0d7-e761-4636-9200-76b7f0e8e83a">
+      <lane id="sid-57E4FE0D-18E4-478D-BC5D-B15164E93254">
+        <flowNodeRef>Event_14822zt</flowNodeRef>
+        <flowNodeRef>Event_19zv3zg</flowNodeRef>
+      </lane>
+    </laneSet>
+    <startEvent id="Event_14822zt">
+      <outgoing>Flow_1usm613</outgoing>
+    </startEvent>
+    <endEvent id="Event_19zv3zg">
+      <incoming>Flow_1usm613</incoming>
+    </endEvent>
+    <sequenceFlow id="Flow_1usm613" sourceRef="Event_14822zt" targetRef="Event_19zv3zg" />
+  </process>
+  <process id="Process_07ad1xo" name="Customer" processType="None" isClosed="false" isExecutable="false">
+    <laneSet id="LaneSet_1yi3iqb">
+      <lane id="Lane_1tfkrtk" />
+    </laneSet>
+  </process>
+  <process id="Process_1j5cqzd" name="Customer" processType="None" isClosed="false" isExecutable="false">
+    <laneSet id="LaneSet_1avg1bz">
+      <lane id="Lane_0if0la3" />
+    </laneSet>
+  </process>
+  <process id="Process_0bqtusy" name="Customer" processType="None" isClosed="false" isExecutable="false">
+    <laneSet id="LaneSet_0tlmuwh">
+      <lane id="Lane_09x6ig9" />
+    </laneSet>
+  </process>
+  <bpmndi:BPMNDiagram id="sid-74620812-92c4-44e5-949c-aa47393d3830">
+    <bpmndi:BPMNPlane id="sid-cdcae759-2af7-4a6d-bd02-53f3352a731d" bpmnElement="sid-c0e745ff-361e-4afb-8c8d-2a1fc32b1424">
+      <bpmndi:BPMNShape id="sid-87F4C1D6-25E1-4A45-9DA7-AD945993D06F_gui" bpmnElement="sid-87F4C1D6-25E1-4A45-9DA7-AD945993D06F" isHorizontal="true">
+        <omgdc:Bounds x="83" y="25" width="933" height="250" />
+        <bpmndi:BPMNLabel labelStyle="sid-84cb49fd-2f7c-44fb-8950-83c3fa153d3b">
+          <omgdc:Bounds x="47.49999999999999" y="170.42857360839844" width="12.000000000000014" height="59.142852783203125" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="sid-57E4FE0D-18E4-478D-BC5D-B15164E93254_gui" bpmnElement="sid-57E4FE0D-18E4-478D-BC5D-B15164E93254" isHorizontal="true">
+        <omgdc:Bounds x="113" y="25" width="903" height="250" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_1usm613_di" bpmnElement="Flow_1usm613">
+        <di:waypoint x="358" y="120" />
+        <di:waypoint x="412" y="120" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="Event_14822zt_di" bpmnElement="Event_14822zt">
+        <omgdc:Bounds x="322" y="102" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_19zv3zg_di" bpmnElement="Event_19zv3zg">
+        <omgdc:Bounds x="412" y="102" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Participant_1jwdbs6_di" bpmnElement="Participant_1jwdbs6" isHorizontal="true">
+        <omgdc:Bounds x="83" y="295" width="933" height="250" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_1tfkrtk_di" bpmnElement="Lane_1tfkrtk" isHorizontal="true">
+        <omgdc:Bounds x="113" y="295" width="903" height="250" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Participant_0gtsuaq_di" bpmnElement="Participant_0gtsuaq" isHorizontal="true">
+        <omgdc:Bounds x="83" y="560" width="933" height="250" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_0if0la3_di" bpmnElement="Lane_0if0la3" isHorizontal="true">
+        <omgdc:Bounds x="113" y="560" width="903" height="250" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Participant_1dlnjun_di" bpmnElement="Participant_1dlnjun" isHorizontal="true">
+        <omgdc:Bounds x="83" y="830" width="933" height="250" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_09x6ig9_di" bpmnElement="Lane_09x6ig9" isHorizontal="true">
+        <omgdc:Bounds x="113" y="830" width="903" height="250" />
+      </bpmndi:BPMNShape>
+    </bpmndi:BPMNPlane>
+    <bpmndi:BPMNLabelStyle id="sid-e0502d32-f8d1-41cf-9c4a-cbb49fecf581">
+      <omgdc:Font name="Arial" size="11" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" />
+    </bpmndi:BPMNLabelStyle>
+    <bpmndi:BPMNLabelStyle id="sid-84cb49fd-2f7c-44fb-8950-83c3fa153d3b">
+      <omgdc:Font name="Arial" size="12" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" />
+    </bpmndi:BPMNLabelStyle>
+  </bpmndi:BPMNDiagram>
+</definitions>

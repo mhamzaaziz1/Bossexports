@@ -1,0 +1,31 @@
+<?php
+
+$lang['bpmns']                                             = 'Χάρτες μυαλού';
+$lang['bpmn']                                              = 'Χάρτης του μυαλού';
+$lang['bpmn_create_new']                                   = 'Δημιουργία νέου';
+$lang['bpmn_edit']                                         = 'Επεξεργασία';
+$lang['bpmn_delete']                                       = 'Διαγράφω';
+$lang['bpmn_title']                                        = 'Τίτλος';
+$lang['bpmn_desc']                                         = 'Περιγραφή';
+$lang['bpmn_staff']										  = 'Δημιουργήθηκε από';
+$lang['bpmn_search']										  = 'Αναζήτηση χάρτη μυαλού';
+$lang['bpmn_group']								          = 'Ομάδα';
+$lang['bpmn_groups']								          = 'Ομάδες';
+$lang['edit_bpmn_group']								      = 'Επεξεργασία ομάδας';
+$lang['new_bpmn_group']								      = 'Νέα ομάδα';
+$lang['bpmn_group_add_edit_name']						  = 'Ονομα';
+$lang['bpmn_group_add_edit_description']					  = 'Περιγραφή';
+$lang['bpmn_switch_to_grid_view']						  = 'Μετάβαση σε πλέγμα';
+$lang['bpmn_switch_to_list_view']						  = 'Μετάβαση σε λίστα';
+$lang['bpmn_assigned_to_me']								  = 'Ο χάρτης μου';
+$lang['bpmn_filter_staff']								  = 'Προσωπικό';
+$lang['bpmn_filter_group']								  = 'Ομάδα';
+$lang['bpmn_info']								          = 'Πληροφορίες bpmn';
+$lang['bpmn_staff']								          = 'Προσωπικό';
+$lang['bpmn_view']								          = 'Θέα';
+$lang['bpmn_not_found']								      = 'Το bpmn δεν βρέθηκε';
+$lang['preview_bpmn']								      = 'Προεπισκόπηση bpmn';
+$lang['bpmn_settings_name']								  = 'Χάρτης του μυαλού';
+$lang['new_bpmn_group']								      = 'Νέα ομάδα';
+$lang['bpmn_created_at']									  = 'Δημιουργήθηκε στις';
+$lang['bpmn_enable_group_option']                          = 'Επιτρέψτε στα μέλη του προσωπικού που δεν είναι διαχειριστές να δημιουργήσουν ομάδα στο bpmn create / edit area?  ';

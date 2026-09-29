@@ -1,0 +1,31 @@
+<?php
+
+$lang['bpmns']                                             = 'Mapy myśli';
+$lang['bpmn']                                              = 'Mapa myśli';
+$lang['bpmn_create_new']                                   = 'Tworzyć nowe';
+$lang['bpmn_edit']                                         = 'Edytować';
+$lang['bpmn_delete']                                       = 'Usunąć';
+$lang['bpmn_title']                                        = 'Tytuł';
+$lang['bpmn_desc']                                         = 'Opis';
+$lang['bpmn_staff']										  = 'Stworzone przez';
+$lang['bpmn_search']										  = 'Przeszukaj mapę myśli';
+$lang['bpmn_group']								          = 'Grupa';
+$lang['bpmn_groups']								          = 'Grupy';
+$lang['edit_bpmn_group']								      = 'Edytuj grupę';
+$lang['new_bpmn_group']								      = 'Nowa grupa';
+$lang['bpmn_group_add_edit_name']						  = 'Imię';
+$lang['bpmn_group_add_edit_description']					  = 'Opis';
+$lang['bpmn_switch_to_grid_view']						  = 'Przełącz na siatkę';
+$lang['bpmn_switch_to_list_view']						  = 'Przełącz na listę';
+$lang['bpmn_assigned_to_me']								  = 'Moja mapa myśli';
+$lang['bpmn_filter_staff']								  = 'Personel';
+$lang['bpmn_filter_group']								  = 'Grupa';
+$lang['bpmn_info']								          = 'Informacje o mapie myśli';
+$lang['bpmn_staff']								          = 'Personel';
+$lang['bpmn_view']								          = 'Widok';
+$lang['bpmn_not_found']								      = 'Nie znaleziono mapy myśli';
+$lang['preview_bpmn']								      = 'Podgląd mapy myśli';
+$lang['bpmn_settings_name']								  = 'Mapa myśli';
+$lang['new_bpmn_group']								      = 'Nowa grupa';
+$lang['bpmn_created_at']									  = 'Utworzono w';
+$lang['bpmn_enable_group_option']                          = 'Pozwól członkom personelu niebędącego administratorami tworzyć grupy w obszarze tworzenia / edycji mapy myśli?  ';

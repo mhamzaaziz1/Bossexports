@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "bossexports-site",
+      "runtimeExecutable": "python",
+      "runtimeArgs": ["-m", "http.server", "8735", "--directory", "C:/Users/hamza/Downloads/bossexports_web"],
+      "port": 8735
+    }
+  ]
+}

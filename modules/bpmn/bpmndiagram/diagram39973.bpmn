@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" targetNamespace="" xsi:schemaLocation="http://www.omg.org/spec/BPMN/20100524/MODEL http://www.omg.org/spec/BPMN/2.0/20100501/BPMN20.xsd">
+  <collaboration id="sid-c0e745ff-361e-4afb-8c8d-2a1fc32b1424">
+    <participant id="sid-87F4C1D6-25E1-4A45-9DA7-AD945993D06F" name="Customer" processRef="sid-C3803939-0872-457F-8336-EAE484DC4A04" />
+  </collaboration>
+  <process id="sid-C3803939-0872-457F-8336-EAE484DC4A04" name="Customer" processType="None" isClosed="false" isExecutable="false">
+    <extensionElements />
+    <laneSet id="sid-b167d0d7-e761-4636-9200-76b7f0e8e83a">
+      <lane id="sid-57E4FE0D-18E4-478D-BC5D-B15164E93254">
+        <flowNodeRef>Event_0mw8geu</flowNodeRef>
+        <flowNodeRef>Gateway_0r6yxz2</flowNodeRef>
+        <flowNodeRef>Activity_164x8zg</flowNodeRef>
+        <flowNodeRef>Event_155ut28</flowNodeRef>
+      </lane>
+    </laneSet>
+    <intermediateThrowEvent id="Event_0mw8geu">
+      <outgoing>Flow_0wr0b7w</outgoing>
+    </intermediateThrowEvent>
+    <exclusiveGateway id="Gateway_0r6yxz2">
+      <incoming>Flow_0wr0b7w</incoming>
+      <outgoing>Flow_0sxhkf8</outgoing>
+    </exclusiveGateway>
+    <sequenceFlow id="Flow_0wr0b7w" sourceRef="Event_0mw8geu" targetRef="Gateway_0r6yxz2" />
+    <task id="Activity_164x8zg">
+      <incoming>Flow_0sxhkf8</incoming>
+      <outgoing>Flow_0qevej4</outgoing>
+    </task>
+    <sequenceFlow id="Flow_0sxhkf8" sourceRef="Gateway_0r6yxz2" targetRef="Activity_164x8zg" />
+    <endEvent id="Event_155ut28">
+      <incoming>Flow_0qevej4</incoming>
+    </endEvent>
+    <sequenceFlow id="Flow_0qevej4" sourceRef="Activity_164x8zg" targetRef="Event_155ut28" />
+  </process>
+  <bpmndi:BPMNDiagram id="sid-74620812-92c4-44e5-949c-aa47393d3830">
+    <bpmndi:BPMNPlane id="sid-cdcae759-2af7-4a6d-bd02-53f3352a731d" bpmnElement="sid-c0e745ff-361e-4afb-8c8d-2a1fc32b1424">
+      <bpmndi:BPMNShape id="sid-87F4C1D6-25E1-4A45-9DA7-AD945993D06F_gui" bpmnElement="sid-87F4C1D6-25E1-4A45-9DA7-AD945993D06F" isHorizontal="true">
+        <omgdc:Bounds x="83" y="105" width="933" height="250" />
+        <bpmndi:BPMNLabel labelStyle="sid-84cb49fd-2f7c-44fb-8950-83c3fa153d3b">
+          <omgdc:Bounds x="47.49999999999999" y="170.42857360839844" width="12.000000000000014" height="59.142852783203125" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="sid-57E4FE0D-18E4-478D-BC5D-B15164E93254_gui" bpmnElement="sid-57E4FE0D-18E4-478D-BC5D-B15164E93254" isHorizontal="true">
+        <omgdc:Bounds x="113" y="105" width="903" height="250" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_0wr0b7w_di" bpmnElement="Flow_0wr0b7w">
+        <di:waypoint x="228" y="240" />
+        <di:waypoint x="285" y="240" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0sxhkf8_di" bpmnElement="Flow_0sxhkf8">
+        <di:waypoint x="335" y="240" />
+        <di:waypoint x="400" y="240" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0qevej4_di" bpmnElement="Flow_0qevej4">
+        <di:waypoint x="500" y="240" />
+        <di:waypoint x="572" y="240" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="Event_0mw8geu_di" bpmnElement="Event_0mw8geu">
+        <omgdc:Bounds x="192" y="222" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_0r6yxz2_di" bpmnElement="Gateway_0r6yxz2" isMarkerVisible="true">
+        <omgdc:Bounds x="285" y="215" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_164x8zg_di" bpmnElement="Activity_164x8zg">
+        <omgdc:Bounds x="400" y="200" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_155ut28_di" bpmnElement="Event_155ut28">
+        <omgdc:Bounds x="572" y="222" width="36" height="36" />
+      </bpmndi:BPMNShape>
+    </bpmndi:BPMNPlane>
+    <bpmndi:BPMNLabelStyle id="sid-e0502d32-f8d1-41cf-9c4a-cbb49fecf581">
+      <omgdc:Font name="Arial" size="11" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" />
+    </bpmndi:BPMNLabelStyle>
+    <bpmndi:BPMNLabelStyle id="sid-84cb49fd-2f7c-44fb-8950-83c3fa153d3b">
+      <omgdc:Font name="Arial" size="12" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" />
+    </bpmndi:BPMNLabelStyle>
+  </bpmndi:BPMNDiagram>
+</definitions>

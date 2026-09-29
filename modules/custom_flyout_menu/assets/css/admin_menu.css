@@ -1,0 +1,429 @@
+
+/* Custom Flyout Menu - HubSpot-style Sidebar */
+
+body.cfm-flyout {
+    --cfm-collapsed-width: 70px;
+    --cfm-flyout-width: 260px;
+    --cfm-flyout-radius: 12px;
+    --cfm-flyout-bg: #ffffff;
+    --cfm-flyout-border: rgba(15, 23, 42, 0.08);
+    --cfm-flyout-shadow: 0 16px 40px rgba(15, 23, 42, 0.18);
+    --cfm-flyout-text: #0f172a;
+    --cfm-flyout-muted: #64748b;
+    --cfm-flyout-hover: #f1f5f9;
+}
+
+/* Collapsed sidebar: keep icon rail visible */
+body.cfm-flyout.hide-sidebar:not(.show-sidebar):not(.page-small) #menu {
+    margin-left: 0 !important;
+    width: var(--cfm-collapsed-width) !important;
+    overflow: visible !important;
+}
+
+body.cfm-flyout.hide-sidebar:not(.show-sidebar):not(.page-small) #wrapper {
+    margin-left: var(--cfm-collapsed-width) !important;
+}
+
+/* Icon-only layout */
+
+body.cfm-flyout.hide-sidebar:not(.show-sidebar):not(.page-small) #setup-menu-wrapper {
+    /*z-index: 101;*/
+}
+body.cfm-flyout.hide-sidebar:not(.show-sidebar):not(.page-small) .sidebar {
+    /*z-index: 100;*/
+}
+body.cfm-flyout.hide-sidebar:not(.show-sidebar):not(.page-small) #side-menu {
+    margin-top: 60px !important;
+}
+
+body.cfm-flyout.hide-sidebar:not(.show-sidebar):not(.page-small) #side-menu > li > a {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 14px 0;
+    text-align: center;
+}
+
+body.cfm-flyout.hide-sidebar:not(.show-sidebar):not(.page-small) #side-menu > li > a .menu-text,
+body.cfm-flyout.hide-sidebar:not(.show-sidebar):not(.page-small) #side-menu > li > a .arrow {
+    display: none !important;
+}
+
+body.cfm-flyout.hide-sidebar:not(.show-sidebar):not(.page-small) #side-menu > li > a .menu-icon {
+    margin-right: 0 !important;
+    font-size: 18px;
+}
+
+body.cfm-flyout.hide-sidebar:not(.show-sidebar):not(.page-small) #side-menu > li > a .badge {
+    display: none !important;
+}
+
+body.cfm-flyout.hide-sidebar:not(.show-sidebar):not(.page-small) #side-menu > li.active > a,
+body.cfm-flyout.hide-sidebar:not(.show-sidebar):not(.page-small) #side-menu > li.cfm-flyout-open > a {
+    background: #f8fafc;
+}
+
+/* Hide original profile dropdown (replaced by profile menu item) */
+body.cfm-flyout .sidebar-user-profile {
+    display: none !important;
+}
+
+/* Profile menu icon (first menu item) */
+body.cfm-flyout.hide-sidebar:not(.show-sidebar):not(.page-small) #side-menu > li.cfm-profile-menu > a {
+    padding: 10px 0;
+}
+
+body.cfm-flyout.hide-sidebar:not(.show-sidebar):not(.page-small) #side-menu > li.cfm-profile-menu img.cfm-profile-icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 999px;
+    object-fit: cover;
+}
+
+body.cfm-flyout.hide-sidebar:not(.show-sidebar):not(.page-small) #side-menu > li.cfm-profile-menu .menu-text {
+    display: none !important;
+}
+
+/* Flyout panel from second level */
+body.cfm-flyout.hide-sidebar:not(.show-sidebar):not(.page-small) #menu .nav-second-level {
+    position: fixed !important;
+    left: 75px !important;
+    top: 60px;
+    width: var(--cfm-flyout-width) !important;
+    max-height: calc(100vh - 20px);
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 8px 0 10px;
+    background: var(--cfm-flyout-bg);
+    border-radius: var(--cfm-flyout-radius);
+    box-shadow: var(--cfm-flyout-shadow);
+    border: 1px solid var(--cfm-flyout-border);
+    opacity: 0;
+    transform: translateX(-8px);
+    pointer-events: none;
+    transition: opacity 0.16s ease, transform 0.16s ease;
+    z-index: 1099;
+    display: block !important;
+    height: auto !important;
+}
+
+body.cfm-flyout.hide-sidebar:not(.show-sidebar):not(.page-small) #menu .nav-second-level.collapse,
+body.cfm-flyout.hide-sidebar:not(.show-sidebar):not(.page-small) #menu .nav-second-level.in,
+body.cfm-flyout.hide-sidebar:not(.show-sidebar):not(.page-small) #menu .nav-second-level.collapsing {
+    display: block !important;
+    height: auto !important;
+}
+
+body.cfm-flyout.hide-sidebar:not(.show-sidebar):not(.page-small) #side-menu > li.cfm-flyout-open > .nav-second-level {
+    opacity: 1;
+    transform: translateX(0);
+    pointer-events: auto;
+}
+
+/* Flyout title */
+body.cfm-flyout.hide-sidebar:not(.show-sidebar):not(.page-small) .cfm-flyout-title {
+    display: block;
+    padding: 10px 16px 8px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    color: var(--cfm-flyout-muted);
+    border-bottom: 1px solid #eef2f6;
+    margin-bottom: 6px;
+}
+
+/* Group labels and separators inside flyout */
+body.cfm-flyout.hide-sidebar:not(.show-sidebar):not(.page-small) .cfm-group-label {
+    padding: 10px 16px 6px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: var(--cfm-flyout-muted);
+}
+
+body.cfm-flyout.hide-sidebar:not(.show-sidebar):not(.page-small) .cfm-group-separator {
+    margin: 6px 12px;
+    border: 0;
+    border-top: 1px solid #e5e7eb;
+}
+
+body.cfm-flyout.hide-sidebar:not(.show-sidebar):not(.page-small) .cfm-flyout-title span {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+body.cfm-flyout:not(.hide-sidebar) .cfm-flyout-title,
+body.cfm-flyout.show-sidebar .cfm-flyout-title,
+body.cfm-flyout.page-small .cfm-flyout-title {
+    display: none;
+}
+
+/* Submenu links in flyout */
+body.cfm-flyout.hide-sidebar:not(.show-sidebar):not(.page-small) #menu .nav-second-level > li > a {
+    padding: 10px 16px;
+    border-radius: 0;
+    margin: 2px 0;
+    color: var(--cfm-flyout-text);
+}
+
+body.cfm-flyout.hide-sidebar:not(.show-sidebar):not(.page-small) #menu .nav-second-level > li > a:hover,
+body.cfm-flyout.hide-sidebar:not(.show-sidebar):not(.page-small) #menu .nav-second-level > li.active > a {
+    background: var(--cfm-flyout-hover);
+}
+
+body.cfm-flyout.hide-sidebar:not(.show-sidebar):not(.page-small) #menu .nav-second-level .menu-icon {
+    margin-right: 8px;
+}
+
+/* Keep Setup menu separate */
+#setup-menu-wrapper .cfm-flyout-title {
+    display: none !important;
+}
+
+@media (max-width: 768px) {
+    body.cfm-flyout {
+        --cfm-collapsed-width: 60px;
+        --cfm-flyout-width: 230px;
+    }
+
+    body.cfm-flyout.hide-sidebar:not(.show-sidebar):not(.page-small) #menu {
+        width: 60px !important;
+    }
+
+    body.cfm-flyout.hide-sidebar:not(.show-sidebar):not(.page-small) #wrapper {
+        margin-left: 60px !important;
+    }
+}
+
+
+/*=============================================*/
+
+/* css for flyout panel for default crm sidebar */
+/* Flyout panel from second level */
+body.cfm-flyout #menu .collapse.in {
+    position: fixed !important;
+    left: 245px !important;
+    top: 130px;
+    width: var(--cfm-flyout-width) !important;
+    max-height: calc(100vh - 20px);
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 8px 0 10px;
+    background: var(--cfm-flyout-bg);
+    border-radius: var(--cfm-flyout-radius);
+    box-shadow: var(--cfm-flyout-shadow);
+    border: 1px solid var(--cfm-flyout-border);
+    transform: translateX(-8px);
+    pointer-events: none;
+    transition: opacity 0.16s ease, transform 0.16s ease;
+    z-index: 9999;
+    display: block !important;
+    height: auto !important;
+}
+
+body.cfm-flyout #menu .nav-second-level.collapse.in,
+body.cfm-flyout #menu .nav-second-level.in,
+body.cfm-flyout #menu .nav-second-level.collapsing {
+    display: block !important;
+    height: auto !important;
+}
+
+body.cfm-flyout.hide-sidebar:not(.show-sidebar):not(.page-small) #side-menu > li.cfm-flyout-open > .nav-second-level {
+    opacity: 1;
+    transform: translateX(0);
+    pointer-events: auto;
+}
+
+/* Flyout title */
+body.cfm-flyout.hide-sidebar:not(.show-sidebar):not(.page-small) .cfm-flyout-title {
+    display: block;
+    padding: 10px 16px 8px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    color: var(--cfm-flyout-muted);
+    border-bottom: 1px solid #eef2f6;
+    margin-bottom: 6px;
+}
+
+/* Group labels and separators inside flyout */
+body.cfm-flyout.hide-sidebar:not(.show-sidebar):not(.page-small) .cfm-group-label {
+    padding: 10px 16px 6px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: var(--cfm-flyout-muted);
+}
+
+body.cfm-flyout.hide-sidebar:not(.show-sidebar):not(.page-small) .cfm-group-separator {
+    margin: 6px 12px;
+    border: 0;
+    border-top: 1px solid #e5e7eb;
+}
+
+body.cfm-flyout.hide-sidebar:not(.show-sidebar):not(.page-small) .cfm-flyout-title span {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+body.cfm-flyout:not(.hide-sidebar) .cfm-flyout-title,
+body.cfm-flyout.show-sidebar .cfm-flyout-title,
+body.cfm-flyout.page-small .cfm-flyout-title {
+    display: none;
+}
+
+/* Submenu links in flyout */
+body.cfm-flyout.hide-sidebar:not(.show-sidebar):not(.page-small) #menu .nav-second-level > li > a {
+    padding: 10px 16px;
+    border-radius: 0;
+    margin: 2px 0;
+    color: var(--cfm-flyout-text);
+}
+
+body.cfm-flyout.hide-sidebar:not(.show-sidebar):not(.page-small) #menu .nav-second-level > li > a:hover,
+body.cfm-flyout.hide-sidebar:not(.show-sidebar):not(.page-small) #menu .nav-second-level > li.active > a {
+    background: var(--cfm-flyout-hover) !important;
+}
+
+body.cfm-flyout.hide-sidebar:not(.show-sidebar):not(.page-small) #menu .nav-second-level .menu-icon {
+    margin-right: 8px;
+}
+
+
+/* ============================================= */
+/* CSS for Flyout Panel for Default Full CRM Sidebar */
+/* ============================================= */
+
+/* When sidebar is EXPANDED (NOT collapsed) - Full width sidebar mode */
+/* Hide the default nested submenu display (no indentation, no expansion below parent) */
+body.cfm-flyout:not(.hide-sidebar) #side-menu > li > .nav-second-level,
+body.cfm-flyout.show-sidebar #side-menu > li > .nav-second-level {
+    position: fixed !important;
+    left: 237px !important; /* Sidebar width (230px) + small gap */
+    top: 60px;
+    width: var(--cfm-flyout-width) !important;
+    max-height: calc(100vh - 80px);
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 12px 0;
+    background: var(--cfm-flyout-bg);
+    border-radius: var(--cfm-flyout-radius);
+    box-shadow: var(--cfm-flyout-shadow);
+    border: 1px solid var(--cfm-flyout-border);
+    /* Hidden by default */
+    opacity: 0;
+    visibility: hidden;
+    transform: translateX(-8px);
+    pointer-events: none;
+    transition: opacity 0.16s ease, transform 0.16s ease, visibility 0.16s;
+    z-index: 1099;
+    /* Override Bootstrap collapse classes */
+    display: block !important;
+    height: auto !important;
+}
+
+/* Override Bootstrap collapse behavior for full sidebar mode */
+body.cfm-flyout:not(.hide-sidebar) #side-menu > li > .nav-second-level.collapse,
+body.cfm-flyout:not(.hide-sidebar) #side-menu > li > .nav-second-level.in,
+body.cfm-flyout:not(.hide-sidebar) #side-menu > li > .nav-second-level.collapsing,
+body.cfm-flyout.show-sidebar #side-menu > li > .nav-second-level.collapse,
+body.cfm-flyout.show-sidebar #side-menu > li > .nav-second-level.in,
+body.cfm-flyout.show-sidebar #side-menu > li > .nav-second-level.collapsing {
+    display: block !important;
+    height: auto !important;
+}
+
+/* Show flyout panel when parent li has .cfm-flyout-open class (controlled by JS) */
+body.cfm-flyout:not(.hide-sidebar) #side-menu > li.cfm-flyout-open > .nav-second-level,
+body.cfm-flyout.show-sidebar #side-menu > li.cfm-flyout-open > .nav-second-level {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(0);
+    pointer-events: auto;
+}
+
+.sidebar .fa.arrow:before {
+    content: "\f104" !important; /* Keep arrow pointing letf */
+}
+
+/* Prevent default arrow rotation in full sidebar mode */
+body.cfm-flyout:not(.hide-sidebar) #side-menu > li.cfm-flyout-open > a > .fa.arrow:before,
+body.cfm-flyout.show-sidebar #side-menu > li.cfm-flyout-open > a > .fa.arrow:before {
+    content: "\f105" !important; /* Keep arrow pointing right */
+}
+
+/* Style submenu items inside flyout for full sidebar */
+body.cfm-flyout:not(.hide-sidebar) .cfm-flyout-open .nav-second-level > li > a,
+body.cfm-flyout.show-sidebar .cfm-flyout-open .nav-second-level > li > a {
+    padding: 10px 16px !important;
+    margin: 2px 8px !important;
+    border-radius: 6px;
+    color: var(--cfm-flyout-text);
+    font-weight: 500;
+}
+
+body.cfm-flyout:not(.hide-sidebar) .cfm-flyout-open .nav-second-level > li > a:hover,
+body.cfm-flyout.show-sidebar .cfm-flyout-open .nav-second-level > li > a:hover {
+    background: var(--cfm-flyout-hover) !important;
+    color: #111827;
+}
+
+body.cfm-flyout:not(.hide-sidebar) .cfm-flyout-open .nav-second-level > li.active > a,
+body.cfm-flyout.show-sidebar .cfm-flyout-open .nav-second-level > li.active > a {
+    background: var(--cfm-flyout-hover) !important;
+    color: #111827;
+    font-weight: 600;
+}
+
+/* Flyout title for full sidebar mode */
+body.cfm-flyout:not(.hide-sidebar) .cfm-flyout-title,
+body.cfm-flyout.show-sidebar .cfm-flyout-title {
+    display: block;
+    padding: 10px 16px 8px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    color: var(--cfm-flyout-muted);
+    border-bottom: 1px solid #eef2f6;
+    margin-bottom: 6px;
+}
+
+/* Group labels and separators for full sidebar mode */
+body.cfm-flyout:not(.hide-sidebar) .cfm-group-label,
+body.cfm-flyout.show-sidebar .cfm-group-label {
+    padding: 10px 16px 6px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: var(--cfm-flyout-muted);
+    list-style: none;
+}
+
+body.cfm-flyout:not(.hide-sidebar) .cfm-group-separator,
+body.cfm-flyout.show-sidebar .cfm-group-separator {
+    margin: 6px 12px;
+    border: 0;
+    border-top: 1px solid #e5e7eb;
+}
+
+/* Make sure menu icons display correctly in flyout for full sidebar */
+body.cfm-flyout:not(.hide-sidebar) .nav-second-level .menu-icon,
+body.cfm-flyout.show-sidebar .nav-second-level .menu-icon {
+    margin-right: 8px !important;
+    float: none;
+    display: inline-block;
+}
+
+/* ============================================= */
+/* End: CSS for Flyout Panel for Default Full CRM Sidebar */
+/* ============================================= */
+
+
+/* css for flyout panel for default crm sidebar */

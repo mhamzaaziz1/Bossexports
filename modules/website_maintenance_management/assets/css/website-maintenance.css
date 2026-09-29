@@ -1,0 +1,10 @@
+.btn-danger {
+    border-color: rgb(209 213 219 / var(--tw-border-opacity)) !important;
+    background-color: rgb(255 255 255 / var(--tw-bg-opacity)) !important;
+    color: red !important;
+}
+
+.task-info span.label i,
+.table span.label i {
+    margin-right: 6px;
+}

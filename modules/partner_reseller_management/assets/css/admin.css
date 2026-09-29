@@ -1,0 +1,27 @@
+/* ==========================================================================
+   Partner & Reseller Management — Admin styles
+   ========================================================================== */
+.prm-stat-card {
+    border-left: 4px solid;
+    box-shadow: 0 1px 3px rgba(0,0,0,.05);
+    transition: transform .15s;
+}
+.prm-stat-card:hover { transform: translateY(-2px); }
+.prm-stat-card.panel-info     { border-left-color: #5BC0DE; }
+.prm-stat-card.panel-success  { border-left-color: #5CB85C; }
+.prm-stat-card.panel-warning  { border-left-color: #F0AD4E; }
+.prm-stat-card.panel-danger   { border-left-color: #D9534F; }
+.prm-stat-card.panel-primary  { border-left-color: #428BCA; }
+.prm-stat-label { font-size: 12px; color: #999; text-transform: uppercase; letter-spacing: .5px; }
+.prm-stat-value { font-size: 26px; font-weight: 600; color: #333; margin-top: 4px; }
+
+.prm-pipeline-row { display:flex; align-items:center; padding: 6px 0; gap: 10px; }
+.prm-pipeline-row .prm-stage { width: 130px; font-weight: 600; }
+.prm-pipeline-row .prm-bar-wrap { flex:1; background:#f0f0f0; border-radius:4px; height:14px; overflow:hidden; }
+.prm-pipeline-row .prm-bar { background: linear-gradient(90deg,#3498db,#1abc9c); height:100%; }
+.prm-pipeline-row .prm-stage-meta { font-size: 12px; color: #666; min-width: 130px; text-align:right; }
+
+.prm-tree { list-style: none; padding-left: 18px; border-left: 2px solid #eee; }
+.prm-tree li { padding: 6px 0 6px 14px; position: relative; }
+.prm-tree li::before { content: ""; position: absolute; left: -2px; top: 14px; width: 12px; height: 2px; background: #eee; }
+.prm-tree ul { list-style: none; padding-left: 18px; border-left: 2px solid #eee; }

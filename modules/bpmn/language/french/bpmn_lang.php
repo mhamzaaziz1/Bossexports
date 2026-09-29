@@ -1,0 +1,31 @@
+<?php
+
+$lang['bpmns']                                             = 'Les cartes mentales';
+$lang['bpmn']                                              = 'Carte mentale';
+$lang['bpmn_create_new']                                   = 'Créer un nouveau';
+$lang['bpmn_edit']                                         = 'Éditer';
+$lang['bpmn_delete']                                       = 'Supprimer';
+$lang['bpmn_title']                                        = 'Titre';
+$lang['bpmn_desc']                                         = 'La description';
+$lang['bpmn_staff']										  = 'Créé par';
+$lang['bpmn_search']										  = 'Rechercher une carte mentale';
+$lang['bpmn_group']								          = 'Groupe';
+$lang['bpmn_groups']								          = 'Groupes';
+$lang['edit_bpmn_group']								      = 'Modifier le groupe';
+$lang['new_bpmn_group']								      = 'Nouveau groupe';
+$lang['bpmn_group_add_edit_name']						  = 'Nom';
+$lang['bpmn_group_add_edit_description']					  = 'La description';
+$lang['bpmn_switch_to_grid_view']						  = 'Passer à la grille';
+$lang['bpmn_switch_to_list_view']						  = 'Passer à la liste';
+$lang['bpmn_assigned_to_me']								  = 'Ma bpmn';
+$lang['bpmn_filter_staff']								  = 'Personnelle';
+$lang['bpmn_filter_group']								  = 'Groupe';
+$lang['bpmn_info']								          = 'Informations bpmn';
+$lang['bpmn_staff']								          = 'Personnelle';
+$lang['bpmn_view']								          = 'Vue';
+$lang['bpmn_not_found']								      = 'bpmn introuvable';
+$lang['preview_bpmn']								      = 'Aperçu de bpmn';
+$lang['bpmn_settings_name']								  = 'Carte mentale';
+$lang['new_bpmn_group']								      = 'Nouveau groupe';
+$lang['bpmn_created_at']									  = 'Créé à';
+$lang['bpmn_enable_group_option']                          = 'Autoriser les membres du personnel non administrateurs à créer un groupe dans la zone de création / modification de bpmn?  ';

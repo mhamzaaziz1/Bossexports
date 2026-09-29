@@ -1,0 +1,31 @@
+<?php
+
+$lang['bpmns']                                             = 'Mapes d’ànim';
+$lang['bpmn']                                              = 'Mapa mental';
+$lang['bpmn_create_new']                                   = 'Crea un nou';
+$lang['bpmn_edit']                                         = 'Edita';
+$lang['bpmn_delete']                                       = 'Suprimeix';
+$lang['bpmn_title']                                        = 'Títol';
+$lang['bpmn_desc']                                         = 'Descripció';
+$lang['bpmn_staff']										  = 'Creat per';
+$lang['bpmn_search']										  = 'Cerca al mapa de la ment';
+$lang['bpmn_group']								          = 'Grup';
+$lang['bpmn_groups']								          = 'Grups';
+$lang['edit_bpmn_group']								      = 'Grup d\'edicions';
+$lang['new_bpmn_group']								      = 'Grup nou';
+$lang['bpmn_group_add_edit_name']						  = 'Nom';
+$lang['bpmn_group_add_edit_description']					  = 'Descripció';
+$lang['bpmn_switch_to_grid_view']						  = 'Canvia a Graella';
+$lang['bpmn_switch_to_list_view']						  = 'Canvia a llista';
+$lang['bpmn_assigned_to_me']								  = 'El meu mapa mental';
+$lang['bpmn_filter_staff']								  = 'Personal';
+$lang['bpmn_filter_group']								  = 'Grup';
+$lang['bpmn_info']								          = 'Informació del mapa de pantalla';
+$lang['bpmn_staff']								          = 'Personal';
+$lang['bpmn_view']								          = 'Veure';
+$lang['bpmn_not_found']								      = 'No s\'ha trobat mapa de pantalla';
+$lang['preview_bpmn']								      = 'Vista prèvia del mapa directori';
+$lang['bpmn_settings_name']								  = 'Mapa mental';
+$lang['new_bpmn_group']								      = 'Grup nou';
+$lang['bpmn_created_at']									  = 'Creat a';
+$lang['bpmn_enable_group_option']                          = 'Permet que els membres del personal que no siguin administradors crein un grup de l\'àrea de creació / edició de bpmn?  ';

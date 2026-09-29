@@ -1,0 +1,257 @@
+/* ==========================================================================
+   Vendor Hierarchy Module — Styles
+   ========================================================================== */
+
+/* ---------- KPI Cards ---------- */
+.vh-kpi-card {
+    border: none;
+    border-radius: 10px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    overflow: hidden;
+}
+.vh-kpi-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+}
+.vh-kpi-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    color: #fff;
+    font-size: 20px;
+    margin-bottom: 5px;
+}
+
+/* ---------- Stat Cards (Vendor Profile) ---------- */
+.vh-stat-card {
+    border: none;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    transition: all 0.2s;
+}
+.vh-stat-card:hover {
+    box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+}
+.vh-stat-icon {
+    font-size: 24px;
+    margin-bottom: 5px;
+}
+
+/* ---------- Breadcrumb ---------- */
+.vh-breadcrumb {
+    list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    padding: 12px 16px;
+    margin: 0;
+    background: linear-gradient(135deg, #f8f9ff, #f0f4ff);
+    border-radius: 8px;
+    border: 1px solid #e8ecf5;
+}
+.vh-breadcrumb-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 0;
+}
+.vh-breadcrumb-item.active {
+    font-weight: 700;
+}
+.vh-breadcrumb-badge {
+    font-size: 10px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 10px;
+}
+.vh-breadcrumb-link {
+    color: #3b82f6;
+    text-decoration: none;
+    font-weight: 500;
+}
+.vh-breadcrumb-link:hover {
+    text-decoration: underline;
+}
+.vh-breadcrumb-sep {
+    margin: 0 8px;
+    color: #cbd5e1;
+    font-size: 11px;
+}
+
+/* ---------- Tree View ---------- */
+.vh-tree-container {
+    padding: 10px 0;
+}
+.vh-tree {
+    list-style: none;
+    padding-left: 24px;
+    margin: 0;
+    border-left: 2px solid #e2e8f0;
+}
+.vh-tree-container > .vh-tree {
+    border-left: none;
+    padding-left: 0;
+}
+.vh-tree-collapsed {
+    display: none;
+}
+.vh-tree-node {
+    position: relative;
+    padding: 2px 0;
+}
+.vh-tree-node::before {
+    content: '';
+    position: absolute;
+    left: -24px;
+    top: 16px;
+    width: 20px;
+    height: 0;
+    border-top: 2px solid #e2e8f0;
+}
+.vh-tree-container > .vh-tree > .vh-tree-node::before {
+    display: none;
+}
+.vh-tree-node-content {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 14px;
+    background: #fff;
+    border: 1px solid #e8ecf5;
+    border-radius: 8px;
+    transition: all 0.15s ease;
+    margin: 2px 0;
+}
+.vh-tree-node-content:hover {
+    background: #f5f7ff;
+    border-color: #c7d2fe;
+    box-shadow: 0 2px 8px rgba(99,102,241,0.08);
+}
+.vh-tree-toggle {
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    border-radius: 4px;
+    background: #f1f5f9;
+    color: #64748b;
+    font-size: 13px;
+    transition: all 0.15s;
+}
+.vh-tree-toggle:hover {
+    background: #e2e8f0;
+    color: #334155;
+}
+.vh-tree-toggle-placeholder {
+    width: 22px;
+    height: 22px;
+    display: inline-block;
+}
+.vh-tree-badge {
+    font-size: 10px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 10px;
+}
+.vh-tree-link {
+    color: #1e293b;
+    font-weight: 600;
+    text-decoration: none;
+    font-size: 13px;
+}
+.vh-tree-link:hover {
+    color: #3b82f6;
+    text-decoration: underline;
+}
+
+/* ---------- Parent Vendor Dropdown ---------- */
+.vh-parent-field {
+    background: #fafbff;
+    border: 1px solid #e8ecf5;
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 15px;
+}
+.vh-parent-field-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+    font-weight: 600;
+    color: #334155;
+    font-size: 15px;
+}
+.vh-parent-field-header i {
+    color: #6366f1;
+    font-size: 18px;
+}
+.vh-validation-msg {
+    margin-top: 8px;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 13px;
+    display: none;
+}
+.vh-validation-msg.vh-error {
+    display: block;
+    background: #fef2f2;
+    border: 1px solid #fee2e2;
+    color: #dc2626;
+}
+.vh-validation-msg.vh-success {
+    display: block;
+    background: #f0fdf4;
+    border: 1px solid #dcfce7;
+    color: #16a34a;
+}
+
+/* ---------- Page Heading ---------- */
+.page-heading {
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid #f1f5f9;
+}
+.page-heading h4 {
+    margin: 0;
+    display: inline-block;
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 768px) {
+    .vh-breadcrumb {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    .vh-breadcrumb-sep {
+        transform: rotate(90deg);
+        margin: 4px 0;
+    }
+    .vh-tree {
+        padding-left: 16px;
+    }
+    .vh-tree-node::before {
+        left: -16px;
+        width: 12px;
+    }
+}
+
+/* ---------- Vendor List Column ---------- */
+.vh-parent-col {
+    white-space: nowrap;
+}
+.vh-parent-col .label {
+    font-size: 10px;
+    margin-right: 4px;
+}
+.vh-level-badge {
+    font-size: 10px;
+    padding: 2px 6px;
+    border-radius: 8px;
+    margin-left: 4px;
+}

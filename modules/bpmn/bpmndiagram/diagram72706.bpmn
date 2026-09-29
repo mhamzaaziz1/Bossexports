@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" targetNamespace="" xsi:schemaLocation="http://www.omg.org/spec/BPMN/20100524/MODEL http://www.omg.org/spec/BPMN/2.0/20100501/BPMN20.xsd">
+  <collaboration id="sid-c0e745ff-361e-4afb-8c8d-2a1fc32b1424">
+    <participant id="sid-87F4C1D6-25E1-4A45-9DA7-AD945993D06F" name="Customer" processRef="sid-C3803939-0872-457F-8336-EAE484DC4A04" />
+  </collaboration>
+  <process id="sid-C3803939-0872-457F-8336-EAE484DC4A04" name="Customer" processType="None" isClosed="false" isExecutable="false">
+    <extensionElements />
+    <laneSet id="sid-b167d0d7-e761-4636-9200-76b7f0e8e83a">
+      <lane id="Lane_1v7kv4c">
+        <flowNodeRef>Activity_0897mto</flowNodeRef>
+        <flowNodeRef>Event_1s4vobw</flowNodeRef>
+        <flowNodeRef>Activity_0mt7w3q</flowNodeRef>
+        <flowNodeRef>Activity_173tq4i</flowNodeRef>
+      </lane>
+    </laneSet>
+    <task id="Activity_0897mto" name="kkk">
+      <outgoing>Flow_087442h</outgoing>
+    </task>
+    <sequenceFlow id="Flow_087442h" sourceRef="Activity_0897mto" targetRef="Activity_173tq4i" />
+    <sequenceFlow id="Flow_086upec" sourceRef="Activity_173tq4i" targetRef="Event_1s4vobw" />
+    <dataStoreReference id="DataStoreReference_0ctli0q" />
+    <sequenceFlow id="Flow_0rhozuw" sourceRef="Activity_173tq4i" targetRef="Activity_0mt7w3q" />
+    <dataObjectReference id="DataObjectReference_1fxnhza" dataObjectRef="DataObject_0k19l48" />
+    <dataObject id="DataObject_0k19l48" />
+    <subProcess id="Activity_0mt7w3q">
+      <incoming>Flow_0rhozuw</incoming>
+      <startEvent id="Event_1j8jx0h" />
+    </subProcess>
+    <endEvent id="Event_1s4vobw">
+      <incoming>Flow_086upec</incoming>
+    </endEvent>
+    <sendTask id="Activity_173tq4i">
+      <incoming>Flow_087442h</incoming>
+      <outgoing>Flow_086upec</outgoing>
+      <outgoing>Flow_0rhozuw</outgoing>
+    </sendTask>
+    <textAnnotation id="TextAnnotation_1jon134">
+      <text>dfsdfsdfsdfdsfsdfsdfs</text>
+    </textAnnotation>
+    <association id="Association_1yojrcl" sourceRef="DataObjectReference_1fxnhza" targetRef="TextAnnotation_1jon134" />
+  </process>
+  <bpmndi:BPMNDiagram id="sid-74620812-92c4-44e5-949c-aa47393d3830">
+    <bpmndi:BPMNPlane id="sid-cdcae759-2af7-4a6d-bd02-53f3352a731d" bpmnElement="sid-c0e745ff-361e-4afb-8c8d-2a1fc32b1424">
+      <bpmndi:BPMNShape id="sid-87F4C1D6-25E1-4A45-9DA7-AD945993D06F_gui" bpmnElement="sid-87F4C1D6-25E1-4A45-9DA7-AD945993D06F" isHorizontal="true">
+        <omgdc:Bounds x="83" y="-190" width="1423" height="675" />
+        <bpmndi:BPMNLabel labelStyle="sid-84cb49fd-2f7c-44fb-8950-83c3fa153d3b">
+          <omgdc:Bounds x="47.49999999999999" y="170.42857360839844" width="12.000000000000014" height="59.142852783203125" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_1v7kv4c_di" bpmnElement="Lane_1v7kv4c" isHorizontal="true">
+        <omgdc:Bounds x="113" y="-190" width="1393" height="675" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="TextAnnotation_1jon134_di" bpmnElement="TextAnnotation_1jon134">
+        <omgdc:Bounds x="360" y="-130" width="100" height="40" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_087442h_di" bpmnElement="Flow_087442h">
+        <di:waypoint x="230" y="220" />
+        <di:waypoint x="280" y="220" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_086upec_di" bpmnElement="Flow_086upec">
+        <di:waypoint x="380" y="220" />
+        <di:waypoint x="406" y="220" />
+        <di:waypoint x="406" y="400" />
+        <di:waypoint x="432" y="400" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0rhozuw_di" bpmnElement="Flow_0rhozuw">
+        <di:waypoint x="330" y="180" />
+        <di:waypoint x="330" y="160" />
+        <di:waypoint x="505" y="160" />
+        <di:waypoint x="505" y="50" />
+        <di:waypoint x="850" y="50" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="Activity_0897mto_di" bpmnElement="Activity_0897mto">
+        <omgdc:Bounds x="130" y="180" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="DataStoreReference_0ctli0q_di" bpmnElement="DataStoreReference_0ctli0q">
+        <omgdc:Bounds x="305" y="85" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="DataObjectReference_1fxnhza_di" bpmnElement="DataObjectReference_1fxnhza">
+        <omgdc:Bounds x="322" y="-50" width="36" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_1s4vobw_di" bpmnElement="Event_1s4vobw">
+        <omgdc:Bounds x="432" y="382" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_15xnfpm_di" bpmnElement="Activity_173tq4i">
+        <omgdc:Bounds x="280" y="180" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Association_1yojrcl_di" bpmnElement="Association_1yojrcl">
+        <di:waypoint x="347" y="-50" />
+        <di:waypoint x="360" y="-100" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="Activity_0mt7w3q_di" bpmnElement="Activity_0mt7w3q" isExpanded="true">
+        <omgdc:Bounds x="850" y="-50" width="620" height="200" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_1j8jx0h_di" bpmnElement="Event_1j8jx0h">
+        <omgdc:Bounds x="890" y="32" width="36" height="36" />
+      </bpmndi:BPMNShape>
+    </bpmndi:BPMNPlane>
+    <bpmndi:BPMNLabelStyle id="sid-e0502d32-f8d1-41cf-9c4a-cbb49fecf581">
+      <omgdc:Font name="Arial" size="11" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" />
+    </bpmndi:BPMNLabelStyle>
+    <bpmndi:BPMNLabelStyle id="sid-84cb49fd-2f7c-44fb-8950-83c3fa153d3b">
+      <omgdc:Font name="Arial" size="12" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" />
+    </bpmndi:BPMNLabelStyle>
+  </bpmndi:BPMNDiagram>
+</definitions>

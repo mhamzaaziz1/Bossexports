@@ -1,0 +1,31 @@
+<?php
+
+$lang['bpmns']                                             = 'Mind Maps';
+$lang['bpmn']                                              = 'Mind Map';
+$lang['bpmn_create_new']                                   = 'Skapa ny';
+$lang['bpmn_edit']                                         = 'Redigera';
+$lang['bpmn_delete']                                       = 'Radera';
+$lang['bpmn_title']                                        = 'Titel';
+$lang['bpmn_desc']                                         = 'Beskrivning';
+$lang['bpmn_staff']										  = 'Skapad av';
+$lang['bpmn_search']										  = 'Sök Mind Map';
+$lang['bpmn_group']								          = 'Grupp';
+$lang['bpmn_groups']								          = 'grupper';
+$lang['edit_bpmn_group']								      = 'Redigera grupp';
+$lang['new_bpmn_group']								      = 'Ny grupp';
+$lang['bpmn_group_add_edit_name']						  = 'namn';
+$lang['bpmn_group_add_edit_description']					  = 'Beskrivning';
+$lang['bpmn_switch_to_grid_view']						  = 'Byt till Grid';
+$lang['bpmn_switch_to_list_view']						  = 'Byt till lista';
+$lang['bpmn_assigned_to_me']								  = 'Min bpmn';
+$lang['bpmn_filter_staff']								  = 'Personal';
+$lang['bpmn_filter_group']								  = 'Grupp';
+$lang['bpmn_info']								          = 'bpmn Info';
+$lang['bpmn_staff']								          = 'Personal';
+$lang['bpmn_view']								          = 'Se';
+$lang['bpmn_not_found']								      = 'bpmn hittades inte';
+$lang['preview_bpmn']								      = 'Förhandsgranska bpmn';
+$lang['bpmn_settings_name']								  = 'Mind Map';
+$lang['new_bpmn_group']								      = 'Ny grupp';
+$lang['bpmn_created_at']									  = 'Skapad vid';
+$lang['bpmn_enable_group_option']                          = 'Låt personal som inte är administratörer skapa grupp i bpmn skapa / redigera området?  ';

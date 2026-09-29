@@ -1,0 +1,31 @@
+<?php
+
+$lang['bpmns']                                             = 'Zihin Haritaları';
+$lang['bpmn']                                              = 'Zihin haritası';
+$lang['bpmn_create_new']                                   = 'Yeni oluşturmak';
+$lang['bpmn_edit']                                         = 'Düzenle';
+$lang['bpmn_delete']                                       = 'Sil';
+$lang['bpmn_title']                                        = 'Başlık';
+$lang['bpmn_desc']                                         = 'Açıklama';
+$lang['bpmn_staff']										  = 'Tarafından yaratıldı';
+$lang['bpmn_search']										  = 'Zihin Haritası Ara';
+$lang['bpmn_group']								          = 'grup';
+$lang['bpmn_groups']								          = 'Gruplar';
+$lang['edit_bpmn_group']								      = 'Grubu Düzenle';
+$lang['new_bpmn_group']								      = 'Yeni Grup';
+$lang['bpmn_group_add_edit_name']						  = 'ad';
+$lang['bpmn_group_add_edit_description']					  = 'Açıklama';
+$lang['bpmn_switch_to_grid_view']						  = 'Şebekeye Geç';
+$lang['bpmn_switch_to_list_view']						  = 'Listeye Geç';
+$lang['bpmn_assigned_to_me']								  = 'Akıl Haritam';
+$lang['bpmn_filter_staff']								  = 'Personel';
+$lang['bpmn_filter_group']								  = 'grup';
+$lang['bpmn_info']								          = 'bpmn Bilgisi';
+$lang['bpmn_staff']								          = 'Personel';
+$lang['bpmn_view']								          = 'Görünüm';
+$lang['bpmn_not_found']								      = 'bpmn bulunamadı';
+$lang['preview_bpmn']								      = 'bpmn Önizleme';
+$lang['bpmn_settings_name']								  = 'Zihin haritası';
+$lang['new_bpmn_group']								      = 'Yeni Grup';
+$lang['bpmn_created_at']									  = 'Oluşturma tarihi';
+$lang['bpmn_enable_group_option']                          = 'Yönetici olmayan personelin bpmn oluşturma / düzenleme alanında Grup oluşturmasına izin ver?  ';

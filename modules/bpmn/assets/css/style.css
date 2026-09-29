@@ -1,0 +1,132 @@
+.input-group {
+position: relative;
+/*display: flex !important;*/
+z-index: 000;
+}
+.input-group-append .btn {
+font-size: 15.5px !important;
+}
+.diagram-note {
+  background-color: rgba(66, 180, 21, 0.7);
+  color: White;
+  border-radius: 5px;
+  font-family: Arial;
+  font-size: 12px;
+  padding: 5px;
+  min-height: 16px;
+  width: 50px;
+  text-align: center;
+}
+.needs-discussion:not(.djs-connection) .djs-visual > :nth-child(1) {
+  stroke: rgba(66, 180, 21, 0.7) !important; /* color elements as red */
+}
+#save-button {
+  position: fixed;
+  bottom: 20px;
+  left: 20px;
+}
+.bjs-powered-by{
+  display: none !important;
+}
+
+
+/* The Close Button */
+.close {
+  color: #aaa;
+  float: right;
+  font-size: 28px;
+  font-weight: bold;
+}
+.close:hover,
+.close:focus {
+  color: black;
+  text-decoration: none;
+  cursor: pointer;
+}
+.bootstrap-select:not([class*=col-]):not([class*=form-control]):not(.input-group-btn) {
+    width: 100% !important;
+}
+.close2 {
+font-size: 28px;
+font-weight: bold;
+float:right;
+color:black;
+cursor:pointer;
+}
+#canvas{
+height: 900px;
+width: 100%;
+}
+#expand-button{
+  float: right;
+}
+.bpmn-api-body{
+  min-height:800px!important;
+}
+#top-panel{
+ display: none;
+}
+#bpmn_content{
+  display: none !important;
+}
+#smessage{
+color:green;font-size: 16px;
+}
+.lt{width: 40px !important;}
+.cardbox img {
+    border-radius: 60px;
+    width: 200px !important;
+    height: 200px !important;
+}
+.iframe_style
+{
+    width: 400px;
+    height: 100%;
+    overflow: hidden!important;
+    background: #fff;
+    zoom: normal;
+    -ms-zoom: 23.75;
+    -moz-transform: scale(2.75);
+    -moz-transform-origin: 0 0;
+    -o-transform: scale(3.75);
+    -o-transform-origin: 0 0;
+    -webkit-transform: scale(3.45);
+    -webkit-transform-origin: 0 0;
+    margin: 0;
+    top: -106px;
+    position: relative;
+    left:0;
+}
+.iframe_style2
+{
+        overflow: hidden!important;
+    background: grey;
+    zoom: normal;
+    -ms-zoom: 23.75;
+    -moz-transform: scale(5.75);
+    -moz-transform-origin: 0 0;
+    -o-transform: scale(5.75);
+    -o-transform-origin: 0 0;
+    -webkit-transform: scale(5.75);
+    -webkit-transform-origin: 0 0;
+    top: -373px;
+    position: relative;
+    left: -64%;
+}
+.map_grid
+{
+    overflow: hidden !important;
+} 
+#pagination{
+  margin-top: 10px;
+}   
+.cardbox
+{
+  border: none;
+}
+.task-single-col-left{
+  min-height: 926px;overflow:hidden;
+}
+#print{
+  float: right;
+}

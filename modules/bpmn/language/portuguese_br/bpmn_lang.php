@@ -1,0 +1,31 @@
+<?php
+
+$lang['bpmns']                                             = 'Mapas mentais';
+$lang['bpmn']                                              = 'Mapa mental';
+$lang['bpmn_create_new']                                   = 'Crie um novo';
+$lang['bpmn_edit']                                         = 'Editar';
+$lang['bpmn_delete']                                       = 'Excluir';
+$lang['bpmn_title']                                        = 'Título';
+$lang['bpmn_desc']                                         = 'Descrição';
+$lang['bpmn_staff']										  = 'Criado por';
+$lang['bpmn_search']										  = 'Pesquisa Mapa Mental';
+$lang['bpmn_group']								          = 'Grupo';
+$lang['bpmn_groups']								          = 'Grupos';
+$lang['edit_bpmn_group']								      = 'Editar grupo';
+$lang['new_bpmn_group']								      = 'Novo grupo';
+$lang['bpmn_group_add_edit_name']						  = 'Nome';
+$lang['bpmn_group_add_edit_description']					  = 'Descrição';
+$lang['bpmn_switch_to_grid_view']						  = 'Mudar para Grade';
+$lang['bpmn_switch_to_list_view']						  = 'Mudar para lista';
+$lang['bpmn_assigned_to_me']								  = 'My bpmn';
+$lang['bpmn_filter_staff']								  = 'Funcionárias';
+$lang['bpmn_filter_group']								  = 'Grupo';
+$lang['bpmn_info']								          = 'Informações do mapa mental';
+$lang['bpmn_staff']								          = 'Funcionárias';
+$lang['bpmn_view']								          = 'Visão';
+$lang['bpmn_not_found']								      = 'Mapa mental não encontrado';
+$lang['preview_bpmn']								      = 'Visualizar bpmn';
+$lang['bpmn_settings_name']								  = 'Mapa mental';
+$lang['new_bpmn_group']								      = 'Novo grupo';
+$lang['bpmn_created_at']									  = 'Criado em';
+$lang['bpmn_enable_group_option']                          = 'Permitir que membros da equipe que não sejam administradores criem Grupo na área de criação / edição do bpmn?  ';

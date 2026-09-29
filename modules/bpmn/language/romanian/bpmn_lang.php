@@ -1,0 +1,31 @@
+<?php
+
+$lang['bpmns']                                             = 'Maps Mind';
+$lang['bpmn']                                              = 'Harta mintii';
+$lang['bpmn_create_new']                                   = 'Creaza nou';
+$lang['bpmn_edit']                                         = 'Editați | ×';
+$lang['bpmn_delete']                                       = 'Șterge';
+$lang['bpmn_title']                                        = 'Titlu';
+$lang['bpmn_desc']                                         = 'Descriere';
+$lang['bpmn_staff']										  = 'Creat de';
+$lang['bpmn_search']										  = 'Căutați pe harta minții';
+$lang['bpmn_group']								          = 'grup';
+$lang['bpmn_groups']								          = 'Grupuri';
+$lang['edit_bpmn_group']								      = 'Editează grupul';
+$lang['new_bpmn_group']								      = 'Grup nou';
+$lang['bpmn_group_add_edit_name']						  = 'Nume';
+$lang['bpmn_group_add_edit_description']					  = 'Descriere';
+$lang['bpmn_switch_to_grid_view']						  = 'Comutați la Grila';
+$lang['bpmn_switch_to_list_view']						  = 'Comutați la listă';
+$lang['bpmn_assigned_to_me']								  = 'bpmn-ul meu';
+$lang['bpmn_filter_staff']								  = 'Personal';
+$lang['bpmn_filter_group']								  = 'grup';
+$lang['bpmn_info']								          = 'bpmn Info';
+$lang['bpmn_staff']								          = 'Personal';
+$lang['bpmn_view']								          = 'Vedere';
+$lang['bpmn_not_found']								      = 'bpmn nu a fost găsit';
+$lang['preview_bpmn']								      = 'Previzualizați pagina de imagine';
+$lang['bpmn_settings_name']								  = 'Harta mintii';
+$lang['new_bpmn_group']								      = 'Grup nou';
+$lang['bpmn_created_at']									  = 'Creat la';
+$lang['bpmn_enable_group_option']                          = 'Permiteți membrilor personalului non-admin să creeze Grup în zona de creare / editare a bpmn?  ';

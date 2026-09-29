@@ -1,0 +1,31 @@
+<?php
+
+$lang['bpmns']                                             = 'マインドマップ';
+$lang['bpmn']                                              = '心理図';
+$lang['bpmn_create_new']                                   = '新しく作る';
+$lang['bpmn_edit']                                         = '編集する';
+$lang['bpmn_delete']                                       = '削除する';
+$lang['bpmn_title']                                        = '題名';
+$lang['bpmn_desc']                                         = '説明文';
+$lang['bpmn_staff']										  = 'によって作成された';
+$lang['bpmn_search']										  = 'マインドマップを検索';
+$lang['bpmn_group']								          = 'グループ';
+$lang['bpmn_groups']								          = '団体';
+$lang['edit_bpmn_group']								      = 'グループを編集';
+$lang['new_bpmn_group']								      = '新しい集団';
+$lang['bpmn_group_add_edit_name']						  = '名前';
+$lang['bpmn_group_add_edit_description']					  = '説明文';
+$lang['bpmn_switch_to_grid_view']						  = 'グリッドに切り替え';
+$lang['bpmn_switch_to_list_view']						  = 'リストに切り替え';
+$lang['bpmn_assigned_to_me']								  = '私のマインドマップ';
+$lang['bpmn_filter_staff']								  = 'スタッフ';
+$lang['bpmn_filter_group']								  = 'グループ';
+$lang['bpmn_info']								          = 'マインドマップ情報';
+$lang['bpmn_staff']								          = 'スタッフ';
+$lang['bpmn_view']								          = '見る';
+$lang['bpmn_not_found']								      = 'マインドマップが見つかりません';
+$lang['preview_bpmn']								      = 'マインドマップをプレビュー';
+$lang['bpmn_settings_name']								  = '心理図';
+$lang['new_bpmn_group']								      = '新しい集団';
+$lang['bpmn_created_at']									  = 'で作成';
+$lang['bpmn_enable_group_option']                          = '管理者以外のスタッフがマインドマップの作成/編集領域でグループを作成できるようにする?  ';

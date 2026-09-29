@@ -1,0 +1,31 @@
+<?php
+
+$lang['bpmns']                                             = 'Gedächniskarten';
+$lang['bpmn']                                              = 'bpmn';
+$lang['bpmn_create_new']                                   = 'Erstelle neu';
+$lang['bpmn_edit']                                         = 'Bearbeiten';
+$lang['bpmn_delete']                                       = 'Löschen';
+$lang['bpmn_title']                                        = 'Titel';
+$lang['bpmn_desc']                                         = 'Beschreibung';
+$lang['bpmn_staff']										  = 'Erstellt von';
+$lang['bpmn_search']										  = 'Mind Map suchen';
+$lang['bpmn_group']								          = 'Gruppe';
+$lang['bpmn_groups']								          = 'Gruppen';
+$lang['edit_bpmn_group']								      = 'Gruppe bearbeiten';
+$lang['new_bpmn_group']								      = 'Neue Gruppe';
+$lang['bpmn_group_add_edit_name']						  = 'Name';
+$lang['bpmn_group_add_edit_description']					  = 'Beschreibung';
+$lang['bpmn_switch_to_grid_view']						  = 'Wechseln Sie zu Grid';
+$lang['bpmn_switch_to_list_view']						  = 'Wechseln Sie zu Liste';
+$lang['bpmn_assigned_to_me']								  = 'Meine bpmn';
+$lang['bpmn_filter_staff']								  = 'Mitarbeiterin';
+$lang['bpmn_filter_group']								  = 'Gruppe';
+$lang['bpmn_info']								          = 'bpmn Info';
+$lang['bpmn_staff']								          = 'Mitarbeiterin';
+$lang['bpmn_view']								          = 'Aussicht';
+$lang['bpmn_not_found']								      = 'bpmn nicht gefunden';
+$lang['preview_bpmn']								      = 'Vorschau bpmn';
+$lang['bpmn_settings_name']								  = 'bpmn';
+$lang['new_bpmn_group']								      = 'Neue Gruppe';
+$lang['bpmn_created_at']									  = 'Hergestellt in';
+$lang['bpmn_enable_group_option']                          = 'Ermöglichen Sie Mitarbeitern, die keine Administratoren sind, das Erstellen einer Gruppe im bpmn-Erstellungs- / Bearbeitungsbereich?  ';

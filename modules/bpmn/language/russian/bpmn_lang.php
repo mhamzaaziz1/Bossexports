@@ -1,0 +1,31 @@
+<?php
+
+$lang['bpmns']                                             = 'Карты разума';
+$lang['bpmn']                                              = 'Карта разума';
+$lang['bpmn_create_new']                                   = 'Создать новый';
+$lang['bpmn_edit']                                         = 'редактировать';
+$lang['bpmn_delete']                                       = 'Удалить';
+$lang['bpmn_title']                                        = 'заглавие';
+$lang['bpmn_desc']                                         = 'Описание';
+$lang['bpmn_staff']										  = 'Создано';
+$lang['bpmn_search']										  = 'Поиск Mind Map';
+$lang['bpmn_group']								          = 'группа';
+$lang['bpmn_groups']								          = 'группы';
+$lang['edit_bpmn_group']								      = 'Редактировать группу';
+$lang['new_bpmn_group']								      = 'Новая группа';
+$lang['bpmn_group_add_edit_name']						  = 'название';
+$lang['bpmn_group_add_edit_description']					  = 'Описание';
+$lang['bpmn_switch_to_grid_view']						  = 'Переключиться на сетку';
+$lang['bpmn_switch_to_list_view']						  = 'Переключиться на список';
+$lang['bpmn_assigned_to_me']								  = 'Моя карта разума';
+$lang['bpmn_filter_staff']								  = 'Штат сотрудников';
+$lang['bpmn_filter_group']								  = 'группа';
+$lang['bpmn_info']								          = 'Информация о bpmn';
+$lang['bpmn_staff']								          = 'Штат сотрудников';
+$lang['bpmn_view']								          = 'Посмотреть';
+$lang['bpmn_not_found']								      = 'bpmn не найден';
+$lang['preview_bpmn']								      = 'Предварительный просмотр bpmn';
+$lang['bpmn_settings_name']								  = 'Карта разума';
+$lang['new_bpmn_group']								      = 'Новая группа';
+$lang['bpmn_created_at']									  = 'Создано на';
+$lang['bpmn_enable_group_option']                          = 'Разрешить сотрудникам без прав администратора создавать группы в области создания и редактирования bpmn?  ';

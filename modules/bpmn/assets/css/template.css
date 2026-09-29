@@ -1,0 +1,105 @@
+.diagram-note {
+
+background-color: rgba(66, 180, 21, 0.7);
+
+color: White;
+
+border-radius: 5px;
+
+font-family: Arial;
+
+font-size: 12px;
+
+padding: 5px;
+
+min-height: 16px;
+
+width: 50px;
+
+text-align: center;
+
+}
+
+.needs-discussion:not(.djs-connection) .djs-visual > :nth-child(1) {
+
+stroke: rgba(66, 180, 21, 0.7) !important; /* color elements as red */
+
+}
+
+
+
+#save-button {
+
+position: fixed;
+
+bottom: 20px;
+
+left: 20px;
+
+}
+
+.bjs-powered-by
+
+{
+
+display: none !important;
+
+}
+
+.djs-palette
+
+{
+
+  display: none !important;
+
+}
+
+.iframe_style
+
+{
+
+overflow: hidden!important;
+
+background: grey;
+
+zoom: normal;
+
+-ms-zoom: 23.75;
+
+-moz-transform: scale(5.75);
+
+-moz-transform-origin: 0 0;
+
+-o-transform: scale(5.75);
+
+-o-transform-origin: 0 0;
+
+-webkit-transform: scale(5.75);
+
+-webkit-transform-origin: 0 0;
+
+top: -373px;
+
+position: relative;
+
+left: -64%;
+
+}
+
+.task-single-col-left
+
+{
+
+min-height: 926px;overflow:hidden;
+position: relative;
+
+}
+.bpmn_preview_cover{
+	width: 100%;
+    height: 100%;
+    position: absolute;
+    background-color: transparent;
+    z-index: 1;
+    left: 0;
+    top: 0;
+}

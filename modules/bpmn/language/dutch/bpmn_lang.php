@@ -1,0 +1,31 @@
+<?php
+
+$lang['bpmns']                                             = 'Mind maps';
+$lang['bpmn']                                              = 'Mind Map';
+$lang['bpmn_create_new']                                   = 'Maak nieuw';
+$lang['bpmn_edit']                                         = 'Bewerk';
+$lang['bpmn_delete']                                       = 'Verwijderen';
+$lang['bpmn_title']                                        = 'Titel';
+$lang['bpmn_desc']                                         = 'Omschrijving';
+$lang['bpmn_staff']										  = 'Gemaakt door';
+$lang['bpmn_search']										  = 'Zoek Mind Map';
+$lang['bpmn_group']								          = 'Groep';
+$lang['bpmn_groups']								          = 'Groepen';
+$lang['edit_bpmn_group']								      = 'Groep bewerken';
+$lang['new_bpmn_group']								      = 'Nieuwe groep';
+$lang['bpmn_group_add_edit_name']						  = 'Naam';
+$lang['bpmn_group_add_edit_description']					  = 'Omschrijving';
+$lang['bpmn_switch_to_grid_view']						  = 'Schakel over naar Grid';
+$lang['bpmn_switch_to_list_view']						  = 'Schakel over naar lijst';
+$lang['bpmn_assigned_to_me']								  = 'Mijn bpmn';
+$lang['bpmn_filter_staff']								  = 'Personeel';
+$lang['bpmn_filter_group']								  = 'Groep';
+$lang['bpmn_info']								          = 'bpmn Info';
+$lang['bpmn_staff']								          = 'Personeel';
+$lang['bpmn_view']								          = 'Visie';
+$lang['bpmn_not_found']								      = 'bpmn niet gevonden';
+$lang['preview_bpmn']								      = 'Voorbeeld bpmn bekijken';
+$lang['bpmn_settings_name']								  = 'bpmn';
+$lang['new_bpmn_group']								      = 'Nieuwe groep';
+$lang['bpmn_created_at']									  = 'Gemaakt bij';
+$lang['bpmn_enable_group_option']                          = 'Sta niet-admin personeel toe om een groep aan te maken in bpmn creëren / bewerken gebied?  ';

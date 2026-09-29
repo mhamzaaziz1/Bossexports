@@ -1,0 +1,57 @@
+<?php
+
+defined('BASEPATH') or exit('No direct script access allowed');
+
+$lang['vendor_hierarchy']                  = 'Vendor Hierarchy';
+$lang['vendor_hierarchy_settings']         = 'Hierarchy Settings';
+$lang['vendor_hierarchy_view']             = 'Hierarchy View';
+$lang['vendor_hierarchy_reports']           = 'Hierarchy Reports';
+$lang['vendor_hierarchy_labels']           = 'Hierarchy Level Labels';
+$lang['vendor_hierarchy_level_1']          = 'Level 1 Label';
+$lang['vendor_hierarchy_level_2']          = 'Level 2 Label';
+$lang['vendor_hierarchy_level_3']          = 'Level 3 Label';
+$lang['vendor_hierarchy_level_4']          = 'Level 4 Label';
+$lang['vendor_hierarchy_parent_vendor']    = 'Parent Vendor';
+$lang['vendor_hierarchy_no_parent']        = 'No Parent (Top Level)';
+$lang['vendor_hierarchy_current_level']    = 'Current Level';
+$lang['vendor_hierarchy_save_settings']    = 'Save Hierarchy Settings';
+$lang['vendor_hierarchy_settings_updated'] = 'Hierarchy settings updated successfully';
+$lang['vendor_hierarchy_max_depth']        = 'Maximum hierarchy depth (4 levels) reached. Cannot assign this parent.';
+$lang['vendor_hierarchy_circular_ref']     = 'Circular reference detected. A vendor cannot be its own ancestor.';
+$lang['vendor_hierarchy_sub_vendors']      = 'Sub-Vendors';
+$lang['vendor_hierarchy_tree_view']        = 'Hierarchy Tree';
+$lang['vendor_hierarchy_breadcrumb']       = 'Hierarchy Path';
+$lang['vendor_hierarchy_no_children']      = 'No sub-vendors found.';
+$lang['vendor_hierarchy_level']            = 'Level';
+$lang['vendor_hierarchy_children_count']   = 'Direct Children';
+$lang['vendor_hierarchy_total_descendants'] = 'Total Descendants';
+$lang['vendor_hierarchy_report_by_level']  = 'Vendors by Level';
+$lang['vendor_hierarchy_report_tree']      = 'Full Hierarchy Tree';
+$lang['vendor_hierarchy_report_orphans']   = 'Orphan Vendors';
+$lang['vendor_hierarchy_report_summary']   = 'Hierarchy Summary';
+$lang['vendor_hierarchy_top_level_vendors'] = 'Top-Level Vendors';
+$lang['vendor_hierarchy_total_vendors']    = 'Total Vendors';
+$lang['vendor_hierarchy_deepest_chain']    = 'Deepest Chain';
+$lang['vendor_hierarchy_avg_children']     = 'Avg. Children Per Parent';
+$lang['vendor_hierarchy_export_pdf']       = 'Export PDF';
+$lang['vendor_hierarchy_export_csv']       = 'Export CSV';
+$lang['vendor_hierarchy_expand_all']       = 'Expand All';
+$lang['vendor_hierarchy_collapse_all']     = 'Collapse All';
+$lang['vendor_hierarchy_filter_by_level']  = 'Filter by Level';
+$lang['vendor_hierarchy_all_levels']       = 'All Levels';
+$lang['vendor_hierarchy_validation_error'] = 'Hierarchy validation error';
+$lang['vendor_hierarchy_search']           = 'Search Hierarchy';
+$lang['vendor_hierarchy_search_placeholder'] = 'Search by company name, phone, or city...';
+$lang['vendor_hierarchy_filter_parent']    = 'Filter by Parent';
+$lang['vendor_hierarchy_filter_status']    = 'Status';
+$lang['vendor_hierarchy_status_all']       = 'All Status';
+$lang['vendor_hierarchy_status_active']    = 'Active';
+$lang['vendor_hierarchy_status_inactive']  = 'Inactive';
+$lang['vendor_hierarchy_clear_filters']    = 'Clear Filters';
+$lang['vendor_hierarchy_search_btn']       = 'Search';
+$lang['vendor_hierarchy_no_results']       = 'No vendors found matching your criteria.';
+$lang['vendor_hierarchy_showing_results']  = 'Showing %s vendor(s)';
+$lang['vendor_hierarchy_hierarchy_path']   = 'Hierarchy Path';
+$lang['vendor_hierarchy_view_vendor']      = 'View Vendor';
+$lang['vendor_hierarchy_view_children']    = 'View Children';
+
